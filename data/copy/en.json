@@ -1,0 +1,18 @@
+{
+  "menu.title": "Foul Fowl 4X",
+  "menu.splash.1": "Ducks.",
+  "menu.splash.2": "Pheasants for the win.",
+  "menu.splash.3": "Swans OP.",
+  "menu.tagline": "eXplore. eXpand. eXploit. eXterminate.",
+  "menu.tagline2": "Then eXhale.",
+  "menu.quit_confirm": "This is the door. One More Turn is a different button, and it appears after you have already won.",
+  "credits.1": "For eXplorminate, with affection: a small galaxy, a finished evening, and the swans exactly as guilty as charged.",
+  "credits.2": "No balance patch was applied to the swans. This was a decision.",
+  "ui.label.new_game": "New Game",
+  "ui.label.continue": "Continue",
+  "ui.label.settings": "Settings",
+  "ui.label.credits": "Credits",
+  "ui.label.quit": "Quit",
+  "ui.label.back": "Back",
+  "ui.label.coming_soon": "Coming in a later build"
+}
