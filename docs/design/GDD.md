@@ -1,11 +1,11 @@
 # Foul Fowl 4X — Game Design Document
 
-Revision 3 (red team round 1), 2026-10-06. Status: DRAFT for red team round 2. Companions: `ARCHITECTURE.md` (how it is built), `BRIEF.md` (why), `MEME_BIBLE.md` (voice, roster flavour), `COPY_PLAN.md` (every string), `redteam/` (round 1 findings; disposition in §22).
+Revision 4 (red team round 2), 2026-10-06. Status: BUILD (engineering plan: `docs/engineering/PLAN.md`). Companions: `ARCHITECTURE.md` (how it is built), `BRIEF.md` (why), `MEME_BIBLE.md` (voice, roster flavour), `COPY_PLAN.md` (every string), `redteam/` (findings; round 1 disposition in §22, round 2 in §23).
 
 Conventions:
 - **[MVP]** ships in the first public build. **[STRETCH]** only after a complete MVP evening repeatedly finishes in time. The full cut list is §18.
 - **[COPY: key]** marks a player-facing string; `key` is its `data/copy/en.json` key (scheme in `COPY_PLAN.md`). Mechanics never depend on copy.
-- **Source of truth.** Mechanics and numbers here win over every other design doc. §21 lists meme-bible numbers that were changed, §22 the red-team dispositions.
+- **Source of truth.** Mechanics and numbers here win over every other design doc. §21 lists meme-bible numbers that were changed, §22-§23 the red-team dispositions.
 - Every number is a starting value in `data/balance.json` or content JSON (ARCHITECTURE §5). §17 says what the soak can and cannot verify, and the human playtest gate for the rest.
 - Mechanical identifiers (`snake_case`) are stable; display names are copy.
 
@@ -67,7 +67,7 @@ Measured human decision time is the budget, not an estimate of it. Targets per t
 | 41-80 | 25 s | 16.7 min |
 | 81-120 | 35 s | 23.3 min |
 | 121-150 | 45 s | 22.5 min |
-| Battle Orders cards (~25 x 15 s) + watched replays (~20 x 8 s) | | 9 min |
+| Battle Orders stops (at most 1 per turn, ≤ 3 cards each; ~25 stops x 15 s) + watched replays (~20 x 8 s) | | 9 min |
 | End-turn processing (150 x ≤ 0.6 s) | | 1.5 min |
 | **Total at a T150 ending** | | **≈ 80 min** |
 | Each extra turn past 150 | 45 s | +0.75 min/turn → cap T200 ≈ 118 min |
@@ -159,7 +159,7 @@ Budget 10 picks (negatives refund, cap -10; one per group; Specials pick-any). T
 | | heat_intolerant | -3 | Desert, Arid, Cinder, Sour capped at 1 pop/size (after floors) |
 | | low_g / high_g | -4 / +5 | Gravity comfort |
 | | large_homeworld / rich_homeworld / poor_homeworld / artifact_homeworld | +1 / +2 / -1 / +3 | |
-| | creative ("Wide-Eyed") | +8 | A tier grants both options |
+| | creative ("Wide-Eyed") | +6 | Completing a node grants both options at once (no second prompt), including the final Hyper-Preened forks (§6.1) |
 | | uncreative ("One-Note") | -4 | You choose one option per tier; the other is never researchable (trade or theft still fetch it) |
 | | night_hours | +2 | Research +20% while at peace with every empire met |
 | | charismatic | +3 | +20 relations; a Grand Roost candidate you vote for, **other than yourself**, gains 10% of your votes |
@@ -191,13 +191,13 @@ Budget 10 picks (negatives refund, cap -10; one per group; Specials pick-any). T
 | **The Pale Supremacy** (Swans) | Cob-Empress Cygnara the Unbothered | **13** | good_science, ship_attack_+1, ship_defense_+1, fast_ships, ground_+1, rich_homeworld, large_homeworld, notorious | Large Temperate, Rich | The Unbothered | White #F5F5F5 / crown |
 | **The Ringneck Warrant** (Pheasants) | High Cockade Vesper Goldtail | 10 | talon_adepts, flush, ship_attack_+1, good_industry, high_upkeep | Medium Temperate | The Sportsman | Vermillion #D55E00 / triangle |
 | **The Dabble League** (Ducks) | First Mallard Deb Quill | 10 | fantastic_traders, any_puddle, fast_growth, charismatic, ship_attack_-1, ground_-1 | Medium Ocean | The Dealmaker | Bluish green #009E73 / circle |
-| **The Night Parliament** (Owls) | Arch-Dean Athene Stillbranch | 10 | creative, good_science, night_hours, poor_industry | Medium Temperate | The Librarian | Yellow #F0E442 / diamond |
+| **The Night Parliament** (Owls) | Arch-Dean Athene Stillbranch | 10 | creative, good_science, night_hours, ship_attack_+1, poor_industry | Medium Temperate | The Librarian | Yellow #F0E442 / diamond |
 | **The Pebble Throne** (Penguins) | Pebble-King Pebble XIV | 10 | tolerant, piscivore, huddle, good_industry, ground_+1, large_homeworld, heat_intolerant, slow_growth | Large Ice | The Patient Rock | Sky blue #56B4E9 / square |
 | **The Open Murder** (Crows) | Keeper of the Cache, Kestra Nightcache | 10 | spy_+1, cache, scavengers, stealthy_ships, informants, distrusted, ground_-1 | Medium Arid | The Borrower | Reddish purple #CC79A7 / cross |
 | **The Marked Airspace** (Geese) | Grand Honk Brenda Ironwing | 10 | v_formation, tough_hulls, ground_+1, ship_attack_+1, rich_homeworld, territorial | Medium Temperate, Rich | The Neighbor | Orange #E69F00 / chevron |
 | **The Pecking Order** (Chickens) | Prime Rooster Cluckett of the Ninth | 10 | unification, good_industry, prefab_coops, nothing_wasted, uncreative | Medium Temperate | The Floor | Blue #0072B2 / comb |
 
-Pick sums: Swans 3+2+3+3+2+2+1-3 = 13; Pheasants 3+3+2+3-1 = 10; Ducks 4+4+3+3-2-2 = 10; Owls 8+3+2-3 = 10; Penguins 8+0+3+3+2+1-3-4 = 10; Crows 3+4+2+4+3-4-2 = 10; Geese 4+3+2+2+2-3 = 10; Chickens 6+3+3+2-4 = 10. Penguin food uses the fish table with no tolerant food floor, and the heat cap applies after the pop floor (§3.4). Crows get informants instead of omniscient: the spy empire still has to explore.
+Pick sums: Swans 3+2+3+3+2+2+1-3 = 13; Pheasants 3+3+2+3-1 = 10; Ducks 4+4+3+3-2-2 = 10; Owls 6+3+2+2-3 = 10 (revision 4: Wide-Eyed repriced from 8 to 6; the freed 2 buy Mean Aim, so the few ships a thin-factory library builds hit what the library told them to); Penguins 8+0+3+3+2+1-3-4 = 10; Crows 3+4+2+4+3-4-2 = 10; Geese 4+3+2+2+2-3 = 10; Chickens 6+3+3+2-4 = 10. Penguin food uses the fish table with no tolerant food floor, and the heat cap applies after the pop floor (§3.4). Crows get informants instead of omniscient: the spy empire still has to explore.
 
 ### 4.3 Swans OP [MVP]
 
@@ -230,7 +230,7 @@ Each pop eats 1. Food is summed empire-wide. **Surplus sells at 2 food = 1 credi
 
 ### 5.4 Yields
 
-`food = farmers x farm + flat`; `industry = (workers x pp + flat) x (100+pct)/100`; `research = (scientists x rp + flat) x (100+pct)/100`; `taxes = pop x 1 x (100+pct)/100`. Order per §3.4. Occupied colonies: -50% for 10 turns. **Long supply lines**: colonies more than 15 pc from the Grand Nest lose 10% of all output per 5 pc beyond (max -30%).
+`food = farmers x farm + flat`; `industry = (workers x pp + flat) x (100+pct)/100`; `research = (scientists x rp + flat) x (100+pct)/100`; `taxes = pop x 1 x (100+pct)/100`. Order per §3.4. Occupied colonies: -50% for 10 turns. **Long supply lines**: colonies more than 15 pc from the Grand Nest lose 10% of industry, research and taxes per 5 pc beyond (max -30%). **Food is exempt** (revision 4): food is already the pooled constraint, and a farm-2 frontier world at -20% food would only feed itself.
 
 ### 5.5 Expansion costs (red team: expansion must be a decision)
 
@@ -238,7 +238,8 @@ Each pop eats 1. Food is summed empire-wide. **Surplus sells at 2 food = 1 credi
 - **Colony administration**: 1 credit/turn per colony beyond the capital; colonies beyond the 8th cost 2.
 - **Outposts** (Perch Pods, 27 PP) claim range but have no defense: a hostile armed fleet that controls orbit at end of turn **razes** the outpost.
 - **Blockade**: a hostile armed fleet controlling orbit stops the colony's growth and halves its industry; its trade income stops.
-- Net effect at T5: a second Nest Ship costs 65 PP (4.6 turns of capital output), 1 capital pop (≈ 3 PP or 3 RP per turn until regrown, ~8 turns) and 1 credit/turn. Postponing it for 2 Sparrows or a Second Shift Hall is a live choice; the playtest gate asks whether players actually postpone (§17.4).
+- Net effect at T5 (corrected in revision 4): a second Nest Ship costs 65 PP (4.6 turns of capital output), 1 capital pop and 1 credit/turn. At the capital (pop 7 of 12 after the drain) growth is `(7000 x 5000 / 12000) x 10% + 50 ≈ 341` milli/turn, so the drained pop **regrows in about 3 turns** (≈ 9 PP or RP lost in total), not 8; the drain bites only on small frontier colonies (pop 3 of 9: ≈ 183 milli/turn, ~5.5 turns). Costs are **not** raised on that basis: the brake is the 30% habitable rate past 9 pc plus admin upkeep, and the playtest gate (H3) and the soak's per-colony payback report (§17.2) decide whether more is needed.
+- **Prospect line** [MVP]: the Nest Ship order and the colonise target tooltip show one line for the target world after supply lines and admin: net food, net credits, net PP at the colony's pop 3 and at its max pop. [COPY: ui.expansion.prospect]
 
 ### 5.6 Specialisation [MVP]
 
@@ -312,14 +313,16 @@ Ids follow Grok's display names (COPY_PLAN maps the old ids).
 | weapons (WE) | **Broodheat** | Talon, Beak, Horizon, bombs, planet guns |
 
 - 36 nodes, each = **core** (backbone, always granted) + **one of two options**. One prompt per node; the research queue pre-chooses. Every option has an MVP effect: no dead buttons.
-- **The fork holds**: an unchosen option cannot be started until **two further tiers of that field** are complete, and then costs **150%** of its tier. Trade, theft, capture and Cache bypass the wait. Creative (Owls) has both options during the era the choice was about; One-Note (Chickens) never researches the sibling.
+- **The fork holds** (revision 4): the unchosen option of a **tier 1-4** node cannot be started until **two further tiers of that field** are complete (T1 sibling after T3, T2 after T4, T3 after T5, T4 after T6), and then costs **150%** of its tier. **Hyper-Preened forks (tiers 5 and 6) are final**: their unchosen option can never be researched, only received by trade, theft, capture or Cache (round 2: there is no T7 or T8 to wait for, so the old wording silently made them permanent; now it is a printed rule). Trade, theft, capture and Cache bypass every wait. Creative (Owls) receives both options of every node, including the final forks, on the same completion with no second prompt; One-Note (Chickens) never researches a sibling at any tier. [COPY: ui.research.fork_locked, ui.research.fork_final]
 - **Tech-transfer limit**: an empire can **receive** at most one tech by trade or gift per 10 turns (steal, capture, Cache and Guardian loot do not count). Exodus keys never move.
 - Tiers 5-6 carry the **Hyper-Preened** label. Repeatable Hyper-Preened techs: [STRETCH].
 - Completion is deterministic; overflow carries.
 
 ### 6.2 Cost
 
-`cost(tier) = 30 x tier²` → T1 30, T2 120, T3 270, T4 480, T5 750, T6 1080 (field total 2730, tree 16,380). An unchosen option researched later costs 150%. `creative_tier_cost_pct` (default 0) is the measured knob for Owls (§17.2).
+`cost(tier) = 30 x tier²` → T1 30, T2 120, T3 270, T4 480, T5 750, T6 1080 (field total 2730, tree 16,380). An unchosen T1-T4 option researched later costs 150%.
+
+**Creative price** (revision 4): Wide-Eyed is worth the 24 early siblings without the wait or the 150% (a full set costs an ordinary empire `1.5 x (30+120+270+480) x 6 = 8,100` RP, and it gets them two tiers late) plus 12 final options nobody else can research. Against that, Owls carry poor_industry, so half of the extra options are buildings their factories queue slowly, and trade, theft and Cache let others reach any single sibling. Priced at **6 picks** (round 2 bracketed it between Grok's 5 and the old 8). `creative_tier_cost_pct` (default 0) stays the measured knob: it is raised only if the soak shows Owls above their band (§17.2).
 
 Pacing check (balanced player; RP ≈ 9 → 25 (T30) → 60 (T60) → 110 (T90) → 160 (T120) → 200 (T150)): cumulative RP ≈ 1,800 by T60, 4,300 by T90, 8,400 by T120, 13,800 by T150. So: all six T3 by ~T70, all T4 by ~T100, Exodus requirements (§14, ≈ 12,100 RP) by ~T140. A research-focused empire (+50% RP) gets there by ≈ T115, then needs the 3000-PP Departure Roost.
 
@@ -479,11 +482,14 @@ At a system, at the combat step, if parties at war (or the Monster faction) have
 ### 9.2 The Battle Orders card [MVP] (red team: agency)
 
 Before a battle resolves, each side issues **one set of orders**:
-- **The player** gets the Battle Orders card when the battle is big (default: own side ≥ 3 armed ships, or a colony of yours defending; setting: Always / Big / Never). The card shows the enemy as visible (hull counts, designs if known, estimated odds) and the five orders below, pre-filled from the fleet's standing plan. One click accepts.
+- **The player** gets a Battle Orders card for a battle that qualifies. Setting Always / Big (default) / Never. **Big** (revision 4) means the player has at least 1 armed ship in the battle **and** (own side ≥ 3 armed ships, **or** enemy side ≥ 3 armed ships, **or** a bomb part is present on either side). A colony defending alone, or a lone scout, never stops the turn; planets fight on their defaults.
+- **One stop per turn** (revision 4): all of a turn's qualifying battles are presented together on one Battle Orders stop, one card each, the **3 largest by total armed PP** first; any further battles that turn use standing plans and are listed as "auto" lines on the same stop. Enter accepts all; each card is also accepted on its own.
+- Each card shows the enemy as visible (hull counts, designs if known, estimated odds), the five orders below pre-filled from the standing plan, and a **range projection line** computed by the §9.3 rule from your posture and speed against the enemy's visible line speed: "Talon band by round {t}, Beak band by round {b} at worst" (the worst case is when they open at full speed; §9.3 makes it exact). [COPY: battle.orders.projection]
+- **Combined fleets**: when several of your fleets are in one battle, they form one party; its orders are the standing plan of the fleet with the largest armed PP (ties: lowest fleet id), and the line order concatenates the fleets' line orders in that same ranking. The card edits the party's orders.
 - **The AI** chooses at the same point from the same visible information (AiBattle, §13.3). Neither side sees the other's orders.
 - Headless runs and the "Never" setting use standing plans. Orders are commands, so replays reproduce them.
 
-Turn processing pauses for the card (ARCHITECTURE §7.3); this is the only mid-turn prompt.
+Turn processing pauses once for the stop (ARCHITECTURE §7.3); it is the only mid-turn prompt. Whether orders change outcomes is measured, not assumed: probe P9 (§17.3).
 
 ### 9.3 Range, posture and the line
 
@@ -491,19 +497,37 @@ Turn processing pauses for the card (ARCHITECTURE §7.3); this is the only mid-t
 
 **Posture** sets a preferred distance P: **Close** 0, **Talon range** 5, **Stand Off** 12, **Auto** (loadout-weighted: Beak 1, Talon 5, Horizon 12; switches to the remaining band when Horizon ammo is spent), **Retreat** (§9.6).
 
-**Movement each round** (simultaneous; s = the party's line combat speed, the minimum over its armed line ships):
+**Movement each round** (revision 4; replaces the simultaneous-sum rule, which froze equal-speed Close vs Stand Off at D = 10 for all 8 rounds). `s` = the party's line combat speed, the minimum over its armed line ships, at least 1 for a fleet; planets have `s = 0` and never move or resist. For each pair of opposing parties, `c` is the **closer** (the lower P) and `o` the **opener** (the higher P):
 ```
-want_i  = clamp(P_i - D, -s_i, +s_i)                 # each party's desired change
-want_i  = min(want_i, 12 - D)                         # an opener cannot pass the edge
-D_new   = clamp(D + want_a + want_b, 0, 12)
+if P_a == P_b or s_a == 0 or s_b == 0:        # no contest: each moves toward its own P
+    D = clamp(D + clamp(P_a - D, -s_a, s_a) + clamp(P_b - D, -s_b, s_b), 0, 12)
+elif D > P_c:                                 # the closer still wants in
+    if D > P_o:  gain = s_c + min(s_o, D - P_o)               # both come in
+    else:        gain = max(1, s_c - min(s_o, 12 - D))        # contested: never less than 1
+    D = max(P_c, D - gain)
+elif D == P_c:                                # closer is on its number
+    D = min(12, D + max(0, min(s_o, P_o - D, 12 - D) - s_c))  # opener pulls away only if strictly faster
+else:                                         # D < P_c: both want out
+    D = min(P_c, D + s_c + min(s_o, max(0, P_o - D)))
 ```
-Consequences (each pinned by a fixture):
-- A faster closer always gains on a slower or stationary opener, by `s_close - s_open` per round.
-- A kiter backed against 12 cannot open further, so any closer gains on it.
-- Equal speeds hold the distance until one side's posture changes. Closing on a kiter needs speed: Lean-In, The Kick, or a Current Drive against a Walk Drive.
-- Two closers meet twice as fast.
-- Planets have s = 0.
-- In three-way battles, each pair's D resolves independently.
+Spoken rule (printed in the battle help and on the strip tooltip): **"While the distance is above the closer's number, it shrinks every round: by the closer's speed minus the opener's, never by less than 1. The opener can only pull away from a closer that is already on its number, and only by what it is strictly faster."** [COPY: ui.battle.range_rule]
+
+**Proof that every closer reaches its band.** Whenever `D > P_c`, every branch lowers D by at least 1 (no-contest: the closer's own step is ≥ 1 and a planet adds 0; both-in: `gain ≥ s_c ≥ 1`; contested: `gain ≥ 1`), and D never drops below `P_c`. So from any start the closer reaches `P_c` in at most `D0 - P_c` rounds, for **every** speed pairing; at `P_c` it is pushed out only by `s_o - s_c` and is back in band within that many rounds. From the standard start of 10: the Talon band (≤ 7) within **3** rounds and the Beak band (≤ 3) within **7** rounds, inside the 8-round battle. Measured over all P ∈ {0, 1, 5, 12} x s ∈ {0..5} x D0 ∈ {0..12}: zero violations. Rounds to reach the band, Close (0) vs Stand Off (12), start 10, as `Talon/Beak`:
+
+| s_c \ s_o | 0 (planet) | 1 | 2 | 3 | 4 |
+|---|---|---|---|---|---|
+| 1 | 3/7 | 3/7 | 3/7 | 3/7 | 3/7 |
+| 2 | 2/4 | 3/7 | 3/7 | 3/7 | 3/7 |
+| 3 | 1/3 | 2/4 | 3/7 | 3/7 | 3/7 |
+| 4 | 1/2 | 1/3 | 2/4 | 2/6 | 2/6 |
+
+What kiting buys is **time, not immunity**: a Stand Off fleet at least as fast holds a Beak fleet out of its band for 7 of 8 rounds (that is the Horizon boat's whole job); being faster than the closer is how you earn the lead (`s_c - s_o` per round). Two Steps Back starts at 12, which is 9 rounds for a speed-1 closer: the stalemate carry-over (§9.7) finishes it next turn.
+
+Consequences (each pinned by the P6 table fixture):
+- A faster closer gains `s_c - s_o` per round; an equal or slower closer still gains 1 per round.
+- Two closers meet at the sum of their speeds; two parties with the same P go to it and hold.
+- Talon range (5) against Close (0) cannot anchor: the pair falls into the Beak band, and the Talon fleet gets the rounds between 10 and 3 to shoot.
+- In three-way battles, each pair's D resolves independently with the same rule.
 
 **The battle line**: each party fields at most **8 line slots** (Titan Perch takes 2; Geese 10; Hyper-Preened Cognition +1). The rest wait in reserve and fill empty slots at the start of each round, in reserve order. **Line order** belongs to the fleet. The default is by role: Swat Escorts and ships of the posture's band first, then other warships by hull size, unarmed ships last. The player can reorder in the fleet panel or on the card. Planet defenses are not counted.
 
@@ -533,7 +557,7 @@ A party with posture Retreat escapes at the **end of round R**, where `R = 2`; *
 
 ### 9.7 End, autopsy, viewer
 
-- The battle ends early when at most one mutually-hostile armed side remains. After round 8 with several, it is a stalemate (repeat next turn, no orbit control). The side holding the field controls orbit; enemy unarmed ships there are destroyed. Veterancy: +5 acc (max +15).
+- The battle ends early when at most one mutually-hostile armed side remains. After round 8 with several, it is a stalemate (repeat next turn, no orbit control). **Stalemate carry-over** (revision 4): if the same two parties (same empires) fight at that system next turn, each pair starts at the distance it ended on, not at 10 or 12. The side holding the field controls orbit; enemy unarmed ships there are destroyed. Veterancy: +5 acc (max +15).
 - **Autopsy** [MVP]: deciding band, standout hull, receipt, and (with Battle Transcriber) enemy loadouts.
 - **Viewer** [MVP]: side view with the range strip and band words; ~1.2 s/round at 1x; pause, 1x/2x/4x, skip, replay. The **first Horizon wave is drawn as darts being swatted**; volley ticks are used only for overflow beyond the projectile cap. Watching never changes anything.
 
@@ -592,21 +616,26 @@ Exchanges: tech (receiver limit 1 per 10 turns), credits, tribute demands, **Gra
 - Sessions happen at the preset's first turn and then every interval, while ≥ 3 empires live and the player has met one. The **first session is non-binding**: it publishes the count and names no Supreme Bird. Each session is announced 5 turns ahead.
 - **Votes** = whole pop units. Charismatic adds 10% of the charismatic empire's votes to a candidate it votes for, **never itself**.
 - **Candidates**: the two empires with the most votes. A candidate is **electable** only if it has met every living empire **and** holds ≥ 30% of all votes itself.
-- **Pledges**: an AI's vote can be bought for the next session. Price = `10 x votes x (1 + 4 x buyer's own vote share)` credits, so it scales with victory leverage. Pledged votes counted for one candidate are capped at **15% of all votes**. An AI refuses a pledge that would carry a non-ally over 2/3. Breaking a pledge: -20.
+- **Pledges**: an AI's vote can be bought for the next session. Price = `10 x votes x (1 + 4 x buyer's own vote share)` credits, so it scales with victory leverage. Pledged votes counted for one candidate are capped at **15% of all votes**; that cap is the anti-buyout. Breaking a pledge: -20. (Revision 4: the old "an AI refuses a pledge that would carry a non-ally over 2/3" is **deleted**; it made the 52% route below illegal.)
+- **Unpledged AI votes** (revision 4), in this order: (1) a candidate votes for itself; (2) a Coalition member never votes for the Coalition leader while the Coalition is active; (3) an AI votes for an **Acknowledged** candidate it is not at war with (§12.4); (4) for an allied candidate; (5) for the candidate it has the higher relation with, if that relation ≥ 0; (6) otherwise it abstains. Ties: lower empire id. The player's vote is the player's.
 - A candidate with **≥ 2/3 of all votes** (cast or abstained) becomes Supreme Bird. If that is the player, it is victory. If it is an AI, the player chooses **Accept** (defeat) or **Defy** (the Grand Roost dissolves; every empire that voted for the winner declares war; the Defy card lists them by leader name). The player votes at the start of the session turn.
-- Arithmetic (Evening Standard, 4 empires): a candidate needs ≥ 30% of the votes itself, and the votes it can collect must reach 66.7%. With the 15% pledge cap, an unallied candidate needs ≥ 52% of the population itself, or an ally. The earliest binding session is T75. Soak check: Grand Roost wins before T120 in ≤ 1/3 of games containing Ducks (§17.2).
+- **Routes to 2/3** (Evening Standard, 4 empires; stated on `council.electability_tip`): (a) **unallied**: ≥ 52% of the votes yourself + ≤ 15% bought; (b) **with friends**: ≥ 30% yourself + an ally's votes + voluntary votes (rule 5: AIs that like you more than your rival) + ≤ 15% bought; (c) **Acknowledged**: ≥ 30% yourself, survive a Coalition (§12.4), and every AI not at war with you votes for you. The earliest binding session is T75. Soak check: Grand Roost wins before T120 in ≤ 1/3 of games containing Ducks (§17.2).
 
 ### 12.4 The Coalition [MVP] (red team: a real hunt, not a label)
 
-- **Coalition power** = pop units + 3 x colonies + fleet PP / 20. It has no tech term, so reading does not make you the leader. Score (with techs) is used only for Called Game.
-- **Trip**: from T40, when one empire's power ≥ **35%** of the living total (**30%** if notorious). It lasts until that empire falls below trip - 5 points or for **25 turns**, whichever comes first, then a **15-turn cooldown** applies against that empire.
-- **Effects**:
+- **Coalition power** (revision 4) = `fleet PP / 20 + 3 x colonies + pop / 2` (integer division last). It has no tech term, so reading does not make you the leader, and it weighs fleets and colonies over population, so the hunt and the ballot (votes = pop) are not aimed at the same number. Score (with techs) is used only for Called Game.
+- **Trip**: from T40, when one empire's power ≥ **35%** of the living total (**30%** if notorious), it has no active Coalition against it, and it is neither in cooldown nor Acknowledged.
+- **Effects while active**:
   - Members get +10 relations with each other (+15 against a notorious leader).
   - Declaring war on the leader is never a backstab.
   - Members share vision of the leader and draw fuel range from each other's colonies for operations against it.
-  - **Every AI member without a treaty with the leader evaluates war on it as aggression 8 with war ratio x0.8, using the Coalition's combined power.** This overrides personality restraints (Librarian, Patient Rock, Dealmaker).
-  - Members' strike planners prioritise the **Coalition target** (the leader's colony nearest the members' power-weighted centroid), announced on PNN.
+  - **Coalition duty** (revision 4): every AI member **not allied** with the leader goes to war with it. A NAP or Trade treaty with the leader is cancelled with no backstab penalty ("Coalition duty"); only an **Alliance** exempts. Its war evaluation uses aggression 8 and war ratio x0.8 on the Coalition's combined power, overriding personality restraints (Librarian, Patient Rock, Dealmaker). [COPY: coalition.duty_tip]
+  - **Strike pair** (revision 4): the **two members whose capitals are nearest the Coalition target** (the leader's colony nearest the members' power-weighted centroid, announced on PNN) commit a joint strike: each sizes its share on the **pair's combined** strike force (launch at combined ≥ 1.2 x estimated defense), and both set the **same arrival turn** (the earlier one waits at a staging system within its range). Other members stay at war and defend. If the player is one of the two nearest, the next-nearest AI member is paired instead and the player is free to join.
   - Players can join or ignore it.
+- **Every Coalition ends, in one of two ways, each with an effect** (revision 4; round 2: no 25/15 loop without an outcome):
+  - **Cut Down**: the leader loses a colony (captured by anyone at war with it, or depopulated), or its power falls below trip - 5 points. The Coalition dissolves at once; members at war with the leader may make peace normally; PNN announces it; the leader cannot be tripped again for **20 turns**. [COPY: coalition.end.cut_down]
+  - **Held**: **25 turns** pass without a Cut Down. The Coalition dissolves; every AI member at war with the leader offers it peace (a 15-turn truce, accepted automatically by AI leaders); the leader becomes **Acknowledged** for the rest of the game: no Coalition can trip against it again, and every AI not at war with it votes for it at Grand Roost sessions (§12.3 rule 3). Surviving the hunt is a door, not a reprieve: an electable Acknowledged leader usually wins the next binding session unless someone Defies or declares war. [COPY: coalition.end.held, coalition.acknowledged_tip]
+- A game can host several Coalitions (one at a time), but each Cut Down costs the leader a colony and each Held ends hunting that empire for good, so every trip moves the game toward an ending. The soak reports trips per game, outcomes, captures, capitulations and Called Games after a trip (§17.2).
 - Labels: **Tier List** against Swans, **Snowball** otherwise. The first trip fires "The Tier List Leaks".
 
 ---
@@ -631,6 +660,8 @@ The eight personalities are the Unbothered (Swans), Sportsman (Pheasants), Dealm
 ### 13.3 Planning loop and competence
 
 Order per AI turn (each a bounded sub-step, ARCHITECTURE §7.3): Assess → Research → Design → Colonies (specialisations, presets) → Expansion → Military → War/peace → Diplomacy → Production (via the military budget) → Espionage.
+
+**When the AI thinks** (revision 4): the **economy planners** (Research, Design, Colonies, Production) run during the player's turn, time-sliced in idle frames, on the turn-start state; their commands are held and applied at End Turn. They read only the AI's own entities and its Knowledge, which no player planning command can change, so precomputing them is a pure cache: a test asserts the same commands result whether they are computed at turn start or at End Turn after any player commands. The **war planners** (Assess, Expansion, Military, War/peace, Diplomacy, Espionage) run at End Turn on the committed orders, so a fleet the player just sent is seen if the AI's sensors say so.
 
 At each battle, **AiBattle** picks orders by counter-picking:
 - Enemy Horizon-heavy and own Swat Mounts → Missiles first and Close.
@@ -698,25 +729,30 @@ Budget: each sub-step ≤ 8 ms on the web reference laptop (ARCHITECTURE §10).
 | Growth | `(P(M-P)/M x 10% + 50) x (100+g)%` milli | 5.2 |
 | Food surplus | 2 food = 1 credit | 5.3 |
 | Supply lines | -10% per 5 pc beyond 15 pc (max -30%) | 5.4 |
-| Research cost | `30 x tier²`; unchosen option after +2 tiers at 150% | 6.2 |
+| Research cost | `30 x tier²`; unchosen T1-T4 option after +2 tiers at 150%; T5-T6 forks final | 6.1-6.2 |
 | Miniaturisation | `max(50, 100 - 15 x tiers above)%` | 7.2 |
-| Movement | `D += clamp(P_a-D, ±s_a) + clamp(P_b-D, ±s_b)`, 0..12, opener ≤ edge | 9.3 |
+| Movement | Above the closer's P: `D -= max(1, s_c - min(s_o, 12 - D))` (contested), floor P_c; at P_c the opener pulls away by `max(0, s_o - s_c)` | 9.3 |
 | To-hit | `clamp(60 + acc - eva - Beak 6D, 5, 95)` | 9.5 |
 | Pledge price / cap | `10 x votes x (1 + 4 x share)`; ≤ 15% of votes | 12.3 |
-| Coalition | power ≥ 35% (30% notorious), from T40, ≤ 25 turns, 15 cooldown | 12.4 |
+| Coalition | power `fleet PP/20 + 3 x colonies + pop/2` ≥ 35% (30% notorious), from T40; ends Cut Down (20-turn cooldown) or Held after 25 turns (Acknowledged) | 12.4 |
 
 ### 17.2 Soak balance targets (gate for the balance phase)
 
 **Method**: 280 games, Evening Standard, Flighted, Seat the Swans OFF. The 4 AIs per game are drawn from all 70 four-race subsets of the 8 races, each subset used 4 times. Each race appears in exactly 140 games (50%), and every pair co-occurs equally. Every game has exactly one winner (Called Game included), so `Σ_race (wins_r / 140) = 280 / 140 = 2.0`: conditional win rates average 25%.
 
+**Gate rule for win rates** (revision 4; round 2: interval overlap is not confirmation): the **point estimate** must lie in the band; the 95% Wilson interval is printed beside it as the uncertainty. If a point estimate is outside its band but its interval overlaps the band, the run is **inconclusive**, not failed: run another 280 games with fresh seeds and judge the pooled n = 280 per race on its point estimate. A point estimate outside the band whose interval lies entirely outside it fails at once.
+
 | Metric | Target | Gate rule |
 |---|---|---|
-| Swans conditional win rate | 40% (35-45) | Fail if the 95% Wilson interval lies entirely outside 35-45 (n = 140 → ±8) |
-| Each other race | 15-35% | Fail if its interval lies entirely outside 15-35. Consistency: with Swans at 40%, the other seven average 22.9% |
+| Swans conditional win rate | 40% (35-45) | Point estimate in band (n = 140 → interval ±8, printed) |
+| Each other race | 15-35% | Point estimate in band. Consistency: with Swans at 40%, the other seven average 22.9% |
 | Games ending before the cap | ≥ 90% | Point estimate |
 | Victory mix | Conquest ≥ 30%; Grand Roost 10-35%; Exodus ≥ 5%; Called Game ≤ 10% | Point estimates (the minimums sum to 45% ≤ 100) |
 | Grand Roost wins before T120 in games with Ducks | ≤ 1/3 of those games | Point estimate |
-| Coalition trips | ≥ 50% of games; the leader's power falls ≥ 5 points within 25 turns in ≥ 50% of trips | Point estimates |
+| Coalition trips | ≥ 50% of games | Point estimate |
+| Coalition bite (revision 4; replaces "power fell 5 points") | In ≥ 50% of trips the leader **lost a colony or fought a defensive battle at one of its colonies** within the trip | Point estimate |
+| Coalition report (no gate) | Trips per game, Cut Down vs Held, captures during trips, capitulations and Called Games in games with ≥ 1 trip, end turn after the last trip | Reported |
+| Colony payback (no gate) | Median turns until a new colony's cumulative net PP + RP + credits repays its Nest Ship (65 PP + 1 pop), by distance band and climate | Reported; feeds the H3 decision on expansion costs |
 | Median end turn (AI-only) | 120-180 | Point estimate (AI turns are not human turns; see §17.4) |
 | AI starving > 10 turns; rejected AI commands; invariant violations; script errors | 0 | Hard |
 
@@ -726,14 +762,17 @@ A second 40-game run with Seat the Swans ON (the default experience) reports the
 
 | Probe | Pass |
 |---|---|
-| P1 Capital assault | A Flighted AI with 2x economy and no bonuses captures a passive defended capital (Horizon Perch x2, Colony Mantle) within 40 turns in ≥ 8 of 10 seeds |
+| P1a Capital assault (smoke) | Fixed fixture (`test/probes/p1a_capital.json`): a Flighted AI attacker with **+100% industry** (a difficulty-style modifier; starting assets equal) at war from turn 1 with a **passive** defender whose capital has Horizon Perch x2, Colony Mantle and a **4-ship guard squadron** parked in orbit. Pass: the capital is captured within **25 turns** in **10 of 10** fixed seeds. A floor, not a threat test |
+| P1b Contested war | Parity economy: two Flighted AIs with **full planners** (the defender builds, reinforces and intercepts), adjacent homeworlds 14 pc apart, war declared at the fixture's T30 state (`test/probes/p1b_contested.json`). Pass over 10 seeds: the attacker takes or razes ≥ 1 defender colony or outpost within 40 turns in ≥ 6 seeds; the defender's response (P5) fires in every seed with a visible strike; no seed ends with zero battles |
 | P2 Surprise defenses | After a failed strike, the next strike on that target has ≥ 1.5x the defense met; ≤ 2 failures per target per 20 turns |
 | P3 Stale intel | No strike launched on intel older than 10 turns without a re-scout |
 | P4 Invasion logistics | Boot Ships land within 1 turn of orbit control in ≥ 80% of AI invasions |
 | P5 Defense response | Visible threat within 3 turns → reinforcement or defense queued within 2 turns |
-| P6 Range pairings | Every posture pair and speed combination reaches the distances §9.3 predicts (table fixture) |
+| P6 Range pairings | Every posture pair x speed pair (0-5) x start (0-12) follows the §9.3 rule; every closer reaches its P within `D0 - P_c` rounds; the §9.3 table reproduces exactly (table fixture) |
 | P7 Grand Roost | No Supreme Bird before the second session; pledge cap and electability hold |
 | P8 Manual gap (report) | Tutorial seed: Frontier→Industry vs locked Breadbasket on a high-farm, poor-mineral world at T40; reported, and investigated if the gap is < 10% |
+| P9 Orders matter (report) | 40 fixture battles (mixed bands, speeds, sizes): each is resolved under every posture x target-priority pair for the player side against fixed AI orders. Reported: the share of battles where the best and worst order sets differ in winner or in own PP lost by ≥ 15%. Investigated if < 50% |
+| P10 AI precompute is a cache | 20 seeds x 30 turns: AI economy commands computed at turn start (then random player planning commands applied) equal those computed at End Turn; state hashes equal |
 
 ### 17.4 What the soak cannot verify — human playtest gate (before public release)
 
@@ -774,15 +813,9 @@ The soak verifies termination, stability, determinism, native performance, gross
 
 ---
 
-## 19. Open questions for red team round 2
+## 19. Open questions
 
-1. Battle Orders + posture/priority/line/Swat: enough agency for veterans without a tactical layer? Is one mid-turn pause per big battle acceptable for session length?
-2. The range rule (§9.3): does any posture pairing still degenerate? Is "equal speed holds the range" the right counter to kiting?
-3. Expansion costs (pop drain, admin upkeep, supply lines, outpost razing): too punishing for Pheasant-style wide play, or still a no-brainer?
-4. Coalition with forced aggression: does it now dogpile any leader so hard that snowballing is impossible and games drift to Called Game?
-5. Grand Roost: with electability at 30% and the pledge cap at 15%, is it now unreachable without conquest?
-6. Fork rule (+2 tiers, 150%) and transfer limit: is Creative now worth 8 picks?
-7. 280-game soak + probes + 5 playtests: sufficient? Is the P1 pass bar right?
+Round 2's questions are answered in §23. Open for the build: the reference laptop (owner, before P11), the Creative price and Coalition numbers (measured by the soak, §17.2), and expansion costs (H3 + the payback report).
 
 ---
 
@@ -828,7 +861,7 @@ Numbers changed from the bible (unchanged from revision 2 unless marked **revisi
 |---|---|---|
 | Swans | research +25%; damage +15%; +1 movement; research cost -15%; relations -40 | good_science; accuracy +20; fast_ships; cost cut dropped; notorious -20 |
 | Ducks | trade +30%; growth +15%; weapons -20%; Any Puddle | x2 treaty income; growth +50%; accuracy -20; ≥ 3 pop/size |
-| Owls | research +40%; factories -25% | good_science + Night Hours; poor_industry |
+| Owls | research +40%; factories -25% | good_science + Night Hours; poor_industry; Wide-Eyed 6 picks + Mean Aim (**revision 4**) |
 | Penguins | piscivore, habitability, Huddle | Fish table, tolerant floor, heat cap, Huddle full repair |
 | Crows | omniscient | informants (**revision 3**) |
 | Geese | ground +30%; fleet cap 9 | +25%; battle line 10 |
@@ -880,3 +913,29 @@ C = Codex (`redteam/codex_redteam_1.md`), G = Grok (`redteam/grok_redteam_and_co
 | G12 | Polite default opponents; score targets the library | Medium | ACCEPT | Evening Standard seating; Coalition power excludes tech |
 | G13 | Staged screenshots | Low | ACCEPT | §15 |
 | G14 | Outposts are paint | — | ADAPT | Outposts razed by an orbiting hostile fleet (no defensive mount) |
+
+---
+
+## 23. Red team 2 disposition
+
+C = Codex (`redteam/codex_redteam_2.md`, verdict BUILD WITH AMENDMENTS), G = Grok (`redteam/grok_redteam_2.md`). AQ = ARCHITECTURE §18 question. Both families agreed on every BLOCKER.
+
+| # | Finding | Severity | Disposition | Resolution |
+|---|---|---|---|---|
+| C1 / G2 | Equal-speed Close vs Stand Off freezes D at 10 (C5 unresolved) | BLOCKER | ACCEPT (rule replaced) | §9.3: closer/opener rule; contested rounds shrink D by `max(1, s_c - s_o')`; opener pulls away only at the closer's number and only if strictly faster; proof + table; stalemate carry-over (§9.7); P6 covers P x s 0-5 x D0 0-12. Grok's "same speed drifts toward the shorter preference" is the same idea generalised to every speed |
+| C2 / G1 | Several cards per turn vs ~25 per game; colony trigger; orders may not matter; combined fleets undefined | MAJOR | ACCEPT | §9.2: one stop per turn, ≤ 3 cards (largest), the rest auto; Big trigger needs ≥ 1 own armed ship and 3+ armed on either side or a bomb part; no colony trigger; range projection line; combined-fleet plan rule; P9 measures whether orders matter. The line editor stays in the fleet panel (G1) |
+| C3 / G3 | Pop drain regrows in ~3 turns, not 8; supply lines starve frontier food | MAJOR | ACCEPT (correct, do not raise) | §5.5 corrected arithmetic; costs not raised; prospect line; soak payback report; §5.4 supply lines exempt food |
+| C4 / G4 | Coalition loops 25/15 without an ending; NAP deletes duty; strikers arrive piecemeal; "power -5" is a weak metric | MAJOR | ACCEPT | §12.4: power formula split from votes; duty ignores NAP/Trade (Alliance exempts); strike pair with combined sizing and a shared arrival turn; every Coalition ends Cut Down (20-turn cooldown) or Held (Acknowledged: no more Coalitions, AI bandwagon votes); §17.2 "bite" metric + outcome report |
+| C5 / G5 | AI pledge refusal makes the 52% route illegal; unpledged votes unspecified; hunt and ballot aim at the same bird | MAJOR | ACCEPT | §12.3: refusal deleted (15% cap is the anti-buyout); unpledged vote order; three routes printed; Coalition power no longer pop-led. Electability 30%, cap 15%, non-binding first session and no self-charisma kept |
+| C6 / G6 | "+2 tiers" can never unlock T5/T6 siblings; Creative overpriced/unmeasured | BLOCKER | ACCEPT (ADAPT price) | §6.1: T1-T4 siblings after +2 tiers at 150%; Hyper-Preened (T5-T6) forks are final (trade/theft/capture/Cache only); Creative grants both on the same completion. §6.2: Creative repriced 8 → 6 (between Grok's 5 and 8, because final forks make Wide-Eyed's late value permanent); Owls take Mean Aim with the freed 2; `creative_tier_cost_pct` stays 0 until the soak says otherwise |
+| C7 / G7 | P1 "2x economy" ambiguous; passive capital proves only overwhelming force; plan timing | MAJOR | ACCEPT | §17.3: P1a fixed fixture, +100% industry, 4-ship guard, 25 turns, 10/10; P1b parity contested war vs a reinforcing AI. §13.3: economy planners precompute during the player turn (pure cache, proved by P10 and a GUT test), war planners at End Turn |
+| C8 / G8 | Hand-written per-command revert is brittle; undo vs replay log diverge | BLOCKER | ACCEPT (mechanism differs from both proposals) | ARCHITECTURE §4.5: undo = restore the start-of-turn snapshot (checkpointed every 10 commands) and replay this turn's command list minus the last; no command implements revert, so there is nothing to keep in sync. The replay log is the turn's command list by construction. Budget ≤ 200 ms web at T150, measured in P05 (`tools/perf/undo_bench`); fallback: player-scope snapshots. Chosen over Grok's `set_value` recorder because a literal builder that writes one direct assignment silently breaks a recorder, while snapshot+replay has no per-command code at all |
+| C9 | Wilson overlap is a loose gate | MAJOR | ACCEPT | §17.2: point estimate gates; interval printed; inconclusive → pooled rerun |
+| C10 | Round-1 blocker audit (C1 partly, C5 open, C10, C12 resolved) | — | NOTED | C5 closed by C1 above; C1 session length stays gated by H1/H2 |
+| G-open | G5 (equal speed), G6 (treaty cancels hunt, piecemeal arrival), G3 (substitute next tier, Creative head start), G12 (seating line unwritten, NAP adjourns), G13 (screenshot words) | — | ACCEPT | G5 → C1; G6, G12 NAP → C4; G3 → C6 (Ink Dart as the T2 second chance into Horizon is kept on purpose: it costs the WE2 choice); G12 seating line and G13 words → COPY_PLAN GROK2 rows |
+| G-copy | Ten copy lines (battle orders, expansion tips, electability, Defy, duty, capitulation, seating) | — | ACCEPT with 2 REWRITES | COPY_PLAN §M: adopted; `battle.orders.odds` and `coalition.duty_tip` rewritten to the revision-4 rules |
+| AQ1 | Battle Orders pause vs determinism/saves | — | ANSWERED | Orders for all of a turn's battles are collected before any resolves; saves are between turns only; the stop is not saveable |
+| AQ2 | Incremental AiMilitary vs player-turn planning | — | ANSWERED | Both: economy precompute in the player turn, war planners sliced at End Turn (C7) |
+| AQ3 | Per-command revert maintainability | — | ANSWERED | Replaced (C8) |
+| AQ4 | pck boot check vs real browser smoke | — | ANSWERED | pck boot check every phase; a real-browser boot (local static server, screenshot) is part of every phase's acceptance from P00 (PLAN.md) |
+| AQ5 | Ship both audio tiers or bake the choice | — | ANSWERED | Ship both (open SFX ≤ 1.5 MB); runtime resolution keeps one code path |

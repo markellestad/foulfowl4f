@@ -1,6 +1,6 @@
 # Foul Fowl 4X — Copy Plan
 
-Revision 3 (red team round 1), 2026-10-06. Maps every player-facing string to its source. All strings ship in **`data/copy/en.json`** (flat `{key: string}`); mechanics files hold no display text.
+Revision 4 (red team round 2), 2026-10-06. Maps every player-facing string to its source. All strings ship in **`data/copy/en.json`** (flat `{key: string}`); mechanics files hold no display text.
 
 ## Sources and status
 
@@ -8,6 +8,7 @@ Revision 3 (red team round 1), 2026-10-06. Maps every player-facing string to it
 |---|---|
 | **BIBLE** | Verbatim from `MEME_BIBLE.md` (cited `MB§section #n`) |
 | **GROK1** | Verbatim from `redteam/grok_redteam_and_copy_1.md` Part B (cited `B1`..`B8`) |
+| **GROK2** | Verbatim from `redteam/grok_redteam_2.md` §Copy (cited `R2 #n`); §M below |
 | **REWRITE** | A BIBLE or GROK1 line that must change to match GDD revision 3; the new text or the required fix is given here |
 | **GAP** | Not written yet; the *needs* column says what. Until filled, the builder ships the prettified id via `Copy.t(key, fallback)` |
 | **UNUSED** | Written but not shipped in MVP (kept for STRETCH) |
@@ -74,7 +75,7 @@ From Grok B intro, plus the MoO-coined terms: Merculite, Pulson, Zeon, Zortrium,
 | `taunt.swans.coalition`, `taunt.owls.peace_broken`, `taunt.crows.cache` | GROK1 | B7 |
 | `diplo.reason.{value,distrust,coalition,pledge,tribute,territorial,relation,exodus_locked,backstab,war,price}` | GROK1 | B7 |
 | `diplo.reason.transfer_limit` | GAP | "We already sent you something this decade" style: one tech per 10 turns |
-| `diplo.reason.pledge_cap` / `diplo.reason.not_kingmaker` | GAP | Refusals: pledge cap reached; refusing to carry a non-ally over 2/3 |
+| `diplo.reason.pledge_cap` | GAP | Refusal: pledge cap reached (`not_kingmaker` is deleted with the rule in revision 4) |
 
 ## E. Research
 
@@ -102,7 +103,8 @@ From Grok B intro, plus the MoO-coined terms: Merculite, Pulson, Zeon, Zortrium,
 | `tech.no_exit.flavor` | REWRITE | B2 says "the door is decorative"; rule is now "cannot retreat before round 8". Keep the line, add nothing that promises no retreat at all |
 | `tech.hyper_<field>.*` (B3 stems, B2 Mantle stem) | UNUSED | Repeatables are STRETCH |
 | Dropped techs: Miss Field III, Annotated Grudge, Every Perch, Loose Feathers, Second Reader, Thrift Nest, The Extra Shift, Boot Frame II, Barrier Nest, Hold Still, Extra Coverts, The Closed Sky, Beak-Proof, Reflective Plumage, Absolute No, Midlife Molt, Made Ground, Garden Intent, Table Manners, Rapid Hatching, dome_perches_3, Ash Drive, Empty Perch, Home Stretch, Nebula Runners, The Map Is Yours, Round-One Encore, Long Quill, Appendix Dart, Spread Quill, Keel Gun, Opening Web, Spreadsheet of Fate | UNUSED | Kept for STRETCH |
-| `ui.research.fork_locked` | GAP | Tooltip: the unchosen option unlocks after two more tiers in this field, at 150% |
+| `ui.research.fork_locked` | GAP | Tooltip: the unchosen option (tiers 1-4) unlocks after two more tiers in this field, at 150% |
+| `ui.research.fork_final` | GAP | Tooltip: Hyper-Preened forks (tiers 5-6) are final; the other option only arrives by trade, theft, capture or Cache |
 
 ## F. Parts, hulls, roles, buildings
 
@@ -205,3 +207,24 @@ Old id → new id (B5 used the old ids): automated_factory → second_shift_hall
 5. `part.bomb_bay`, `trait.informants`, `tech.hatch_dart`, `notify.guardian_loot`, `ui.research.fork_locked`, new deal reasons.
 6. `menu.preset.evening_standard.seats`, victory clock ETA token, credits attribution lines.
 7. The REWRITE rows (small edits).
+
+## M. Red team round 2 (revision 4)
+
+| Key | Status | Source / text |
+|---|---|---|
+| `battle.orders.title` | GROK2 | R2 #1 |
+| `battle.orders.accept` | GROK2 | R2 #3 |
+| `battle.orders.odds` | REWRITE | R2 #2 described the old rule. New: "{odds}. Same speed still closes, one step a round. Faster closes sooner." |
+| `battle.orders.projection` | GAP | One line with `{talon_round}`, `{beak_round}`: the worst-case rounds to each band (GDD §9.2) |
+| `ui.battle.range_rule` | GAP | The spoken range rule of GDD §9.3, tightened; strip tooltip and battle help |
+| `ui.expansion.nest_drain` | GROK2 | R2 #4 |
+| `ui.expansion.supply_lines` | REWRITE | R2 #5 says "every output"; food is now exempt: "Past 15 pc from the Grand Nest, industry, research and taxes drop 10% per 5 pc, to -30%. Food travels free." |
+| `ui.expansion.prospect` | GAP | Prospect line with `{food}`, `{credits}`, `{pp}` at pop 3 and at max pop (GDD §5.5) |
+| `council.electability_tip` | GROK2 | R2 #6, plus a second sentence naming the routes: "52% alone, 30% with friends, or survive the hunt." |
+| `council.defy_card.title` | GROK2 | R2 #7 |
+| `coalition.duty_tip` | REWRITE | R2 #8 predates the NAP rule. New: "Not allied with the leader. Coalition duty tore up the paper and made the declaration." |
+| `coalition.end.cut_down` | GAP | PNN: the Coalition took a colony (or the leader shrank); it disbands; `{leader}`, `{place}` |
+| `coalition.end.held` | GAP | PNN: 25 turns and the leader held; truce; the leader is Acknowledged; `{leader}` |
+| `coalition.acknowledged_tip` | GAP | Tooltip: no more Coalitions against this empire; AIs at peace with it vote for it |
+| `capitulation.card.title` / `.body` | GROK2 | R2 #9 |
+| `menu.preset.evening_standard.seats` | GROK2 | R2 #10 |

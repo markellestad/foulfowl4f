@@ -1,8 +1,8 @@
 # Foul Fowl 4X — Technical Architecture
 
-Revision 3 (red team round 1), 2026-10-06. Engine: Godot 4.6.2, GDScript, static typing. Companions: `GDD.md` (what), `BRIEF.md` (why, incl. open source and licensing), `COPY_PLAN.md` (strings).
+Revision 4 (red team round 2), 2026-10-06. Engine: Godot 4.6.2, GDScript, static typing. Companions: `GDD.md` (what), `BRIEF.md` (why, incl. open source and licensing), `COPY_PLAN.md` (strings), `docs/engineering/PLAN.md` (the build plan and phase briefs).
 
-Written for the builder agent. §16 is the phased build plan; §1-15 are the contracts; §17 the traps.
+Written for the builder agent. §1-15 are the contracts; §16 points at the build plan; §17 the traps. Where a phase brief and this file disagree, this file wins; report the conflict.
 
 ---
 
@@ -87,7 +87,7 @@ If a file under `src/sim/` needs `extends Node`, `get_tree()`, an autoload or a 
 |---|---|
 | `Settings` | User prefs in `user://settings.cfg`: UI scale, volumes, battle watch mode, **Battle Orders mode (Always/Big/Never)**, reduce motion, high contrast, summary filters |
 | `Copy` | `Copy.t(key, fallback)` from `data/copy/en.json`; missing keys logged once |
-| `Session` | Owns `GameState`, `ContentDB`, the undo stack, the command log and `TurnRunner`. API: `new_game`, `load_game`, `save_game`, `submit(cmd) -> String`, `undo`, `redo`, `end_turn`, `answer_battle_orders(cmd)`. Signals: `state_changed(scope, ids)`, `turn_processing(pct)`, `battle_orders_needed(request)`, `turn_started(report)`, `game_over(result)` |
+| `Session` | Owns `GameState`, `ContentDB`, the turn's command list + checkpoints (undo, §4.5), the command log and `TurnRunner`. API: `new_game`, `load_game`, `save_game`, `submit(cmd) -> String`, `undo`, `redo`, `end_turn`, `answer_battle_orders(cmds: Array)`. Signals: `state_changed(scope, ids)`, `turn_processing(pct)`, `battle_orders_needed(requests)`, `turn_started(report)`, `game_over(result)` |
 | `Sfx` | `play(id)`, `music(state)`; buses, pools, open/licensed resolution (§13) |
 
 The sim and the tools never reference autoloads.
@@ -119,21 +119,26 @@ No floats/`randi`/`Time`/`OS` in `src/sim/` (grep test); iterate dictionaries vi
 
 xoshiro128** on four 32-bit masked lanes; FNV-1a seeding; `Rng.keyed(seed, turn, stream, a, b)`; streams `GALAXY, COMBAT, GROUND, EVENTS, ESPIONAGE, AI, RESEARCH, COLONIZE, LOOT, LINEUP`; golden-output test (format contract).
 
-### 4.5 Commands and undo
+### 4.5 Commands and undo (revision 4: snapshot + replay)
 
 ```gdscript
 class_name Cmd extends RefCounted
 var empire_id: int
 func kind() -> StringName
 func validate(gs: GameState, db: ContentDB) -> String   # "" or a copy key with the reason
-func apply(gs: GameState, db: ContentDB) -> Dictionary   # returns an UNDO DELTA: prior values of exactly the fields it changed
-func revert(gs: GameState, delta: Dictionary) -> void
+func apply(gs: GameState, db: ContentDB) -> void         # mutate; NO undo delta, NO revert method
 func to_dict() -> Dictionary
-static func from_dict(d: Dictionary) -> Cmd
+static func from_dict(d: Dictionary) -> Cmd             # dispatches on d["kind"] via CmdRegistry
 ```
-- Planning commands change **orders and settings only** (jobs, preset, specialisation, queue, buy, research choice, designs, refit order, fleet orders and battle plan, diplomacy proposals, spy target/funding, security, military budget, council vote). Outcomes resolve only in the pipeline.
-- **Undo** (red team: snapshots too costly): Session pushes `(cmd, delta)`; Ctrl+Z calls `revert`. Deltas are tiny (a field or a queue array). Cap: 50 entries or 256 KB of serialized deltas, whichever first; cleared at End Turn. A test applies then reverts every command kind on a fixture and asserts the state hash is restored.
-- **Command log**: every applied command (player, AI, battle orders) with the turn; `seed + settings + log` replays a game exactly.
+- Planning commands change **orders and settings only** (jobs, preset, specialisation, queue, buy, research choice, designs, refit order, fleet orders and battle plan, diplomacy proposals, spy target/funding, security, military budget, council vote). Outcomes resolve only in the pipeline. `apply` must be a pure function of `(state, cmd)`: no RNG except `Rng.keyed`, no time.
+- **Undo = restore + replay** (red team round 2: hand-written revert is brittle for the builder, and undo diverged from the replay log). Session keeps, for the current player turn: `turn_cmds: Array[Cmd]` (applied, in order), `checkpoints: Dictionary` (command index → `GameState.to_dict()` snapshot; index 0 is taken at turn start, then one every `undo_checkpoint_every` = 10 applied commands) and `redo_cmds: Array[Cmd]`.
+  - `submit(cmd)`: validate → apply → append to `turn_cmds` → clear `redo_cmds` → checkpoint if `turn_cmds.size() % 10 == 0`.
+  - `undo()`: pop the last command into `redo_cmds`; drop checkpoints at indexes > the new size; restore the largest checkpoint index `k ≤ size` with `GameState.from_dict`; re-apply `turn_cmds[k..size-1]` (no re-validation needed, they validated on this exact state before; a failing re-apply is a bug and is logged as `UNDO_DIVERGED`).
+  - `redo()`: pop from `redo_cmds` and `submit` it without clearing the rest of `redo_cmds`.
+  - Cap: 50 commands back (older ones cannot be undone; the checkpoint at the cap boundary becomes the base). Everything clears at End Turn. Battle Orders answers and pipeline results never enter `turn_cmds`.
+  - **No command implements its own revert**, so a new command kind needs no undo code; a lint test fails if any `Cmd` subclass defines `revert`.
+- **Command log**: at End Turn, `turn_cmds` (the player's surviving commands) are appended to the log, followed by the AI commands and Battle Orders answers in pipeline order; `seed + settings + log` replays a game exactly, and an undone command is never in the log by construction. Test: apply N random commands, undo k, redo j, end turn → state hash equals a fresh game fed only the surviving commands.
+- **Budget**: undo ≤ 80 ms native / ≤ 200 ms web at T150 (restore one checkpoint + ≤ 9 re-applies). Measured by `tools/perf/undo_bench.gd` from P05, when a T150 state exists. Fallback if over: snapshot only the player-scoped slice (`Empire[player]`, its colonies, fleets, designs, pending proposals, `next_ids`), with a test that every command kind leaves the rest of the state hash unchanged.
 
 ### 4.6 Knowledge
 
@@ -164,10 +169,10 @@ Per empire: explored systems, seen colonies (owner, species, pop, buildings if i
 
 | # | Step | Sub-steps (each bounded, §7.3) |
 |---|---|---|
-| 0 | `ai_plan` | Per AI empire (ascending id), per planner: assess, research, design, colonies, expansion, military, war, diplomacy, production, espionage. Commands validated and applied |
+| 0 | `ai_plan` | Per AI empire (ascending id): (a) apply the held **economy** commands (research, design, colonies, production) precomputed during the player turn (computed now if precompute did not finish); (b) run the **war** planners (assess, expansion, military, war, diplomacy, espionage), one bounded sub-step each. Commands validated and applied |
 | 1 | `diplomacy` | Proposals, war declarations, treaty timers, **coalition update** (power, trip/end/cooldown, target) |
 | 2 | `movement` | Simultaneous advance, arrivals, wormhole and Roost Gate hops |
-| 3 | `combat` | Per contested system (ascending id): **3a orders** — AI orders via AiBattle; player orders via the Battle Orders pause (§7.3) or the standing plan; **3b resolve** — CombatResolver → BattleLog + autopsy; apply losses, orbit control, veterancy |
+| 3 | `combat` | **3a orders** for every contested system first: AI orders via AiBattle; then ONE Battle Orders pause for all qualifying player battles (§7.3) or standing plans; **3b resolve** per system (ascending id): CombatResolver → BattleLog + autopsy; apply losses, orbit control, veterancy, stalemate carry-over distances |
 | 4 | `orbital` | Outpost razing, blockade flags, bombardment, invasions, colonisation (orbit controller wins conflicts, else keyed coin), unarmed ships destroyed |
 | 5 | `production` | Queues, overflow, completions (Nest Pod pop drain), refits, rush-buys |
 | 6 | `research` | Projects, fork unlocks, Creative/One-Note |
@@ -188,7 +193,8 @@ Pop ≥ 0; treasury ≥ 0; each ship in exactly one fleet; owners exist; no colo
 ### 7.3 Time slicing and the Battle Orders pause
 
 - `TurnRunner` runs `TurnProcessor.run_next_substep()` in `_process` until **6 ms** of the frame are used, then yields. Every sub-step has a budget of **8 ms on the web reference laptop**; any planner that cannot meet it iterates incrementally across sub-steps (e.g. `AiMilitary` processes one fleet group per sub-step). Debug builds record per-sub-step time and the max frame time during end-turn.
-- **Battle Orders pause**: at step 3a, if the player is a party and the battle qualifies (Settings mode; GDD §9.2), `TurnProcessor` returns `NEEDS_INPUT(request)`; Session emits `battle_orders_needed`, the card shows, and `answer_battle_orders(cmd)` resumes. AI orders were already fixed from the same visible information before the card shows, and are not exposed to the UI. Headless (`run_all`) and mode Never use the fleet's standing `BattlePlan`. The answer is a `CmdBattle` in the command log, so replays reproduce it.
+- **AI economy precompute** (revision 4): while the player's turn is open, `TurnRunner` spends idle frame time (same 6 ms slice) running each AI's economy planners on the live state and stores the resulting commands in `Session.ai_held[empire_id]`. Their inputs (the AI's own entities and Knowledge) cannot be changed by player planning commands, so this is a cache; `ai_plan` step 0a applies the held commands, or computes them if precompute did not finish. Undo, redo and load **restart** the precompute from scratch (it only costs idle time), because a restore replaces the objects a half-finished planner holds; the results cannot differ, only the work is redone. GUT test + probe P10 assert equality with End-Turn computation.
+- **Battle Orders pause** (revision 4: one per turn): at step 3a, after all AI orders are fixed, `TurnProcessor` collects every qualifying player battle (GDD §9.2 Big rule or Settings mode), ranks them by total armed PP, and returns `NEEDS_INPUT(requests)` with up to 3 cards plus the auto list; Session emits `battle_orders_needed(requests)`, the stop shows, and `answer_battle_orders(cmds)` resumes. AI orders are not exposed to the UI. Headless (`run_all`) and mode Never use standing plans (combined-fleet rule, GDD §9.2). Each answer is a `CmdBattle` in the command log, so replays reproduce them.
 
 ---
 
@@ -201,11 +207,11 @@ Built per AI empire per sub-step from `GameState` + that empire's `Knowledge`: o
 ### 8.2 Planners and competence features (GDD §13.3)
 
 - `AiAssess`: power estimates with **stale-intel inflation** (+10% per 5 turns since seen), threats, posture, coalition duty.
-- `AiMilitary`: fleet roles; strikes at `≥ 1.5x` estimated defense; **re-scout** targets with intel older than 10 turns; after a failure, the next strike needs `≥ 1.5x` the defense met, max 2 failures per target per 20 turns (`ai_memory`); Boot Ships one turn behind; defense response within 2 turns; coalition target priority.
-- `AiWar`: declarations/peace with personality rules, overridden by coalition duty (aggression 8, ratio x0.8 on combined coalition power).
+- `AiMilitary`: fleet roles; strikes at `≥ 1.5x` estimated defense (Coalition strike pair: `≥ 1.2x` on the pair's combined force, shared arrival turn via a staging system, GDD §12.4); **re-scout** targets with intel older than 10 turns; after a failure, the next strike needs `≥ 1.5x` the defense met, max 2 failures per target per 20 turns (`ai_memory`); Boot Ships one turn behind; defense response within 2 turns; coalition target priority.
+- `AiWar`: declarations/peace with personality rules, overridden by coalition duty (aggression 8, ratio x0.8 on combined coalition power; NAP/Trade with the leader cancelled, Alliance exempts); auto-accepts the Held truce.
 - `AiProduction`: sets the empire **military budget policy**; queues only through the same Governor path as the player (`why` recorded).
 - `AiBattle`: per battle, from the visible enemy: posture, target priority, Swat mode, line order, retreat (counter-pick table, GDD §13.3).
-- `AiDiplomacy`: treaties, pledges (refuses carrying a non-ally over 2/3), tribute; `AiEspionage`: one target, picks highest-value steal.
+- `AiDiplomacy`: treaties, pledges (sells at the GDD §12.3 price; no kingmaker refusal; the 15% cap is enforced by `Council`), unpledged votes by the GDD §12.3 order, tribute; `AiEspionage`: one target, picks highest-value steal.
 - **Command hygiene**: every AI command must validate; a rejection is logged as `AI_REJECT` and fails the soak.
 
 Shared with the player's automation: auto-design, auto-explore, governor/military budget, power estimates.
@@ -215,7 +221,7 @@ Shared with the player's automation: auto-design, auto-explore, governor/militar
 ## 9. Combat resolver
 
 - Inputs: system id, parties (empire, `CombatUnit`s with pre-evaluated integer stats, **orders**: posture, priority, Swat mode, line order, retreat), Two Steps Back flag, keyed RNG.
-- `RangeTrack`: one `D` per pair of opposing parties (start 10 or 12, range 0..12). Each round: `want = clamp(P - D, -s, +s)`, opener capped at `12 - D`, `D = clamp(D + want_a + want_b, 0, 12)`. `s` = min combat speed of the party's armed line ships; planets `s = 0`. Auto posture re-evaluates P when Horizon ammo is spent.
+- `RangeTrack`: one `D` per pair of opposing parties (start 10, 12 with Two Steps Back, or the stalemate carry-over value; range 0..12). Each round applies `RangeTrack.step(d, p_a, s_a, p_b, s_b) -> int`, the closer/opener rule of GDD §9.3 verbatim (static, pure, integer). `s` = min combat speed of the party's armed line ships, at least 1; planets `s = 0`. Auto posture re-evaluates P when Horizon ammo is spent. `RangeTrack.project(d0, p_own, s_own, s_enemy) -> {talon_round, beak_round}` (worst case: the enemy opens at full speed) feeds the card's projection line.
 - Line: max slots (8; Titan 2; +modifiers); reserve queue in the party's line order; reserves fill at round start.
 - Round: reserves → move → Horizon arrivals (Swat first if mode) → fire (all line mounts incl. cloaked; targets from priority key → auto score → id; computed on the start-of-step snapshot, applied together) → launches → cleanup → retreat checks (`R` rule, receipt).
 - RNG draw order fixed by (party empire id, unit id, mount index); **order-independence test** shuffles inputs and expects an identical log hash.
@@ -234,7 +240,7 @@ Shared with the player's automation: auto-design, auto-explore, governor/militar
 | One battle, 60 units, native | ≤ 5 ms | soak micro-bench |
 | Galaxy map / battle viewer, web | 60 fps (54 stars, 200 fleets / 400 VFX primitives) | perf overlay |
 | Save / load, web | ≤ 300 / 500 ms; file ≤ 1 MB pre-gzip | Session timings |
-| Undo memory | ≤ 256 KB | Session counter |
+| Undo (restore checkpoint + ≤ 9 re-applies) at T150 | ≤ 80 ms native, ≤ 200 ms web; ≤ 6 checkpoints held | `tools/perf/undo_bench.gd` (from P05) |
 
 Timing is never asserted in the gated GUT suite; the soak and probe tools fail their own runs at > 2x budget. The **reference laptop** is named by the owner before P11 (H9).
 
@@ -320,11 +326,11 @@ Timing is never asserted in the gated GUT suite; the soak and probe tools fail t
 | Economy | Growth cases; surplus 2:1; import/starvation; Nest Pod drain; admin upkeep; supply lines; specialisation + retooling; military budget stops at target; `why` set on governor items |
 | Research | Fork: option unavailable until +2 tiers, then 150%; Creative both; One-Note never; transfer limit; Exodus keys never transfer |
 | Ships/movement | Space limits; miniaturisation floor; auto-design legal; refit cost and downtime; range; wormhole/gate |
-| Combat | Range table for every posture pair x speed relation (incl. edge and planets); line slots and reserve order; target priority keys; Swat modes; retreat `R` for every modifier combination with exactly one receipt; cloaked ships fire but are not targeted in rounds 1-2; order independence; 500 random battles without errors |
+| Combat | `RangeTrack.step` over P ∈ {0,1,5,12} x s ∈ {0..5}² x D0 ∈ {0..12}: D strictly falls while above P_c, P_c reached within `D0 - P_c` rounds, GDD §9.3 table exact; stalemate carry-over; line slots and reserve order; target priority keys; Swat modes; retreat `R` for every modifier combination with exactly one receipt; cloaked ships fire but are not targeted in rounds 1-2; order independence; 500 random battles without errors |
 | Siege | Guns blockade but never kill pop; bomb parts kill per table; outposts razed; invasion duels |
 | AI | AiView isolation; all AI commands validate on fixtures; AiBattle counter-pick table |
-| Diplomacy | Grand Roost: first session non-binding, electability, pledge cap and price, no self-charisma, Defy wars; Coalition trip/end/cooldown thresholds, forced aggression flag, shared range |
-| Undo | Apply+revert every command kind restores the hash |
+| Diplomacy | Grand Roost: first session non-binding, electability, pledge cap and price, no self-charisma, unpledged vote order, Defy wars; Coalition power formula, trip, Cut Down / Held endings and their effects (cooldown, Acknowledged, truce, bandwagon votes), duty cancels NAP/Trade but not Alliance, shared range, strike pair selection |
+| Undo | Every command kind: submit then undo restores the hash; random submit/undo/redo sequences then End Turn equal a fresh run of the surviving commands; no `Cmd` subclass defines `revert`; AI precompute equals End-Turn computation |
 | Save | Round trip; migrations; gzip |
 | UI smoke | Every screen builds against fixtures headless |
 
@@ -383,13 +389,12 @@ STRETCH phases after P11, one per GDD §18 item.
 17. **Never commit anything under `assets/audio/licensed/`**, never copy licensed sources into `open/`; every audio slot needs an open fallback.
 18. A battle's orders must be fixed for both sides before `CombatResolver.resolve()` runs; never let the viewer or the card read the other side's orders.
 19. Never ship a do-not-ship name (COPY_PLAN list) in data ids that surface in UI, or in `en.json`.
+20. Never write an undo delta or a `revert` method on a command; undo is restore + replay (§4.5).
+21. AI economy precompute may read only the AI's own entities and its Knowledge; never let it read another empire's orders or the player's uncommitted UI state.
+22. `RangeTrack.step` is the GDD §9.3 code verbatim; do not "simplify" it back to a simultaneous sum (that froze equal-speed fights at D = 10).
 
 ---
 
-## 18. Open architecture questions for red team round 2
+## 18. Architecture questions
 
-1. The Battle Orders pause inside a time-sliced pipeline: any risk to determinism or save consistency (saves only between turns)?
-2. 6 ms slice / 8 ms sub-step on web: is incremental `AiMilitary` the right split, or should AI plan during the player's turn (idle time) with commands committed at End Turn?
-3. Delta undo vs the command set growing (refit, battle plans): is `revert` per command maintainable for a Gemini Flash builder?
-4. The exported-pck boot check as the JSON export guard: sufficient, or do we need a real browser smoke (Playwright) in P11?
-5. Two-tier audio: is "licensed if present, else open" at boot enough, or should the itch export bake the choice to avoid shipping both tiers?
+Round 2's questions (Battle Orders pause, AI planning time, undo, browser smoke, audio tiers) are answered in GDD §23 (rows AQ1-AQ5).
