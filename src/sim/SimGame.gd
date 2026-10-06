@@ -10,6 +10,7 @@ var oldest_undoable_index: int = 0
 var last_report: TurnReport = null
 var metadata: Dictionary = {}
 var current_tp: TurnProcessor = null
+var ai_held: Dictionary = {} # empire_id -> Array[Cmd]
 
 static func create(settings: GameSettings, db: ContentDB) -> SimGame:
 	var game: SimGame = SimGame.new()
@@ -65,6 +66,7 @@ func undo() -> bool:
 	if not can_undo():
 		return false
 
+	ai_held.clear()
 	var last_cmd: Cmd = turn_cmds.pop_back()
 	redo_cmds.append(last_cmd)
 	var target_size: int = turn_cmds.size()
@@ -93,6 +95,7 @@ func redo() -> bool:
 	if not can_redo():
 		return false
 
+	ai_held.clear()
 	var cmd: Cmd = redo_cmds.pop_back()
 	var err: String = cmd.validate(gs, db)
 	if err != "":
@@ -112,6 +115,23 @@ func redo() -> bool:
 
 	return true
 
+func precompute_step() -> bool:
+	if gs == null or gs.game_over:
+		return false
+
+	var all_ai: bool = (gs.settings != null and gs.settings.all_ai)
+	for eid in range(gs.empires.size()):
+		if eid == 0 and not all_ai:
+			continue
+		if ai_held.has(eid):
+			continue
+
+		var view: AiView = AiView.build(gs, db, eid)
+		ai_held[eid] = AiPlayer.plan_economy(view)
+		return true
+
+	return false
+
 func begin_end_turn() -> TurnProcessor:
 	for c in turn_cmds:
 		gs.cmd_log.append({
@@ -123,7 +143,8 @@ func begin_end_turn() -> TurnProcessor:
 	redo_cmds.clear()
 	checkpoints.clear()
 	oldest_undoable_index = 0
-	current_tp = TurnProcessor.new(gs, db)
+	current_tp = TurnProcessor.new(gs, db, ai_held)
+	ai_held.clear()
 	return current_tp
 
 func finish_end_turn() -> void:

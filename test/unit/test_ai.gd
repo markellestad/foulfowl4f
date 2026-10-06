@@ -323,3 +323,51 @@ func test_precompute_equals_end_turn() -> void:
 
 			var tp: TurnProcessor = TurnProcessor.new(game.gs, _db)
 			tp.run_all()
+
+func test_precompute_step_lifecycle_and_invalidation() -> void:
+	var s: GameSettings = (GameSettings as Variant).call(&"new")
+	s.preset = "evening_standard"
+	s.seed_string = "PRE_LIFE_1"
+	s.seed = 12345
+	s.player_race = "pheasants"
+	s.seat_swans = true
+	var game: SimGame = SimGame.create(s, _db)
+
+	assert_eq(game.ai_held.size(), 0, "ai_held starts empty")
+
+	# Precompute step advances AI one by one
+	var count: int = 0
+	while game.precompute_step():
+		count += 1
+		assert_eq(game.ai_held.size(), count, "ai_held holds precomputed AI")
+
+	assert_gt(count, 0, "At least one AI precomputed")
+	assert_false(game.precompute_step(), "precompute_step returns false when all AI held")
+
+	# Submit a player command
+	var cmd: CmdSetMilitaryBudget = CmdSetMilitaryBudget.new()
+	cmd.empire_id = 0
+	cmd.policy = "war"
+	var sub_err: String = game.submit(cmd)
+	assert_eq(sub_err, "", "Command submitted")
+
+	# Undo clears ai_held
+	var undo_ok: bool = game.undo()
+	assert_true(undo_ok, "Undo ok")
+	assert_eq(game.ai_held.size(), 0, "ai_held cleared on undo")
+
+	# Precompute again after undo
+	assert_true(game.precompute_step(), "Precomputed after undo")
+	assert_gt(game.ai_held.size(), 0, "ai_held has entries")
+
+	# Redo clears ai_held
+	var redo_ok: bool = game.redo()
+	assert_true(redo_ok, "Redo ok")
+	assert_eq(game.ai_held.size(), 0, "ai_held cleared on redo")
+
+	# Load clears ai_held
+	game.precompute_step()
+	assert_gt(game.ai_held.size(), 0, "ai_held has entries before load")
+	var loaded_game: SimGame = SimGame.from_state(game.gs, _db)
+	assert_eq(loaded_game.ai_held.size(), 0, "ai_held cleared on load / from_state")
+

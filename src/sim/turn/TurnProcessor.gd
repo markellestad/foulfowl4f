@@ -30,9 +30,10 @@ var requests: Array[Dictionary] = []
 var auto_systems: Array[int] = []
 var ai_held: Dictionary = {}
 
-func _init(p_gs: GameState, p_db: ContentDB) -> void:
+func _init(p_gs: GameState, p_db: ContentDB, p_ai_held: Dictionary = {}) -> void:
 	gs = p_gs
 	db = p_db
+	ai_held = p_ai_held.duplicate(true)
 	report = TurnReport.new()
 	report.turn = gs.turn
 	ctx = TurnContext.new()
