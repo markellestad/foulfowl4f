@@ -1,0 +1,444 @@
+{
+  "rows": {
+    "slow_growth": {
+      "group": "growth",
+      "cost": -4,
+      "species": true,
+      "effects": [{ "stat": "growth_pct", "op": "pct", "value": -50 }]
+    },
+    "fast_growth": {
+      "group": "growth",
+      "cost": 3,
+      "species": true,
+      "effects": [{ "stat": "growth_pct", "op": "pct", "value": 50 }]
+    },
+    "prolific": {
+      "group": "growth",
+      "cost": 6,
+      "species": true,
+      "effects": [{ "stat": "growth_pct", "op": "pct", "value": 100 }]
+    },
+    "poor_farmers": {
+      "group": "farming",
+      "cost": -3,
+      "species": true,
+      "effects": [{ "stat": "food_per_farmer", "op": "add", "value": -1 }]
+    },
+    "good_farmers": {
+      "group": "farming",
+      "cost": 3,
+      "species": true,
+      "effects": [{ "stat": "food_per_farmer", "op": "add", "value": 1 }]
+    },
+    "great_farmers": {
+      "group": "farming",
+      "cost": 6,
+      "species": true,
+      "effects": [{ "stat": "food_per_farmer", "op": "add", "value": 2 }]
+    },
+    "poor_industry": {
+      "group": "industry",
+      "cost": -3,
+      "species": true,
+      "effects": [{ "stat": "industry_per_worker", "op": "add", "value": -1 }]
+    },
+    "good_industry": {
+      "group": "industry",
+      "cost": 3,
+      "species": true,
+      "effects": [{ "stat": "industry_per_worker", "op": "add", "value": 1 }]
+    },
+    "great_industry": {
+      "group": "industry",
+      "cost": 6,
+      "species": true,
+      "effects": [{ "stat": "industry_per_worker", "op": "add", "value": 2 }]
+    },
+    "poor_science": {
+      "group": "science",
+      "cost": -3,
+      "species": true,
+      "effects": [{ "stat": "research_per_scientist", "op": "add", "value": -1 }]
+    },
+    "good_science": {
+      "group": "science",
+      "cost": 3,
+      "species": true,
+      "effects": [{ "stat": "research_per_scientist", "op": "add", "value": 1 }]
+    },
+    "great_science": {
+      "group": "science",
+      "cost": 6,
+      "species": true,
+      "effects": [{ "stat": "research_per_scientist", "op": "add", "value": 2 }]
+    },
+    "poor_taxes": {
+      "group": "credits",
+      "cost": -3,
+      "species": false,
+      "effects": [{ "stat": "taxes_pct", "op": "pct", "value": -50 }]
+    },
+    "rich_taxes": {
+      "group": "credits",
+      "cost": 4,
+      "species": false,
+      "effects": [{ "stat": "taxes_pct", "op": "pct", "value": 50 }]
+    },
+    "ship_attack_-1": {
+      "group": "ship_attack",
+      "cost": -2,
+      "species": false,
+      "effects": [{ "stat": "accuracy_add", "op": "add", "value": -20 }]
+    },
+    "ship_attack_+1": {
+      "group": "ship_attack",
+      "cost": 2,
+      "species": false,
+      "effects": [{ "stat": "accuracy_add", "op": "add", "value": 20 }]
+    },
+    "ship_attack_+2": {
+      "group": "ship_attack",
+      "cost": 4,
+      "species": false,
+      "effects": [{ "stat": "accuracy_add", "op": "add", "value": 40 }]
+    },
+    "ship_defense_-1": {
+      "group": "ship_defense",
+      "cost": -2,
+      "species": false,
+      "effects": [{ "stat": "evasion_add", "op": "add", "value": -20 }]
+    },
+    "ship_defense_+1": {
+      "group": "ship_defense",
+      "cost": 3,
+      "species": false,
+      "effects": [{ "stat": "evasion_add", "op": "add", "value": 25 }]
+    },
+    "ship_defense_+2": {
+      "group": "ship_defense",
+      "cost": 6,
+      "species": false,
+      "effects": [{ "stat": "evasion_add", "op": "add", "value": 50 }]
+    },
+    "ground_-1": {
+      "group": "ground",
+      "cost": -2,
+      "species": true,
+      "effects": [{ "stat": "troops_pct", "op": "pct", "value": -25 }]
+    },
+    "ground_+1": {
+      "group": "ground",
+      "cost": 2,
+      "species": true,
+      "effects": [{ "stat": "troops_pct", "op": "pct", "value": 25 }]
+    },
+    "ground_+2": {
+      "group": "ground",
+      "cost": 4,
+      "species": true,
+      "effects": [{ "stat": "troops_pct", "op": "pct", "value": 50 }]
+    },
+    "spy_-1": {
+      "group": "spying",
+      "cost": -3,
+      "species": false,
+      "effects": [{ "stat": "spy_score_add", "op": "add", "value": -20 }]
+    },
+    "spy_+1": {
+      "group": "spying",
+      "cost": 3,
+      "species": false,
+      "effects": [{ "stat": "spy_score_add", "op": "add", "value": 20 }]
+    },
+    "spy_+2": {
+      "group": "spying",
+      "cost": 6,
+      "species": false,
+      "effects": [{ "stat": "spy_score_add", "op": "add", "value": 40 }]
+    },
+    "talon_adepts": {
+      "group": "weapon_band",
+      "cost": 3,
+      "species": false,
+      "effects": [{ "stat": "band_damage_pct", "op": "pct", "value": 25, "filter": { "band": "talon" } }]
+    },
+    "beak_adepts": {
+      "group": "weapon_band",
+      "cost": 3,
+      "species": false,
+      "effects": [{ "stat": "band_damage_pct", "op": "pct", "value": 25, "filter": { "band": "beak" } }]
+    },
+    "horizon_adepts": {
+      "group": "weapon_band",
+      "cost": 3,
+      "species": false,
+      "effects": [{ "stat": "band_damage_pct", "op": "pct", "value": 25, "filter": { "band": "horizon" } }]
+    },
+    "feudal": {
+      "group": "government",
+      "cost": -4,
+      "species": false,
+      "effects": [
+        { "stat": "ship_cost_pct", "op": "pct", "value": -33 },
+        { "stat": "research_pct", "op": "pct", "value": -25 }
+      ]
+    },
+    "dictatorship": {
+      "group": "government",
+      "cost": 0,
+      "species": false,
+      "effects": []
+    },
+    "democracy": {
+      "group": "government",
+      "cost": 7,
+      "species": false,
+      "effects": [
+        { "stat": "research_pct", "op": "pct", "value": 20 },
+        { "stat": "taxes_pct", "op": "pct", "value": 50 },
+        { "stat": "security_add", "op": "add", "value": -20 }
+      ]
+    },
+    "unification": {
+      "group": "government",
+      "cost": 6,
+      "species": false,
+      "effects": [
+        { "stat": "food_pct", "op": "pct", "value": 25 },
+        { "stat": "industry_pct", "op": "pct", "value": 25 },
+        { "stat": "taxes_pct", "op": "pct", "value": -25 }
+      ]
+    },
+    "aquatic": {
+      "group": "specials",
+      "cost": 5,
+      "species": true,
+      "effects": [
+        { "stat": "pop_per_size", "op": "add", "value": 1, "filter": { "climates": ["ocean", "swamp", "terran"] } },
+        { "stat": "food_per_farmer", "op": "add", "value": 1, "filter": { "climates": ["ocean", "swamp", "terran"] } }
+      ]
+    },
+    "any_puddle": {
+      "group": "specials",
+      "cost": 4,
+      "species": true,
+      "effects": [
+        { "stat": "pop_per_size", "op": "floor", "value": 3, "filter": { "climate_class": "habitable" } }
+      ]
+    },
+    "subterranean": {
+      "group": "specials",
+      "cost": 5,
+      "species": true,
+      "effects": [
+        { "stat": "pop_per_size", "op": "add", "value": 1 },
+        { "stat": "ground_def_pct", "op": "pct", "value": 25 }
+      ]
+    },
+    "tolerant": {
+      "group": "specials",
+      "cost": 8,
+      "species": true,
+      "effects": [
+        { "stat": "pop_per_size", "op": "floor", "value": 3 }
+      ]
+    },
+    "heat_intolerant": {
+      "group": "specials",
+      "cost": -3,
+      "species": true,
+      "effects": [
+        { "stat": "pop_per_size", "op": "cap", "value": 1, "filter": { "climates": ["desert", "arid", "inferno", "toxic"] } }
+      ]
+    },
+    "charismatic": {
+      "group": "specials",
+      "cost": 3,
+      "species": false,
+      "effects": [{ "stat": "relations_base", "op": "add", "value": 20 }]
+    },
+    "notorious": {
+      "group": "specials",
+      "cost": -3,
+      "species": false,
+      "effects": [{ "stat": "relations_base", "op": "add", "value": -20 }]
+    },
+    "repulsive": {
+      "group": "specials",
+      "cost": -6,
+      "species": false,
+      "effects": [{ "stat": "relations_base", "op": "add", "value": -30 }]
+    },
+    "distrusted": {
+      "group": "specials",
+      "cost": -4,
+      "species": false,
+      "effects": [{ "stat": "relations_base", "op": "add", "value": -30 }]
+    },
+    "fantastic_traders": {
+      "group": "specials",
+      "cost": 4,
+      "species": false,
+      "effects": [{ "stat": "trade_income_pct", "op": "pct", "value": 100 }]
+    },
+    "warlord": {
+      "group": "specials",
+      "cost": 4,
+      "species": false,
+      "effects": [{ "stat": "ship_upkeep_pct", "op": "pct", "value": -50 }]
+    },
+    "high_upkeep": {
+      "group": "specials",
+      "cost": -1,
+      "species": false,
+      "effects": [{ "stat": "ship_upkeep_pct", "op": "pct", "value": 15 }]
+    },
+    "fast_ships": {
+      "group": "specials",
+      "cost": 3,
+      "species": false,
+      "effects": [
+        { "stat": "map_speed_add", "op": "add", "value": 1 },
+        { "stat": "combat_speed_add", "op": "add", "value": 1 }
+      ]
+    },
+    "tough_hulls": {
+      "group": "specials",
+      "cost": 3,
+      "species": false,
+      "effects": [{ "stat": "ship_hp_pct", "op": "pct", "value": 15 }]
+    },
+    "huddle": {
+      "group": "specials",
+      "cost": 3,
+      "species": false,
+      "effects": [{ "stat": "planet_def_hp_pct", "op": "pct", "value": 30 }]
+    },
+    "prefab_coops": {
+      "group": "specials",
+      "cost": 3,
+      "species": false,
+      "effects": [{ "stat": "building_cost_pct", "op": "pct", "value": -25 }]
+    },
+    "piscivore": {
+      "group": "specials",
+      "cost": 0,
+      "species": true,
+      "effects": []
+    },
+    "low_g": {
+      "group": "gravity",
+      "cost": -4,
+      "species": true,
+      "effects": []
+    },
+    "high_g": {
+      "group": "gravity",
+      "cost": 5,
+      "species": true,
+      "effects": []
+    },
+    "large_homeworld": {
+      "group": "homeworld",
+      "cost": 1,
+      "species": false,
+      "effects": []
+    },
+    "rich_homeworld": {
+      "group": "homeworld",
+      "cost": 2,
+      "species": false,
+      "effects": []
+    },
+    "poor_homeworld": {
+      "group": "homeworld",
+      "cost": -1,
+      "species": false,
+      "effects": []
+    },
+    "artifact_homeworld": {
+      "group": "homeworld",
+      "cost": 3,
+      "species": false,
+      "effects": []
+    },
+    "creative": {
+      "group": "specials",
+      "cost": 6,
+      "species": false,
+      "effects": []
+    },
+    "uncreative": {
+      "group": "specials",
+      "cost": -4,
+      "species": false,
+      "effects": []
+    },
+    "night_hours": {
+      "group": "specials",
+      "cost": 2,
+      "species": false,
+      "effects": []
+    },
+    "territorial": {
+      "group": "specials",
+      "cost": -3,
+      "species": false,
+      "effects": []
+    },
+    "lucky": {
+      "group": "specials",
+      "cost": 3,
+      "species": false,
+      "effects": []
+    },
+    "omniscient": {
+      "group": "specials",
+      "cost": 3,
+      "species": false,
+      "effects": []
+    },
+    "informants": {
+      "group": "specials",
+      "cost": 3,
+      "species": false,
+      "effects": []
+    },
+    "stealthy_ships": {
+      "group": "specials",
+      "cost": 4,
+      "species": false,
+      "effects": []
+    },
+    "v_formation": {
+      "group": "specials",
+      "cost": 4,
+      "species": false,
+      "effects": []
+    },
+    "flush": {
+      "group": "specials",
+      "cost": 3,
+      "species": false,
+      "effects": []
+    },
+    "scavengers": {
+      "group": "specials",
+      "cost": 2,
+      "species": false,
+      "effects": []
+    },
+    "cache": {
+      "group": "specials",
+      "cost": 4,
+      "species": false,
+      "effects": []
+    },
+    "nothing_wasted": {
+      "group": "specials",
+      "cost": 2,
+      "species": false,
+      "effects": []
+    }
+  }
+}

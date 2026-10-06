@@ -1,0 +1,194 @@
+{
+  "presets": {
+    "tiny": {
+      "stars": 16,
+      "empires": 3,
+      "width_pc": 34,
+      "height_pc": 24,
+      "wormhole_pairs": 0,
+      "leviathans": 2,
+      "turn_cap": 140,
+      "council_first": 40,
+      "council_every": 20
+    },
+    "evening_standard": {
+      "stars": 24,
+      "empires": 4,
+      "width_pc": 44,
+      "height_pc": 30,
+      "wormhole_pairs": 1,
+      "leviathans": 2,
+      "turn_cap": 200,
+      "council_first": 50,
+      "council_every": 25
+    }
+  },
+  "star_types": {
+    "yellow": {
+      "weight": 30,
+      "orbits_min": 2,
+      "orbits_max": 5,
+      "habitable": {
+        "terran": 3,
+        "ocean": 3,
+        "arid": 3,
+        "gaia": 1
+      },
+      "hostile": {
+        "barren": 1
+      },
+      "minerals": {
+        "abundant": 1
+      }
+    },
+    "orange": {
+      "weight": 20,
+      "orbits_min": 2,
+      "orbits_max": 4,
+      "habitable": {
+        "arid": 3,
+        "desert": 3,
+        "tundra": 2,
+        "swamp": 2
+      },
+      "hostile": {
+        "barren": 2,
+        "inferno": 1
+      },
+      "minerals": {
+        "abundant": 3,
+        "poor": 2
+      }
+    },
+    "red": {
+      "weight": 25,
+      "orbits_min": 1,
+      "orbits_max": 4,
+      "habitable": {
+        "tundra": 3,
+        "ocean": 2
+      },
+      "hostile": {
+        "barren": 3,
+        "toxic": 1
+      },
+      "minerals": {
+        "poor": 1
+      }
+    },
+    "white": {
+      "weight": 12,
+      "orbits_min": 2,
+      "orbits_max": 4,
+      "habitable": {
+        "terran": 2
+      },
+      "hostile": {
+        "barren": 2,
+        "inferno": 2
+      },
+      "minerals": {
+        "rich": 1
+      }
+    },
+    "blue": {
+      "weight": 8,
+      "orbits_min": 1,
+      "orbits_max": 3,
+      "habitable": {},
+      "hostile": {
+        "inferno": 2,
+        "toxic": 2,
+        "radiated": 2,
+        "barren": 1
+      },
+      "minerals": {
+        "rich": 3,
+        "ultra_rich": 2
+      }
+    },
+    "neutron": {
+      "weight": 5,
+      "orbits_min": 1,
+      "orbits_max": 3,
+      "habitable": {},
+      "hostile": {
+        "radiated": 3,
+        "barren": 2,
+        "toxic": 1
+      },
+      "minerals": {
+        "ultra_rich": 1
+      }
+    }
+  },
+  "sizes": {
+    "tiny": {
+      "value": 1,
+      "weight": 10
+    },
+    "small": {
+      "value": 2,
+      "weight": 25
+    },
+    "medium": {
+      "value": 3,
+      "weight": 35
+    },
+    "large": {
+      "value": 4,
+      "weight": 20
+    },
+    "huge": {
+      "value": 5,
+      "weight": 10
+    }
+  },
+  "minerals": {
+    "ultra_poor": {
+      "pp": 1,
+      "rank": 0
+    },
+    "poor": {
+      "pp": 2,
+      "rank": 1
+    },
+    "abundant": {
+      "pp": 3,
+      "rank": 2
+    },
+    "rich": {
+      "pp": 4,
+      "rank": 3
+    },
+    "ultra_rich": {
+      "pp": 6,
+      "rank": 4
+    }
+  },
+  "specials": {
+    "old_nest": 1,
+    "pretty_rocks": 1,
+    "rude_wealth": 1,
+    "kind_soil": 1,
+    "spare_nest": 1,
+    "yard_scrap": 1
+  },
+  "gen": {
+    "min_sep_dpc": 45,
+    "margin_dpc": 20,
+    "darts_per_star": 30,
+    "relax_pct": 95,
+    "max_relax": 20,
+    "homeworld_min_orn_dpc": 120,
+    "fair_radius_dpc": 90,
+    "fair_good": 2,
+    "fair_outposts": 1,
+    "outpost_body_pct": 25,
+    "habitable_pct": 40,
+    "special_one_in": 8,
+    "wormhole_min_width_pct": 60,
+    "leviathan_min_home_dpc": 100,
+    "good_min_pop_per_size": 3
+  }
+}

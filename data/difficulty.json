@@ -1,0 +1,42 @@
+{
+  "rows": {
+    "nestling": {
+      "industry_pct": -25,
+      "research_pct": -25,
+      "growth_pct": 0,
+      "war_threshold_pct": 200,
+      "never_first": true,
+      "vision": []
+    },
+    "flighted": {
+      "industry_pct": 0,
+      "research_pct": 0,
+      "growth_pct": 0,
+      "war_threshold_pct": 100,
+      "never_first": false,
+      "vision": []
+    },
+    "honk_admiral": {
+      "industry_pct": 20,
+      "research_pct": 20,
+      "growth_pct": 0,
+      "war_threshold_pct": 80,
+      "never_first": false,
+      "vision": [
+        "designs"
+      ]
+    },
+    "lights_off_ledger": {
+      "industry_pct": 40,
+      "research_pct": 40,
+      "growth_pct": 20,
+      "war_threshold_pct": 70,
+      "never_first": false,
+      "vision": [
+        "designs",
+        "colonies",
+        "fleets"
+      ]
+    }
+  }
+}

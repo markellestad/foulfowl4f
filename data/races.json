@@ -1,0 +1,174 @@
+{
+  "rows": {
+    "swans": {
+      "playable": true,
+      "picks": 13,
+      "traits": [
+        "good_science",
+        "ship_attack_+1",
+        "ship_defense_+1",
+        "fast_ships",
+        "ground_+1",
+        "rich_homeworld",
+        "large_homeworld",
+        "notorious"
+      ],
+      "homeworld": {
+        "climate": "terran",
+        "size": "large",
+        "minerals": "rich"
+      },
+      "best_climate": "terran",
+      "personality": "unbothered",
+      "color": "swans",
+      "glyph": "crown"
+    },
+    "pheasants": {
+      "playable": true,
+      "picks": 10,
+      "traits": [
+        "talon_adepts",
+        "flush",
+        "ship_attack_+1",
+        "good_industry",
+        "high_upkeep"
+      ],
+      "homeworld": {
+        "climate": "terran",
+        "size": "medium",
+        "minerals": "abundant"
+      },
+      "best_climate": "terran",
+      "personality": "sportsman",
+      "color": "pheasants",
+      "glyph": "triangle"
+    },
+    "ducks": {
+      "playable": true,
+      "picks": 10,
+      "traits": [
+        "fantastic_traders",
+        "any_puddle",
+        "fast_growth",
+        "charismatic",
+        "ship_attack_-1",
+        "ground_-1"
+      ],
+      "homeworld": {
+        "climate": "ocean",
+        "size": "medium",
+        "minerals": "abundant"
+      },
+      "best_climate": "ocean",
+      "personality": "dealmaker",
+      "color": "ducks",
+      "glyph": "circle"
+    },
+    "owls": {
+      "playable": false,
+      "picks": 10,
+      "traits": [
+        "creative",
+        "good_science",
+        "night_hours",
+        "ship_attack_+1",
+        "poor_industry"
+      ],
+      "homeworld": {
+        "climate": "terran",
+        "size": "medium",
+        "minerals": "abundant"
+      },
+      "best_climate": "terran",
+      "personality": "librarian",
+      "color": "owls",
+      "glyph": "diamond"
+    },
+    "penguins": {
+      "playable": false,
+      "picks": 10,
+      "traits": [
+        "tolerant",
+        "piscivore",
+        "huddle",
+        "good_industry",
+        "ground_+1",
+        "large_homeworld",
+        "heat_intolerant",
+        "slow_growth"
+      ],
+      "homeworld": {
+        "climate": "tundra",
+        "size": "large",
+        "minerals": "abundant"
+      },
+      "best_climate": "tundra",
+      "personality": "patient_rock",
+      "color": "penguins",
+      "glyph": "square"
+    },
+    "crows": {
+      "playable": false,
+      "picks": 10,
+      "traits": [
+        "spy_+1",
+        "cache",
+        "scavengers",
+        "stealthy_ships",
+        "informants",
+        "distrusted",
+        "ground_-1"
+      ],
+      "homeworld": {
+        "climate": "arid",
+        "size": "medium",
+        "minerals": "abundant"
+      },
+      "best_climate": "arid",
+      "personality": "borrower",
+      "color": "crows",
+      "glyph": "cross"
+    },
+    "geese": {
+      "playable": true,
+      "picks": 10,
+      "traits": [
+        "v_formation",
+        "tough_hulls",
+        "ground_+1",
+        "ship_attack_+1",
+        "rich_homeworld",
+        "territorial"
+      ],
+      "homeworld": {
+        "climate": "terran",
+        "size": "medium",
+        "minerals": "rich"
+      },
+      "best_climate": "terran",
+      "personality": "neighbor",
+      "color": "geese",
+      "glyph": "chevron"
+    },
+    "chickens": {
+      "playable": false,
+      "picks": 10,
+      "traits": [
+        "unification",
+        "good_industry",
+        "prefab_coops",
+        "nothing_wasted",
+        "uncreative"
+      ],
+      "homeworld": {
+        "climate": "terran",
+        "size": "medium",
+        "minerals": "abundant"
+      },
+      "best_climate": "terran",
+      "personality": "floor",
+      "color": "chickens",
+      "glyph": "comb"
+    }
+  }
+}

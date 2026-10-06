@@ -1,0 +1,95 @@
+{
+  "rows": {
+    "gaia": {
+      "class": "habitable",
+      "pop_per_size": 5,
+      "farm": 3,
+      "fish": 2,
+      "needs_flag": null
+    },
+    "terran": {
+      "class": "habitable",
+      "pop_per_size": 4,
+      "farm": 2,
+      "fish": 1,
+      "needs_flag": null
+    },
+    "ocean": {
+      "class": "habitable",
+      "pop_per_size": 4,
+      "farm": 2,
+      "fish": 3,
+      "needs_flag": null
+    },
+    "swamp": {
+      "class": "habitable",
+      "pop_per_size": 3,
+      "farm": 2,
+      "fish": 2,
+      "needs_flag": null
+    },
+    "arid": {
+      "class": "habitable",
+      "pop_per_size": 3,
+      "farm": 1,
+      "fish": 0,
+      "needs_flag": null
+    },
+    "tundra": {
+      "class": "habitable",
+      "pop_per_size": 2,
+      "farm": 1,
+      "fish": 2,
+      "needs_flag": null
+    },
+    "desert": {
+      "class": "habitable",
+      "pop_per_size": 2,
+      "farm": 1,
+      "fish": 0,
+      "needs_flag": null
+    },
+    "barren": {
+      "class": "hostile",
+      "pop_per_size": 1,
+      "farm": 0,
+      "fish": 0,
+      "needs_flag": "dome_perches_1"
+    },
+    "inferno": {
+      "class": "hostile",
+      "pop_per_size": 1,
+      "farm": 0,
+      "fish": 0,
+      "needs_flag": "dome_perches_1"
+    },
+    "toxic": {
+      "class": "hostile",
+      "pop_per_size": 1,
+      "farm": 0,
+      "fish": 0,
+      "needs_flag": "dome_perches_1"
+    },
+    "radiated": {
+      "class": "hostile",
+      "pop_per_size": 1,
+      "farm": 0,
+      "fish": 0,
+      "needs_flag": "crackle_shutters"
+    },
+    "asteroids": {
+      "class": "outpost",
+      "pop_per_size": 0,
+      "farm": 0,
+      "fish": 0,
+      "needs_flag": null
+    },
+    "gas_giant": {
+      "class": "outpost",
+      "pop_per_size": 0,
+      "farm": 0,
+      "fish": 0,
+      "needs_flag": null
+    }
+  }
+}

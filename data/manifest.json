@@ -2,6 +2,11 @@
   "files": [
     "balance",
     "audio",
-    "credits"
+    "credits",
+    "galaxy",
+    "climates",
+    "traits",
+    "races",
+    "difficulty"
   ]
 }
