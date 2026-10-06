@@ -6,6 +6,10 @@ var known: Array[String] = ["start"]
 func knows(tech_id: String) -> bool:
 	return known.has(tech_id)
 
+func grant(tech_id: String) -> void:
+	if not known.has(tech_id):
+		known.append(tech_id)
+
 func to_dict() -> Dictionary:
 	var k_arr: Array = []
 	for k in known:

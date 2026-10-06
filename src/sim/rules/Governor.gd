@@ -182,6 +182,121 @@ static func fill_queues(db: ContentDB, gs: GameState, empire_id: int, report: Tu
 					"place": "Star %d Orbit %d" % [planet.system_id, planet.orbit + 1]
 				}, "colony", col.id)
 
+	# Military Budget warship queueing
+	var budget_pct: int = MilitaryBudget.budget_pct(db, emp.military_budget)
+	var total_industry: int = 0
+	for cid in Ids.sorted_keys(gs.colonies):
+		var col: Colony = gs.colonies[cid]
+		if col.owner == empire_id and not col.is_outpost:
+			var out: Dictionary = Economy.colony_output(db, gs, cid)
+			total_industry += (out["industry"] as ModResult).value
+
+	var target: int = IntMath.pct(total_industry, budget_pct)
+	var current: int = 0
+	for cid in Ids.sorted_keys(gs.colonies):
+		var col: Colony = gs.colonies[cid]
+		if col.owner == empire_id and not col.is_outpost:
+			if _colony_has_yard(db, col) and _queue_head_is_warship(db, gs, col):
+				var out: Dictionary = Economy.colony_output(db, gs, cid)
+				current += (out["industry"] as ModResult).value
+
+	var fin: Dictionary = Economy.empire_totals(db, gs, empire_id)
+	var fleet_upkeep: int = int(fin["ship_upkeep"])
+	var income: int = int(fin["income"])
+	var max_upkeep: int = IntMath.pct(income, db.bal("budget_upkeep_stop_pct"))
+
+	if fleet_upkeep <= max_upkeep and current < target:
+		var view: AiView = AiView.build(gs, db, empire_id)
+		var role: String = MilitaryBudget.next_role(view)
+		var des: ShipDesign = AutoDesign.design_for_role(db, gs, empire_id, role)
+		if des == null and role == "swat_escort":
+			des = AutoDesign.design_for_role(db, gs, empire_id, "talon_line")
+		if des != null:
+			var des_id: int = -1
+			for did in Ids.sorted_keys(gs.designs):
+				var existing: ShipDesign = gs.designs[did]
+				if existing.empire_id == empire_id and not existing.obsolete and _designs_equal(existing, des):
+					des_id = did
+					break
+			if des_id < 0:
+				des_id = gs.alloc_id("design")
+				des.id = des_id
+				des.empire_id = empire_id
+				gs.designs[des_id] = des
+				if not gs.knowledge.has(empire_id):
+					gs.knowledge[empire_id] = Knowledge.new()
+				gs.knowledge[empire_id].known_designs[des_id] = des.to_dict()
+
+			var hdef: Dictionary = db.def("hulls", des.hull)
+			var is_yard_only: bool = bool(hdef.get("yard_only", false))
+
+			while current < target:
+				var best_col: Colony = null
+				var best_ind: int = -1
+
+				for cid in Ids.sorted_keys(gs.colonies):
+					var col: Colony = gs.colonies[cid]
+					if col.owner != empire_id or col.is_outpost:
+						continue
+					var pdef: Dictionary = db.def("presets", col.preset)
+					if not bool(pdef.get("auto", true)):
+						continue
+					if not _colony_has_yard(db, col):
+						continue
+					if _queue_head_is_warship(db, gs, col):
+						continue
+					if is_yard_only and col.id != emp.capital_colony_id:
+						continue
+					if col.queue.size() >= max_q and (col.queue.is_empty() or col.queue[-1].count != -1):
+						continue
+
+					var out: Dictionary = Economy.colony_output(db, gs, cid)
+					var ind: int = (out["industry"] as ModResult).value
+					if ind > best_ind:
+						best_ind = ind
+						best_col = col
+
+				if best_col == null:
+					break
+
+				var target_pct: int = budget_pct
+				var current_pct: int = IntMath.floor_div(current * 100, total_industry) if total_industry > 0 else 0
+
+				var qi: QueueItem = QueueItem.new()
+				qi.kind = "ship"
+				qi.ref_id = str(des_id)
+				qi.count = 1
+				qi.added_by = "governor"
+				qi.why_key = "summary.why_queued.budget"
+				qi.why_args = {
+					"policy": emp.military_budget,
+					"target": target_pct,
+					"current": current_pct
+				}
+
+				if best_col.queue.size() >= max_q and best_col.queue[-1].count == -1:
+					best_col.queue.pop_back()
+				if not best_col.queue.is_empty() and best_col.queue[0].count == -1:
+					best_col.queue.remove_at(0)
+
+				best_col.queue.insert(0, qi)
+				current += best_ind
+
+				if report != null and empire_id == 0:
+					var planet: Planet = gs.planets[best_col.planet_id]
+					report.add_entry("governor", "notify.governor_queued", {
+						"item": des.name,
+						"place": "Star %d Orbit %d" % [planet.system_id, planet.orbit + 1]
+					}, "colony", best_col.id)
+
+	# 3. Filler for colonies that remain empty
+	for cid in Ids.sorted_keys(gs.colonies):
+		var col: Colony = gs.colonies[cid]
+		if col.owner != empire_id:
+			continue
+		var pdef: Dictionary = db.def("presets", col.preset)
+		if not bool(pdef.get("auto", true)):
+			continue
 		if col.queue.is_empty():
 			var filler: String = str(pdef.get("filler", "trade_goods"))
 			var qi: QueueItem = QueueItem.new()
@@ -198,3 +313,28 @@ static func fill_queues(db: ContentDB, gs: GameState, empire_id: int, report: Tu
 					"item": filler,
 					"place": "Star %d Orbit %d" % [planet.system_id, planet.orbit + 1]
 				}, "colony", col.id)
+
+static func _colony_has_yard(db: ContentDB, col: Colony) -> bool:
+	for b in col.buildings:
+		var bdef: Dictionary = db.def("buildings", b)
+		if bool(bdef.get("counts_as_yard", false)):
+			return true
+	return false
+
+static func _queue_head_is_warship(db: ContentDB, gs: GameState, col: Colony) -> bool:
+	if col.queue.is_empty():
+		return false
+	var qi: QueueItem = col.queue[0]
+	if qi.kind != "ship":
+		return false
+	var did: int = int(qi.ref_id)
+	if not gs.designs.has(did):
+		return false
+	var des: ShipDesign = gs.designs[did]
+	var st: Dictionary = DesignRules.stats(db, gs, des)
+	return bool(st.get("armed", false))
+
+static func _designs_equal(a: ShipDesign, b: ShipDesign) -> bool:
+	return a.hull == b.hull and a.drive == b.drive and a.plate == b.plate and \
+		a.mantle == b.mantle and a.computer == b.computer and \
+		a.specials == b.specials and a.weapons == b.weapons

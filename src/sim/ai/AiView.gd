@@ -77,6 +77,14 @@ func own_ship(sid: int) -> Ship:
 		return s
 	return null
 
+func own_ships() -> Array[Ship]:
+	var res: Array[Ship] = []
+	for sid in Ids.sorted_keys(_gs.ships):
+		var s: Ship = _gs.ships[sid]
+		if s.owner == empire_id:
+			res.append(s)
+	return res
+
 func knowledge() -> Knowledge:
 	if not _gs.knowledge.has(empire_id):
 		_gs.knowledge[empire_id] = Knowledge.new()

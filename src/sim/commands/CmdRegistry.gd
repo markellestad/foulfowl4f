@@ -51,6 +51,8 @@ static func from_dict(d: Dictionary) -> Cmd:
 			cmd = CmdProposePeace.new()
 		"answer_proposal":
 			cmd = CmdAnswerProposal.new()
+		"set_military_budget":
+			cmd = CmdSetMilitaryBudget.new()
 		_:
 			return null
 
