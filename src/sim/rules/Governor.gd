@@ -77,10 +77,27 @@ static func assign_jobs(db: ContentDB, gs: GameState, empire_id: int) -> void:
 				elif fpf > best_gain:
 					is_better = true
 				elif fpf == best_gain:
-					if farm_first and not best_farm_first:
-						is_better = true
-					elif farm_first == best_farm_first and col.id < best_col.id:
-						is_better = true
+					# Tie-break (orchestrator ruling 2026-10-06):
+					# (a) farm_first presets first
+					var col_ff: bool = farm_first
+					var best_ff: bool = best_farm_first
+					if col_ff != best_ff:
+						is_better = col_ff
+					else:
+						# (b) then colonies whose preset is NOT capital
+						var col_not_cap: bool = (col.preset != "capital")
+						var best_not_cap: bool = (best_col.preset != "capital")
+						if col_not_cap != best_not_cap:
+							is_better = col_not_cap
+						else:
+							# (c) then the colony with the MOST remaining non-farmers
+							var col_rem: int = col.pop_units() - col.farmers
+							var best_rem: int = best_col.pop_units() - best_col.farmers
+							if col_rem != best_rem:
+								is_better = (col_rem > best_rem)
+							else:
+								# (d) then lowest id for determinism
+								is_better = (col.id < best_col.id)
 
 				if is_better:
 					best_col = col

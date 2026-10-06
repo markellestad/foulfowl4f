@@ -407,4 +407,95 @@ func test_ship_production_and_nest_drain() -> void:
 	assert_eq(res2["notices"][0]["key"], "notify.nest_waiting")
 	assert_eq(col.pop_milli, 2000, "Pop not drained while waiting")
 
+func test_governor_3_colony_equal_fertility_preserves_capital_workers() -> void:
+	var ctx: Dictionary = _setup_state("plain_bird", [])
+	var gs: GameState = ctx["gs"]
+	var col0: Colony = ctx["colony"] # Capital colony, id 0
+	col0.pop_milli = 12000 # 12 pop units
+	col0.preset = "capital"
+	col0.buildings = ["grand_nest"]
+
+	# Colony 1 on another Terran planet
+	var p1: Planet = Planet.new()
+	p1.id = gs.planets.size()
+	p1.system_id = 1
+	p1.climate = "terran"
+	p1.size = "medium"
+	p1.minerals = "abundant"
+	gs.planets.append(p1)
+
+	var col1: Colony = Colony.new()
+	col1.id = 1
+	col1.planet_id = p1.id
+	col1.owner = 0
+	col1.species = "plain_bird"
+	col1.pop_milli = 12000 # 12 pop units
+	col1.preset = "frontier"
+	col1.buildings = []
+	gs.colonies[1] = col1
+
+	# Colony 2 on a third Terran planet
+	var p2: Planet = Planet.new()
+	p2.id = gs.planets.size()
+	p2.system_id = 2
+	p2.climate = "terran"
+	p2.size = "medium"
+	p2.minerals = "abundant"
+	gs.planets.append(p2)
+
+	var col2: Colony = Colony.new()
+	col2.id = 2
+	col2.planet_id = p2.id
+	col2.owner = 0
+	col2.species = "plain_bird"
+	col2.pop_milli = 12000 # 12 pop units
+	col2.preset = "frontier"
+	col2.buildings = []
+	gs.colonies[2] = col2
+
+	# Total pop = 12 + 12 + 12 = 36. Food needed = 36.
+	# col0 has grand_nest (+3 flat food), so 33 food needed from farmers.
+	# With equal fertility (fpf = 2), 17 farmers needed (3 + 17*2 = 37 >= 36).
+	# Non-capital colonies 1 and 2 absorb the farmers (col1 gets 9, col2 gets 8).
+	# Capital (col0) keeps 0 farmers, keeping 6 workers and 6 scientists!
+	Governor.assign_jobs(_db, gs, 0)
+
+	assert_eq(col0.farmers, 0, "Capital keeps 0 farmers under orchestrator ruling tie-break")
+	assert_eq(col0.workers, 6, "Capital keeps 6 workers")
+	assert_eq(col0.scientists, 6, "Capital keeps 6 scientists")
+	assert_eq(col1.farmers, 9, "Colony 1 absorbs 9 farmers")
+	assert_eq(col2.farmers, 8, "Colony 2 absorbs 8 farmers")
+
+func test_governor_farm_first_preset_priority() -> void:
+	var ctx: Dictionary = _setup_state("plain_bird", [])
+	var gs: GameState = ctx["gs"]
+	var col0: Colony = ctx["colony"]
+	col0.pop_milli = 8000
+	col0.preset = "capital"
+	col0.buildings = ["grand_nest"]
+
+	var p1: Planet = Planet.new()
+	p1.id = gs.planets.size()
+	p1.system_id = 1
+	p1.climate = "terran"
+	p1.size = "medium"
+	p1.minerals = "abundant"
+	gs.planets.append(p1)
+
+	var col1: Colony = Colony.new()
+	col1.id = 1
+	col1.planet_id = p1.id
+	col1.owner = 0
+	col1.species = "plain_bird"
+	col1.pop_milli = 8000
+	col1.preset = "breadbasket" # farm_first == true
+	col1.buildings = []
+	gs.colonies[1] = col1
+
+	# Breadbasket should initialize all pop to farmers
+	Governor.assign_jobs(_db, gs, 0)
+	assert_eq(col1.farmers, 8, "Breadbasket initializes and maintains all pop as farmers")
+	assert_eq(col0.farmers, 0, "Capital requires 0 farmers since breadbasket supplied all needed food")
+
+
 
