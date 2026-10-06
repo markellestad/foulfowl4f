@@ -39,6 +39,10 @@ static func from_dict(d: Dictionary) -> Cmd:
 			cmd = CmdSetBattlePlan.new()
 		"set_line_order":
 			cmd = CmdSetLineOrder.new()
+		"fleet_bombard":
+			cmd = CmdFleetBombard.new()
+		"fleet_invade":
+			cmd = CmdFleetInvade.new()
 		_:
 			return null
 

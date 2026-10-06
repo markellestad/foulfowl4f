@@ -119,6 +119,12 @@ static func eval(db: ContentDB, gs: GameState, stat: String, base: int, ctx: Dic
 
 	# 3. Colony buildings
 	if colony != null:
+		if colony.blockaded and stat == "industry":
+			effects_to_apply.append({
+				"source_key": "blockade",
+				"op": "pct",
+				"value": -50
+			})
 		for bid in colony.buildings:
 			var bdef: Dictionary = db.def("buildings", bid)
 			var b_effs: Array = bdef.get("effects", [])

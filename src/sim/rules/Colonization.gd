@@ -8,6 +8,9 @@ static func can_colonize(db: ContentDB, gs: GameState, empire_id: int, planet_id
 	for c in gs.colonies.values():
 		if c.planet_id == planet_id:
 			return "refuse.owned"
+	var sys: StarSystem = gs.system_of_planet(planet_id)
+	if sys != null and sys.is_orn and not gs.loot.has("guardian"):
+		return "refuse.guarded"
 	if empire_id < 0 or empire_id >= gs.empires.size():
 		return "refuse.unknown"
 	var emp: Empire = gs.empires[empire_id]
@@ -46,6 +49,9 @@ static func can_outpost(_db: ContentDB, gs: GameState, empire_id: int, planet_id
 	for c in gs.colonies.values():
 		if c.planet_id == planet_id:
 			return "refuse.owned"
+	var sys: StarSystem = gs.system_of_planet(planet_id)
+	if sys != null and sys.is_orn and not gs.loot.has("guardian"):
+		return "refuse.guarded"
 	if empire_id < 0 or empire_id >= gs.empires.size():
 		return "refuse.unknown"
 

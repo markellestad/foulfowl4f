@@ -84,18 +84,34 @@ func next(ctx: TurnContext) -> bool:
 	for i in range(_cursor, end_idx):
 		var cid: int = int(_work_colonies[i])
 		var col: Colony = ctx.gs.colonies[cid]
-		var old_u: int = col.pop_units()
-		Growth.apply_growth(ctx.db, ctx.gs, cid)
-		var new_u: int = col.pop_units()
-		if new_u > old_u:
-			# When pop units increase from growth, assign new pop to workers
-			col.workers += (new_u - old_u)
-			if col.owner == 0:
-				var planet: Planet = ctx.gs.planets[col.planet_id]
-				ctx.report.add_entry("colony", "notify.growth", {
-					"pop": str(new_u),
-					"place": "Star %d Orbit %d" % [planet.system_id, planet.orbit + 1]
-				}, "colony", cid)
+		if not col.blockaded:
+			var old_u: int = col.pop_units()
+			Growth.apply_growth(ctx.db, ctx.gs, cid)
+			var new_u: int = col.pop_units()
+			if new_u > old_u:
+				# When pop units increase from growth, assign new pop to workers
+				col.workers += (new_u - old_u)
+				if col.owner == 0:
+					var planet: Planet = ctx.gs.planets[col.planet_id]
+					ctx.report.add_entry("colony", "notify.growth", {
+						"pop": str(new_u),
+						"place": "Star %d Orbit %d" % [planet.system_id, planet.orbit + 1]
+					}, "colony", cid)
+
+		# Garrison regen
+		var max_garrison: int = 0
+		for bid in col.buildings:
+			var bdef: Dictionary = ctx.db.def("buildings", bid)
+			var def_blk: Dictionary = bdef.get("defense", {})
+			max_garrison += int(def_blk.get("garrison", 0))
+		if max_garrison > 0:
+			col.garrison = mini(max_garrison, col.garrison + ctx.db.bal("garrison_regen"))
+
+		# Defense HP regen
+		var max_def_hp: int = Defenses.calc_max_defense_hp(ctx.gs, ctx.db, col)
+		if max_def_hp > 0:
+			var regen_amt: int = IntMath.ceil_div(max_def_hp * ctx.db.bal("defense_regen_pct"), 100)
+			col.defense_hp = mini(max_def_hp, col.defense_hp + regen_amt)
 
 	_cursor = end_idx
 	return _cursor >= _work_colonies.size()

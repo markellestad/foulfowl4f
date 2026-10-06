@@ -183,6 +183,7 @@ static func stats(db: ContentDB, gs: GameState, design: ShipDesign) -> Dictionar
 		"range_dpc": range_dpc,
 		"scan_dpc": scan_dpc,
 		"armed": armed,
+		"is_armed": armed,
 		"marines": marines,
 		"bomb_milli": bomb_milli,
 		"colonize": colonize,

@@ -18,6 +18,7 @@ var occupied_until: int = -1
 var garrison: int = 0
 var defense_hp: int = 0
 var blockaded: bool = false
+var bombarded_by: Array[int] = []
 var founded_turn: int = 1
 var is_outpost: bool = false
 
@@ -49,6 +50,7 @@ func to_dict() -> Dictionary:
 		"garrison": garrison,
 		"defense_hp": defense_hp,
 		"blockaded": blockaded,
+		"bombarded_by": bombarded_by.duplicate(),
 		"founded_turn": founded_turn,
 		"is_outpost": is_outpost
 	}
@@ -79,6 +81,10 @@ static func from_dict(d: Dictionary) -> Colony:
 	c.garrison = int(d.get("garrison", 0))
 	c.defense_hp = int(d.get("defense_hp", 0))
 	c.blockaded = bool(d.get("blockaded", false))
+	c.bombarded_by.clear()
+	var raw_bb: Array = d.get("bombarded_by", [])
+	for x in raw_bb:
+		c.bombarded_by.append(int(x))
 	c.founded_turn = int(d.get("founded_turn", 1))
 	c.is_outpost = bool(d.get("is_outpost", false))
 	return c
