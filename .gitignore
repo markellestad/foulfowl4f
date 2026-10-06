@@ -3,3 +3,5 @@
 *.tmp
 export_credentials.cfg
 assets/audio/licensed/
+/tools/__pycache__/
+*.pyc
