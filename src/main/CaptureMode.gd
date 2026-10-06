@@ -238,16 +238,23 @@ static func _cap_p03_range_overlay(router: UiRouter) -> void:
 					Session.game.end_turn_headless()
 
 	var screen: GalaxyScreen = router.show_screen(&"galaxy") as GalaxyScreen
-	if screen != null and screen.map_view != null:
-		if screen.map_view.overlay_layer != null:
-			screen.map_view.overlay_layer.set_enabled(true)
-		if screen.map_view.camera != null:
-			var s12: StarSystem = Session.state.systems[12]
-			var s3: StarSystem = Session.state.systems[3]
-			var mid_pos := Vector2((s12.x + s3.x) * 2.0, (s12.y + s3.y) * 2.0)
-			screen.map_view.camera.center_on(mid_pos)
-			screen.map_view.camera.zoom = Vector2(0.8, 0.8)
-			screen.map_view.camera.zoom_changed.emit(0.8)
+	if screen != null:
+		if screen.colony_panel != null:
+			screen.colony_panel.visible = false
+		if screen.system_panel != null:
+			screen.system_panel.visible = false
+		if screen.fleet_panel != null:
+			screen.fleet_panel.visible = false
+		if screen.map_view != null:
+			if screen.map_view.overlay_layer != null:
+				screen.map_view.overlay_layer.set_enabled(true)
+			if screen.map_view.camera != null:
+				var s12: StarSystem = Session.state.systems[12]
+				var s3: StarSystem = Session.state.systems[3]
+				var mid_pos := Vector2((s12.x + s3.x) * 2.0, (s12.y + s3.y) * 2.0)
+				screen.map_view.camera.center_on(mid_pos)
+				screen.map_view.camera.zoom = Vector2(0.85, 0.85)
+				screen.map_view.camera.zoom_changed.emit(0.85)
 
 static func _exec_scenario_action(game: SimGame, act: Dictionary) -> void:
 	var a_name: String = str(act.get("action", ""))

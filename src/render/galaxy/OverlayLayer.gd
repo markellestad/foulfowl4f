@@ -37,16 +37,65 @@ func _draw() -> void:
 	var emp: Empire = state.empires[player_empire_id] if player_empire_id < state.empires.size() else null
 	var race_id: String = emp.race if emp != null else "pheasants"
 	var emp_color: Color = EmpireStyle.race_color(race_id)
-	var fill_color := Color(emp_color.r, emp_color.g, emp_color.b, 0.14)
-	var border_color := Color(emp_color.r, emp_color.g, emp_color.b, 0.22)
+	var fill_color := Color(emp_color.r, emp_color.g, emp_color.b, 0.12)
+	var border_color := Color(emp_color.r, emp_color.g, emp_color.b, 0.70)
 
-	# 1 pc cells: each cell is 10 dpc = 40 world px
-	var cell_size_px: float = 40.0
-	for cx in range(width_pc):
-		for cy in range(height_pc):
-			var center_x_dpc: int = cx * 10 + 5
-			var center_y_dpc: int = cy * 10 + 5
-			if FuelRange.in_range(db, state, player_empire_id, center_x_dpc, center_y_dpc):
-				var r := Rect2(cx * cell_size_px, cy * cell_size_px, cell_size_px, cell_size_px)
-				draw_rect(r, fill_color, true)
-				draw_rect(r, border_color, false, 1.0)
+	var range_dpc: int = FuelRange.fuel_range_dpc(db, state, player_empire_id)
+	var r_px: float = range_dpc * 4.0
+
+	# Collect all unique system centers with owned colonies or outposts
+	var system_centers: Array[Vector2] = []
+	var visited_systems: Dictionary = {}
+
+	for cid in state.colonies.keys():
+		var col: Colony = state.colonies[cid]
+		if col.owner == player_empire_id:
+			var planet: Planet = state.planets[col.planet_id]
+			if not visited_systems.has(planet.system_id):
+				visited_systems[planet.system_id] = true
+				var sys: StarSystem = state.systems[planet.system_id]
+				system_centers.append(Vector2(sys.x * 4.0, sys.y * 4.0))
+
+	if system_centers.is_empty():
+		return
+
+	# Build circle polygons (64 points each)
+	var circles: Array[PackedVector2Array] = []
+	const NUM_PTS: int = 64
+	for center in system_centers:
+		var circle_pts := PackedVector2Array()
+		for i in range(NUM_PTS):
+			var angle: float = (float(i) / float(NUM_PTS)) * TAU
+			circle_pts.append(center + Vector2(cos(angle), sin(angle)) * r_px)
+		circles.append(circle_pts)
+
+	# Merge overlapping circles into disjoint polygon regions
+	var polys: Array[PackedVector2Array] = circles.duplicate()
+	var merged_any := true
+	while merged_any and polys.size() > 1:
+		merged_any = false
+		var new_polys: Array[PackedVector2Array] = []
+		var merged_indices := {}
+		for i in range(polys.size()):
+			if merged_indices.has(i):
+				continue
+			var current: PackedVector2Array = polys[i]
+			for j in range(i + 1, polys.size()):
+				if merged_indices.has(j):
+					continue
+				var res: Array[PackedVector2Array] = Geometry2D.merge_polygons(current, polys[j])
+				if res.size() == 1:
+					current = res[0]
+					merged_indices[j] = true
+					merged_any = true
+			new_polys.append(current)
+		polys = new_polys
+
+	# Draw each region: soft translucent fill + single smooth antialiased edge line
+	for poly in polys:
+		if poly.size() < 3:
+			continue
+		draw_colored_polygon(poly, fill_color)
+		var outline: PackedVector2Array = poly.duplicate()
+		outline.append(poly[0])
+		draw_polyline(outline, border_color, 2.0, true)
