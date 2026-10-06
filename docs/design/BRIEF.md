@@ -21,3 +21,12 @@ A **Master of Orion-style space 4X** (MoO1/MoO2 lineage) where every empire is a
 - Single-player vs AI. No networking.
 - No real company/product trademarks as names; parody names are fine.
 - Process: architect -> red team -> engineer -> build to plan -> QA -> revise -> final. The builder is agy (Gemini Flash); design and copy are by Opus 5.5 and Grok 4.7.
+
+## Open source and licensing (owner, 2026-10-06: the repo will be a public open-source GitHub repo)
+- **Code license: MIT** (LICENSE file at the root).
+- **Font:** Atkinson Hyperlegible (SIL OFL 1.1), `assets/fonts/` with `OFL.txt`. Default UI font.
+- **Audio, two tiers (hard rule):**
+  - **Committed to the repo:** only redistributable audio: the Kenney packs (CC0: `kenney_impact-sounds`, `kenney_interface-sounds`, `kenney_sci-fi-sounds`) and the owner's own Suno music (`IESunoMusic`, `SnakeSunoMusic`). Put these under `assets/audio/open/`.
+  - **NOT committed:** sounds from the paid/licensed packs (David Dumais "Explosion SFX Pack", Shapeforms packs, `SCI-FI_UI_SFX_PACK`, "Sci-Fi Combat Systems Sound Effects Pack"). Their licenses allow use in a shipped game but not redistribution of the raw files, which a public repo would do. They live under `assets/audio/licensed/` (gitignored), copied and converted at build time by `tools/fetch_licensed_audio` from a committed manifest (source path + target name per sound) pointing at the owner's local SoundAssets folder. The game must run and sound acceptable WITHOUT the licensed folder (fall back to the open sound for each slot), so a fresh clone of the public repo works.
+  - Credits screen lists Kenney (CC0, credited anyway), the font, and the licensed packs by vendor name.
+- No real trademarks as product names (parody/reference in copy is fine).
