@@ -11,11 +11,29 @@ var wormhole_to: int = -1
 var is_orn: bool = false
 var home_of: int = -1
 
+const STAR_NAMES: Array[String] = [
+	"Pinfeather", "Cobswell", "Quillmark", "Brinecomb", "Ashroost",
+	"Keelwater", "Marrowgate", "Lowhonk", "Downhaven", "Nightperch",
+	"Pebbleford", "Softbill", "Hardbill", "Ironwater", "Glassice",
+	"Sootjungle", "Farscratch", "Lanternbill", "Quietice", "Clutchhome",
+	"Moltbay", "Vesper", "Brightbill", "Greydown", "Saltperch",
+	"Primaries", "Fledge", "Hatchwell", "Covert", "Barblight",
+	"Oldnest", "Newnest", "Thinice", "Widepuddle", "Crownless",
+	"Littlekeel", "Longkeel", "Redpreen", "Yellowpreen", "Bluepreen",
+	"Cinderwell", "Sourwell", "Baremark", "Gardenmouth", "Footnote",
+	"The Minutes", "Borderline", "Property Line", "Parking Orbit", "Shift Nine",
+	"The Good Rock", "Receipt", "Straggler", "Cache Rock", "Unread",
+	"Jiggle Shoal", "Parade Ground", "Nightshift", "Abstention", "Loudice",
+	"Narrowcut", "Threepebbles", "Whitecob", "Blackcob"
+]
+
 var name: String:
 	get:
-		if is_orn:
+		if is_orn or name_id == -2:
 			return "Orn"
-		return "System %d" % id
+		if name_id > 0 and name_id <= STAR_NAMES.size():
+			return STAR_NAMES[name_id - 1]
+		return STAR_NAMES[posmod(id, STAR_NAMES.size())]
 
 func to_dict() -> Dictionary:
 	return {

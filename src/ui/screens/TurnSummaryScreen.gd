@@ -139,13 +139,7 @@ func _populate_entries(container: VBoxContainer) -> void:
 				var c_target: Colony = Session.state.colonies[t_id]
 				var pl_target: Planet = Session.state.planets[c_target.planet_id]
 				var sys_target: StarSystem = Session.state.systems[pl_target.system_id]
-				var s_name: String = ""
-				if sys_target.is_orn:
-					s_name = Copy.t("place.orn.name")
-				elif sys_target.name_id > 0:
-					s_name = Copy.t("star.name.%d" % sys_target.name_id)
-				else:
-					s_name = "Star %d" % sys_target.id
+				var s_name: String = Copy.system_name(sys_target)
 				formatted_p["place"] = "%s - Orbit %d" % [s_name, pl_target.orbit + 1]
 
 			var msg: String = Copy.f(key, formatted_p, key)

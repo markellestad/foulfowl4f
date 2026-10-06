@@ -70,15 +70,10 @@ func _refresh_data() -> void:
 		var eta_str: String = "—"
 		if flt.system_id >= 0 and flt.system_id < gs.systems.size():
 			var sys: StarSystem = gs.systems[flt.system_id]
-			if sys.is_orn:
-				loc_str = Copy.t("place.orn.name")
-			elif sys.name_id > 0:
-				loc_str = Copy.t("star.name.%d" % sys.name_id)
-			else:
-				loc_str = "Star %d" % sys.id
+			loc_str = Copy.system_name(sys)
 		elif flt.dest_system_id >= 0 and flt.dest_system_id < gs.systems.size():
 			var d_sys: StarSystem = gs.systems[flt.dest_system_id]
-			loc_str = "-> Star %d" % d_sys.id
+			loc_str = "-> %s" % Copy.system_name(d_sys)
 			eta_str = "%d turns" % max(1, flt.arrive_turn - gs.turn)
 		else:
 			loc_str = "Deep Space"

@@ -64,14 +64,7 @@ func show_system(sys_id: int) -> void:
 	var sys: StarSystem = state.systems[sys_id]
 
 	# Star name
-	var s_name: String = ""
-	if sys.is_orn:
-		s_name = Copy.t("place.orn.name")
-	elif sys.name_id > 0:
-		s_name = Copy.t("star.name.%d" % sys.name_id)
-	else:
-		s_name = "Star %d" % sys.id
-	_name_lbl.text = s_name
+	_name_lbl.text = Copy.system_name(sys)
 
 	# Star type
 	var type_name: String = Copy.t("star.%s.name" % sys.star_type)

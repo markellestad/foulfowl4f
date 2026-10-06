@@ -120,3 +120,125 @@ func test_ship_designer_layout_fits_in_1280x720() -> void:
 			var gr: Rect2 = c.get_global_rect()
 			assert_true(gr.end.x <= 1280.0 + 5.0, "Control %s (%s) right edge <= 1280 (got %.1f)" % [c.name, c.get_class(), gr.end.x])
 
+func test_battle_viewer_round_counter_and_conclusion() -> void:
+	var router: UiRouter = UiRouter.new()
+	router.size = Vector2(1280, 720)
+	add_child_autofree(router)
+
+	var blog := BattleLog.new()
+	blog.system_id = 2
+	for i in range(2):
+		blog.initial_units.append({"uid": 10 + i, "empire_id": 0, "name_key": "Swat Escort", "hull_id": "small", "hp": 15, "hp_max": 15, "shield": 2})
+		blog.initial_units.append({"uid": 20 + i, "empire_id": 1, "name_key": "Dart Frigate", "hull_id": "small", "hp": 12, "hp_max": 12, "shield": 0})
+	for r_i in range(1, 9):
+		blog.rounds.append({
+			"round_num": r_i,
+			"distances": {"1_2": 9},
+			"shots": [],
+			"horizon_hits": [],
+			"swat_intercepts": [],
+			"destroyed_uids": []
+		})
+
+	var screen: BattleScreen = router.show_screen(&"battle_screen", {"log": blog}) as BattleScreen
+	assert_not_null(screen)
+
+	# Round 1 initially
+	assert_eq(screen.round_lbl.text, "Round: 1 / 8")
+
+	# Advance to round 2
+	screen.current_round_idx = 1
+	screen._apply_round(1)
+	assert_eq(screen.round_lbl.text, "Round: 2 / 8")
+	assert_false(screen.pause_btn.disabled, "Pause enabled mid-battle")
+
+	# Skip to end / conclude
+	screen._show_autopsy()
+	assert_eq(screen.round_lbl.text, "Round: 8 / 8")
+	assert_true(screen.pause_btn.disabled, "Pause disabled after battle conclusion")
+
+func test_no_raw_ids_in_all_capture_screens() -> void:
+	var re_emp := RegEx.new()
+	re_emp.compile("\\bEmpire \\d+\\b")
+	var re_sys := RegEx.new()
+	re_sys.compile("(?i)\\bSystem \\d+\\b")
+	var re_flt := RegEx.new()
+	re_flt.compile("(?i)\\bFleet \\d+\\b")
+	var re_snake := RegEx.new()
+	re_snake.compile("\\b[a-z]+_[a-z_]+\\b")
+	var re_hull := RegEx.new()
+	re_hull.compile("(?i)\\b(small|medium|large|huge):")
+
+	var capture_ids: Array[String] = [
+		"main_menu", "credits", "P01_new_game", "P01_galaxy", "P01_system_panel",
+		"P02_galaxy_topbar", "P02_colony_panel", "P02_colonies_list", "P02_turn_summary",
+		"P03_fleet_panel", "P03_designer", "P03_range_overlay",
+		"P04_battle_orders", "P04_battle_viewer", "P04_autopsy"
+	]
+
+	var main_node: Main = Main.new()
+	add_child_autofree(main_node)
+	main_node._build_scene_tree()
+	var router: UiRouter = main_node.ui_root
+
+	for cap_id in capture_ids:
+		# Run capture setup
+		match cap_id:
+			"main_menu": CaptureMode._cap_main_menu(router)
+			"credits": CaptureMode._cap_credits(router)
+			"P01_new_game": CaptureMode._cap_new_game(router)
+			"P01_galaxy": CaptureMode._cap_galaxy(router)
+			"P01_system_panel": CaptureMode._cap_system_panel(router)
+			"P02_galaxy_topbar": CaptureMode._cap_p02_galaxy_topbar(router)
+			"P02_colony_panel": CaptureMode._cap_p02_colony_panel(router)
+			"P02_colonies_list": CaptureMode._cap_p02_colonies_list(router)
+			"P02_turn_summary": CaptureMode._cap_p02_turn_summary(router)
+			"P03_fleet_panel": CaptureMode._cap_p03_fleet_panel(router)
+			"P03_designer": CaptureMode._cap_p03_designer(router)
+			"P03_range_overlay": CaptureMode._cap_p03_range_overlay(router)
+			"P04_battle_orders": CaptureMode._cap_p04_battle_orders(router)
+			"P04_battle_viewer": CaptureMode._cap_p04_battle_viewer(router)
+			"P04_autopsy": CaptureMode._cap_p04_autopsy(router)
+
+		await get_tree().process_frame
+		await get_tree().process_frame
+
+		# Walk all Labels, Buttons, OptionButtons in router
+		var all_nodes: Array[Node] = router.find_children("*", "Control", true, false)
+		for node in all_nodes:
+			if not (node is Control) or not (node as Control).is_visible_in_tree():
+				continue
+
+			var texts_to_check: Array[String] = []
+			if node is OptionButton:
+				var ob := node as OptionButton
+				if ob.text != "":
+					texts_to_check.append(ob.text)
+				for item_i in range(ob.item_count):
+					texts_to_check.append(ob.get_item_text(item_i))
+			elif node is Button:
+				var btn := node as Button
+				if btn.text != "":
+					texts_to_check.append(btn.text)
+			elif node is Label:
+				var lbl := node as Label
+				if lbl.text != "":
+					texts_to_check.append(lbl.text)
+
+			for t in texts_to_check:
+				var m_emp = re_emp.search(t)
+				assert_null(m_emp, "[%s] '%s' matched raw Empire pattern: '%s' in node %s" % [cap_id, t, m_emp.get_string() if m_emp else "", node.name])
+
+				var m_sys = re_sys.search(t)
+				assert_null(m_sys, "[%s] '%s' matched raw System pattern: '%s' in node %s" % [cap_id, t, m_sys.get_string() if m_sys else "", node.name])
+
+				var m_flt = re_flt.search(t)
+				assert_null(m_flt, "[%s] '%s' matched raw Fleet pattern: '%s' in node %s" % [cap_id, t, m_flt.get_string() if m_flt else "", node.name])
+
+				var m_snake = re_snake.search(t)
+				assert_null(m_snake, "[%s] '%s' matched snake_case pattern: '%s' in node %s" % [cap_id, t, m_snake.get_string() if m_snake else "", node.name])
+
+				var m_hull = re_hull.search(t)
+				assert_null(m_hull, "[%s] '%s' matched raw hull:count pattern: '%s' in node %s" % [cap_id, t, m_hull.get_string() if m_hull else "", node.name])
+
+

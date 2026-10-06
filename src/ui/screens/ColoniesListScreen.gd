@@ -70,13 +70,7 @@ func _refresh_data() -> void:
 		var planet: Planet = gs.planets[col.planet_id]
 		var sys: StarSystem = gs.systems[planet.system_id]
 
-		var s_name: String = ""
-		if sys.is_orn:
-			s_name = Copy.t("place.orn.name")
-		elif sys.name_id > 0:
-			s_name = Copy.t("star.name.%d" % sys.name_id)
-		else:
-			s_name = "Star %d" % sys.id
+		var s_name: String = Copy.system_name(sys)
 		var col_name: String = "%s (O%d)" % [s_name, planet.orbit + 1]
 
 		var max_pop: int = Economy.max_pop_units(db, gs, col.id)

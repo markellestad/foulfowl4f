@@ -60,3 +60,36 @@ func missing_keys() -> Array[String]:
 	for k in missing.keys():
 		res.append(str(k))
 	return res
+
+func system_name(sys: StarSystem) -> String:
+	if sys == null:
+		return "Deep Space"
+	if sys.is_orn or sys.name_id == -2:
+		return t("place.orn.name", "Orn")
+	if sys.name_id > 0:
+		return t("star.name.%d" % sys.name_id)
+	return t("star.name.%d" % (posmod(sys.id, 64) + 1))
+
+func system_name_by_id(sys_id: int) -> String:
+	if Session != null and Session.state != null and sys_id >= 0 and sys_id < Session.state.systems.size():
+		return system_name(Session.state.systems[sys_id])
+	return t("star.name.%d" % (posmod(sys_id, 64) + 1))
+
+func empire_name(eid: int, state: GameState = null) -> String:
+	if eid == 100:
+		return t("monster.guardian.name", "Space Monster")
+	var gs: GameState = state
+	if gs == null and Session != null:
+		gs = Session.state
+	if gs != null and eid >= 0 and eid < gs.empires.size():
+		var emp: Empire = gs.empires[eid]
+		if emp.race != "":
+			var key := "race.%s.name" % emp.race
+			if has(key):
+				return t(key)
+		if emp.name != "":
+			return emp.name
+	var default_races := ["pheasants", "swans", "ducks", "geese", "owls", "penguins", "crows", "chickens"]
+	var r: String = default_races[posmod(eid, default_races.size())]
+	return t("race.%s.name" % r, "Empire %d" % eid)
+

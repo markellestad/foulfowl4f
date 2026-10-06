@@ -231,13 +231,7 @@ func refresh() -> void:
 	var sys: StarSystem = gs.systems[planet.system_id]
 
 	# Star name / planet orbit
-	var s_name: String = ""
-	if sys.is_orn:
-		s_name = Copy.t("place.orn.name")
-	elif sys.name_id > 0:
-		s_name = Copy.t("star.name.%d" % sys.name_id)
-	else:
-		s_name = "Star %d" % sys.id
+	var s_name: String = Copy.system_name(sys)
 	_title_lbl.text = "%s - Orbit %d" % [s_name, planet.orbit + 1]
 
 	var cl_name: String = Copy.t("climate.%s.name" % planet.climate)
