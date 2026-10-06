@@ -437,28 +437,40 @@ static func _cap_p04_battle_viewer(router: UiRouter) -> void:
 			"hp_max": 12,
 			"shield": 0
 		})
-	blog.rounds.append({
-		"round_num": 2,
-		"distances": {"1_2": 9},
-		"shots": [],
-		"horizon_hits": [],
-		"swat_intercepts": [
-			{"swat_uid": 10, "hit": true},
-			{"swat_uid": 11, "hit": true}
-		],
-		"destroyed_uids": []
-	})
+	for r_i in range(1, 9):
+		var r_dict: Dictionary = {
+			"round_num": r_i,
+			"distances": {"1_2": maxi(0, 11 - r_i)},
+			"shots": [],
+			"horizon_hits": [],
+			"swat_intercepts": [],
+			"destroyed_uids": []
+		}
+		if r_i == 2:
+			r_dict["distances"] = {"1_2": 9}
+			r_dict["swat_intercepts"] = [
+				{"swat_uid": 10, "hit": true},
+				{"swat_uid": 11, "hit": true}
+			]
+		blog.rounds.append(r_dict)
+
 	var screen = router.show_screen(&"battle_screen", {"log": blog})
-	if screen != null and screen.stage != null:
-		screen.range_strip.set_distance(9)
-		screen.stage.set_distance(9)
-		for i in range(5):
-			var from_p: Vector2 = screen.stage.get_unit_pos(20 + (i % 4))
-			var to_p: Vector2 = screen.stage.get_unit_pos(10 + (i % 4))
-			screen.stage.vfx.add_shot(from_p, to_p, "horizon")
-		for i in range(3):
-			var sp: Vector2 = screen.stage.get_unit_pos(10 + i) + Vector2(randf_range(-20, 20), randf_range(-20, 20))
-			screen.stage.vfx.add_swat_flash(sp)
+	if screen != null:
+		screen.current_round_idx = 1
+		screen._apply_round(1)
+		screen.add_ticker_event("Dart Frigate fires Horizon Dart")
+		screen.add_ticker_event("Swat Escort intercepts Horizon Dart")
+		screen.add_ticker_event("Swat Escort intercepts Horizon Dart")
+		if screen.stage != null:
+			screen.range_strip.set_distance(9)
+			screen.stage.set_distance(9)
+			for i in range(5):
+				var from_p: Vector2 = screen.stage.get_unit_pos(20 + (i % 4))
+				var to_p: Vector2 = screen.stage.get_unit_pos(10 + (i % 4))
+				screen.stage.vfx.add_shot(from_p, to_p, "horizon")
+			for i in range(3):
+				var sp: Vector2 = screen.stage.get_unit_pos(10 + i) + Vector2(randf_range(-20, 20), randf_range(-20, 20))
+				screen.stage.vfx.add_swat_flash(sp)
 
 static func _cap_p04_autopsy(router: UiRouter) -> void:
 	var blog := BattleLog.new()
@@ -467,6 +479,15 @@ static func _cap_p04_autopsy(router: UiRouter) -> void:
 	blog.winner_empire_id = 0
 	blog.deciding_band = "talon"
 	blog.standout_ship_uid = 101
+	for r_i in range(1, 9):
+		blog.rounds.append({
+			"round_num": r_i,
+			"distances": {"1_2": maxi(0, 11 - r_i)},
+			"shots": [],
+			"horizon_hits": [],
+			"swat_intercepts": [],
+			"destroyed_uids": []
+		})
 	blog.receipt_lines.append({
 		"name_key": "Sparrow",
 		"hull_id": "small"
