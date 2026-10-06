@@ -1,0 +1,2 @@
+# Known Godot engine log noise to ignore in test runs
+resources still in use at exit
