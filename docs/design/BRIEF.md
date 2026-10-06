@@ -16,7 +16,7 @@ A **Master of Orion-style space 4X** (MoO1/MoO2 lineage) where every empire is a
 
 ## Hard constraints
 - Engine: Godot 4.6 (exe at `C:\Dev\InfiniteEmpire\GodotExe\`), GDScript with static typing, web export for itch.io (single-threaded: no SharedArrayBuffer requirement), runs at 60 fps in a browser on a mid laptop.
-- Sounds: pull freely from `<FOULFOWL_SOUND_ASSETS>\` (fully licensed: Kenney packs, Shapeforms, Sci-Fi UI/Combat packs, Explosion pack, and the owner's Suno music folders IESunoMusic / SnakeSunoMusic). Copy only what is used into the repo, converted to OGG; keep the web build small.
+- Sounds: pull freely from `<FOULFOWL_SOUND_ASSETS>\` (fully licensed: Kenney packs, Shapeforms, Sci-Fi UI/Combat packs, Explosion pack, and the owner's Suno music folders IESunoMusic / SnakeSunoMusic). Only the open tier (Kenney CC0 + owner Suno music) is committed to the repo; licensed packs are fetched at build time (see "Open source and licensing" below). Convert used sounds to OGG; keep the web build small.
 - Art: no external image assets required; procedural/vector art drawn in Godot (bird silhouettes from simple shapes, star map, planets as shaded circles are fine for planets — planets are round; effects must not be lazy rings).
 - Single-player vs AI. No networking.
 - No real company/product trademarks as names; parody names are fine.
