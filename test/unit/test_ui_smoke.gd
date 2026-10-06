@@ -92,3 +92,31 @@ func test_galaxy_screen_and_system_panel() -> void:
 	# Test selecting system 0
 	screen.map_view.select_system(0)
 	assert_eq(screen.system_panel.current_system_id, 0, "System 0 selected in panel")
+
+func test_ship_designer_layout_fits_in_1280x720() -> void:
+	var s: GameSettings = (GameSettings as Variant).call(&"new")
+	s.preset = "evening_standard"
+	s.seed_string = "FOWL"
+	s.seed = Rng.seed_from_string("FOWL")
+	s.player_race = "pheasants"
+	s.seat_swans = true
+	Session.new_game(s)
+
+	var router: UiRouter = UiRouter.new()
+	router.custom_minimum_size = Vector2(1280, 720)
+	router.size = Vector2(1280, 720)
+	add_child_autofree(router)
+
+	var screen: ShipDesignerScreen = router.show_screen(&"ship_designer") as ShipDesignerScreen
+	assert_not_null(screen, "ShipDesignerScreen created")
+
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	var all_controls: Array[Node] = screen.find_children("*", "Control", true, false)
+	for c_node in all_controls:
+		var c: Control = c_node as Control
+		if c.is_visible_in_tree() and c.size.x > 0 and c.size.y > 0:
+			var gr: Rect2 = c.get_global_rect()
+			assert_true(gr.end.x <= 1280.0 + 5.0, "Control %s (%s) right edge <= 1280 (got %.1f)" % [c.name, c.get_class(), gr.end.x])
+

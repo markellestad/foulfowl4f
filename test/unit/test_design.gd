@@ -188,3 +188,37 @@ func test_auto_design_always_validates_for_non_null() -> void:
 		if des != null:
 			var err: String = DesignRules.validate(_db, gs, des)
 			assert_eq(err, "", "AutoDesign for role %s validates (got %s)" % [role, err])
+
+func test_designer_weapon_count_change_and_overcapacity() -> void:
+	var gs: GameState = _make_test_gs()
+	var d: ShipDesign = ShipDesign.new()
+	d.empire_id = 0
+	d.hull = "medium"
+	d.drive = "walk_drive"
+	d.plate = "pinfeather_plate"
+
+	# Medium hull space = 60, walk_drive space = 12, pinfeather_plate space = 6. Base used = 18.
+	# Base PP: hull 22 + drive 3 + plate 0 = 25 PP.
+	# Wick talon: space 5, PP 3.
+
+	# 1 talon: 9 + 5 = 14 space, 25 + 3 = 28 PP
+	d.weapons = [{"part": "wick_talon", "mount": "", "count": 1}]
+	var st1: Dictionary = DesignRules.stats(_db, gs, d)
+	assert_eq(st1["space_used"], 14, "1 talon space used == 14")
+	assert_eq(st1["pp"], 28, "1 talon total PP == 28")
+	assert_eq(DesignRules.validate(_db, gs, d), "", "1 talon is valid")
+
+	# 8 talons: 9 + 40 = 49 space (within 60), 25 + 24 = 49 PP
+	d.weapons = [{"part": "wick_talon", "mount": "", "count": 8}]
+	var st8: Dictionary = DesignRules.stats(_db, gs, d)
+	assert_eq(st8["space_used"], 49, "8 talons space used == 49")
+	assert_eq(st8["pp"], 49, "8 talons total PP == 49")
+	assert_eq(DesignRules.validate(_db, gs, d), "", "8 talons is valid within 60 space")
+
+	# 11 talons: 9 + 55 = 64 space (> 60 capacity), 25 + 33 = 58 PP
+	d.weapons = [{"part": "wick_talon", "mount": "", "count": 11}]
+	var st11: Dictionary = DesignRules.stats(_db, gs, d)
+	assert_eq(st11["space_used"], 64, "11 talons space used == 64")
+	assert_eq(st11["pp"], 58, "11 talons total PP == 58")
+	assert_eq(DesignRules.validate(_db, gs, d), "refuse.design_space", "11 talons over-capacity REFUSE design_space")
+

@@ -167,14 +167,18 @@ static func stats(db: ContentDB, gs: GameState, design: ShipDesign) -> Dictionar
 
 	return {
 		"space_used": space_used,
+		"used_space": space_used,
 		"space_max": hull_space,
+		"space": hull_space,
 		"pp": total_pp,
+		"cost_pp": total_pp,
 		"upkeep": upkeep,
 		"hp": total_hp,
 		"evasion": hull_evasion,
 		"accuracy": accuracy,
 		"shield": shield,
 		"map_speed": map_speed,
+		"speed": map_speed,
 		"combat_speed": combat_speed,
 		"range_dpc": range_dpc,
 		"scan_dpc": scan_dpc,

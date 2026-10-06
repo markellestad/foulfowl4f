@@ -139,7 +139,9 @@ func build() -> void:
 	info_grid.add_child(Ui.label("Role:", "Muted"))
 	_opt_role = OptionButton.new()
 	for r in roles_to_show:
-		_opt_role.add_item(r)
+		var r_name: String = Copy.t("role.%s.name" % r) if Copy.has("role.%s.name" % r) else r.replace("_", " ").capitalize()
+		_opt_role.add_item(r_name)
+		_opt_role.set_item_metadata(_opt_role.item_count - 1, r)
 	_opt_role.item_selected.connect(func(_i: int) -> void: _refresh_live_stats())
 	info_grid.add_child(_opt_role)
 
@@ -287,8 +289,11 @@ func _populate_category_options(opt: OptionButton, category: String, allow_none:
 func _build_specials_list() -> void:
 	for c in _specials_container.get_children():
 		c.queue_free()
-	var specials_row := Ui.hbox(12)
-	_specials_container.add_child(specials_row)
+	var flow := HFlowContainer.new()
+	flow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	flow.add_theme_constant_override("h_separation", 10)
+	flow.add_theme_constant_override("v_separation", 4)
+	_specials_container.add_child(flow)
 
 	var parts_table: Dictionary = db.table("parts").get("rows", {})
 	for p_id in parts_table.keys():
@@ -297,6 +302,7 @@ func _build_specials_list() -> void:
 			var p_name: String = Copy.t("part.%s.name" % p_id) if Copy.has("part.%s.name" % p_id) else str(p_id).capitalize()
 			var chk := CheckBox.new()
 			chk.text = p_name
+			chk.set_meta("part_id", p_id)
 			chk.toggled.connect(func(pressed: bool) -> void:
 				if pressed:
 					if not _specials_buffer.has(p_id):
@@ -305,7 +311,7 @@ func _build_specials_list() -> void:
 					_specials_buffer.erase(p_id)
 				_refresh_live_stats()
 			)
-			specials_row.add_child(chk)
+			flow.add_child(chk)
 
 func _new_blank_design() -> void:
 	current_design = ShipDesign.new()
@@ -328,7 +334,7 @@ func _apply_auto_design(role: String) -> void:
 func _load_design_to_ui(des: ShipDesign) -> void:
 	_name_edit.text = des.name
 	for i in range(_opt_role.item_count):
-		if _opt_role.get_item_text(i) == des.role:
+		if str(_opt_role.get_item_metadata(i)) == des.role or _opt_role.get_item_text(i) == des.role:
 			_opt_role.select(i)
 			break
 	for i in range(_opt_hull.item_count):
@@ -349,19 +355,13 @@ func _load_design_to_ui(des: ShipDesign) -> void:
 
 	# Update specials checkboxes
 	if _specials_container.get_child_count() > 0:
-		var s_row: HBoxContainer = _specials_container.get_child(0) as HBoxContainer
-		if s_row != null:
-			for c in s_row.get_children():
+		var flow: Container = _specials_container.get_child(0) as Container
+		if flow != null:
+			for c in flow.get_children():
 				if c is CheckBox:
 					var cb: CheckBox = c as CheckBox
-					var parts_table: Dictionary = db.table("parts").get("rows", {})
-					var matched_id: String = ""
-					for p_id in parts_table.keys():
-						var p_name: String = Copy.t("part.%s.name" % p_id) if Copy.has("part.%s.name" % p_id) else str(p_id).capitalize()
-						if p_name == cb.text:
-							matched_id = p_id
-							break
-					cb.button_pressed = _specials_buffer.has(matched_id)
+					var p_id: String = str(cb.get_meta("part_id", ""))
+					cb.button_pressed = _specials_buffer.has(p_id)
 
 	_rebuild_weapons_ui()
 	_refresh_live_stats()
@@ -441,7 +441,11 @@ func _create_design_from_ui() -> ShipDesign:
 	des.id = current_design.id if current_design != null else -1
 	des.empire_id = 0
 	des.name = _name_edit.text.strip_edges()
-	des.role = _opt_role.get_item_text(_opt_role.selected)
+	var sel_role: int = _opt_role.selected
+	if sel_role >= 0 and sel_role < _opt_role.item_count:
+		des.role = str(_opt_role.get_item_metadata(sel_role))
+	else:
+		des.role = "talon_line"
 	des.hull = str(_opt_hull.get_item_metadata(_opt_hull.selected))
 	des.drive = str(_opt_drive.get_item_metadata(_opt_drive.selected))
 	des.plate = str(_opt_plate.get_item_metadata(_opt_plate.selected))
@@ -457,6 +461,21 @@ func _refresh_live_stats() -> void:
 		return
 	var des: ShipDesign = _create_design_from_ui()
 	var err: String = DesignRules.validate(db, state, des)
+
+	var st: Dictionary = DesignRules.stats(db, state, des)
+	var used_sp: int = int(st.get("space_used", 0))
+	var max_sp: int = int(st.get("space_max", 24))
+	_space_lbl.text = "%d / %d" % [used_sp, max_sp]
+	_space_bar.max_value = max(1, max_sp)
+	_space_bar.value = used_sp
+
+	if used_sp > max_sp:
+		_space_lbl.add_theme_color_override("font_color", Palette.DANGER)
+		_space_bar.modulate = Palette.DANGER
+	else:
+		_space_lbl.remove_theme_color_override("font_color")
+		_space_bar.modulate = Color.WHITE
+
 	if err != "":
 		_lbl_error.text = Copy.t(err) if Copy.has(err) else err
 		_btn_save.disabled = true
@@ -464,17 +483,10 @@ func _refresh_live_stats() -> void:
 		_lbl_error.text = ""
 		_btn_save.disabled = false
 
-	var st: Dictionary = DesignRules.stats(db, state, des)
-	var used_sp: int = int(st.get("used_space", 0))
-	var max_sp: int = int(st.get("space", 24))
-	_space_lbl.text = "%d / %d" % [used_sp, max_sp]
-	_space_bar.max_value = max(1, max_sp)
-	_space_bar.value = used_sp
-
 	_lbl_cost.text = "%d PP" % int(st.get("cost_pp", 0))
 	_lbl_upkeep.text = "%d cr/turn" % int(st.get("upkeep", 0))
 	_lbl_hp.text = "%d HP" % int(st.get("hp", 0))
-	_lbl_speed.text = "%d pc/turn" % int(st.get("speed", 2))
+	_lbl_speed.text = "%d pc/turn" % int(st.get("map_speed", 2))
 	_lbl_evasion.text = "%d%%" % int(st.get("evasion", 0))
 
 	var caps: Array[String] = []
@@ -492,7 +504,8 @@ func _refresh_designs_list() -> void:
 
 	for d in state.designs.values():
 		if d.empire_id == 0:
-			var btn := Ui.button("%s (%s)" % [d.name, d.role], func() -> void:
+			var r_name: String = Copy.t("role.%s.name" % d.role) if Copy.has("role.%s.name" % d.role) else d.role.replace("_", " ").capitalize()
+			var btn := Ui.button("%s (%s)" % [d.name, r_name], func() -> void:
 				current_design = d
 				_load_design_to_ui(d)
 			)
