@@ -505,7 +505,10 @@ func _refresh_designs_list() -> void:
 	for d in state.designs.values():
 		if d.empire_id == 0:
 			var r_name: String = Copy.t("role.%s.name" % d.role) if Copy.has("role.%s.name" % d.role) else d.role.replace("_", " ").capitalize()
-			var btn := Ui.button("%s (%s)" % [d.name, r_name], func() -> void:
+			var display_text: String = d.name
+			if d.name.strip_edges().to_lower() != r_name.strip_edges().to_lower() and d.name.strip_edges().to_lower() != d.role.strip_edges().to_lower():
+				display_text = "%s (%s)" % [d.name, r_name]
+			var btn := Ui.button(display_text, func() -> void:
 				current_design = d
 				_load_design_to_ui(d)
 			)
