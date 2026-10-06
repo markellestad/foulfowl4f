@@ -677,7 +677,7 @@ Competence requirements (each has a scripted probe, §17.3):
 - **Defense response**: a visible strike fleet within 3 turns of a colony triggers reinforcement or defense builds within 2 turns.
 - **Command hygiene**: every AI command validates; a rejected command is a planner bug, and the soak fails on any.
 
-Budget: each sub-step ≤ 8 ms on the web reference laptop (ARCHITECTURE §10).
+Budget: each sub-step ≤ 8 ms on the low-end web target (BRIEF "Performance target"; measured locally in a browser with the CPU throttled 4x, ARCHITECTURE §10).
 
 ---
 
@@ -788,7 +788,7 @@ The soak verifies termination, stability, determinism, native performance, gross
 | H6 | AI threat | At Flighted, the seated early-war AI took or razed ≥ 1 player colony or outpost in ≥ 3 of 5 games |
 | H7 | Swans | The Coalition visibly attacked Swans in every game where it tripped against them |
 | H8 | Endings | Every game ended by a door before the cap, or the player could name the nearest door on the victory clock |
-| H9 | Web perf | No end-turn frame > 50 ms on the reference laptop; map at 60 fps; saves survive a browser restart on the itch page |
+| H9 | Web perf | BRIEF "Performance target": no End-Turn frame > 50 ms, galaxy map 60 fps, battle viewer ≥ 30 fps, measured in Chrome with the CPU throttled 4x and spot-checked in Firefox, Edge and Safari; mouse-only playable at 1280x720; initial download < 25 MB; saves survive a browser restart on the itch page |
 | H10 | Copy | Each tester screenshots ≥ 1 line unprompted (soft) |
 
 ---
@@ -815,7 +815,7 @@ The soak verifies termination, stability, determinism, native performance, gross
 
 ## 19. Open questions
 
-Round 2's questions are answered in §23. Open for the build: the reference laptop (owner, before P11), the Creative price and Coalition numbers (measured by the soak, §17.2), and expansion costs (H3 + the payback report).
+Round 2's questions are answered in §23. Open for the build: the Creative price and Coalition numbers (measured by the soak, §17.2), and expansion costs (H3 + the payback report).
 
 ---
 

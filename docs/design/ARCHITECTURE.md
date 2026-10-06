@@ -192,7 +192,7 @@ Pop ≥ 0; treasury ≥ 0; each ship in exactly one fleet; owners exist; no colo
 
 ### 7.3 Time slicing and the Battle Orders pause
 
-- `TurnRunner` runs `TurnProcessor.run_next_substep()` in `_process` until **6 ms** of the frame are used, then yields. Every sub-step has a budget of **8 ms on the web reference laptop**; any planner that cannot meet it iterates incrementally across sub-steps (e.g. `AiMilitary` processes one fleet group per sub-step). Debug builds record per-sub-step time and the max frame time during end-turn.
+- `TurnRunner` runs `TurnProcessor.run_next_substep()` in `_process` until **6 ms** of the frame are used, then yields. Every sub-step has a budget of **8 ms on the low-end web target** (BRIEF "Performance target"; locally: browser CPU throttled 4x); any planner that cannot meet it iterates incrementally across sub-steps (e.g. `AiMilitary` processes one fleet group per sub-step). Debug builds record per-sub-step time and the max frame time during end-turn.
 - **AI economy precompute** (revision 4): while the player's turn is open, `TurnRunner` spends idle frame time (same 6 ms slice) running each AI's economy planners on the live state and stores the resulting commands in `Session.ai_held[empire_id]`. Their inputs (the AI's own entities and Knowledge) cannot be changed by player planning commands, so this is a cache; `ai_plan` step 0a applies the held commands, or computes them if precompute did not finish. Undo, redo and load **restart** the precompute from scratch (it only costs idle time), because a restore replaces the objects a half-finished planner holds; the results cannot differ, only the work is redone. GUT test + probe P10 assert equality with End-Turn computation.
 - **Battle Orders pause** (revision 4: one per turn): at step 3a, after all AI orders are fixed, `TurnProcessor` collects every qualifying player battle (GDD §9.2 Big rule or Settings mode), ranks them by total armed PP, and returns `NEEDS_INPUT(requests)` with up to 3 cards plus the auto list; Session emits `battle_orders_needed(requests)`, the stop shows, and `answer_battle_orders(cmds)` resumes. AI orders are not exposed to the UI. Headless (`run_all`) and mode Never use standing plans (combined-fleet rule, GDD §9.2). Each answer is a `CmdBattle` in the command log, so replays reproduce them.
 
@@ -235,14 +235,16 @@ Shared with the player's automation: auto-design, auto-explore, governor/militar
 |---|---|---|
 | Evening Standard AI-vs-AI game, headless native | median ≤ 90 s, max ≤ 180 s | soak |
 | End-turn total at T150, native | ≤ 300 ms | soak per-turn timings |
-| End-turn total at T150, web reference laptop | ≤ 1.5 s wall; **no frame > 50 ms**; UI ≥ 30 fps | in-game perf overlay (debug), H9 |
+| End-turn total at T150, low-end web target (local stand-in: Chrome, CPU throttled 4x) | ≤ 1.5 s wall; **no frame > 50 ms**; UI ≥ 30 fps | perf overlay (`?perf=1`), H9 |
 | Any sub-step, web | ≤ 8 ms | debug sub-step timer |
 | One battle, 60 units, native | ≤ 5 ms | soak micro-bench |
-| Galaxy map / battle viewer, web | 60 fps (54 stars, 200 fleets / 400 VFX primitives) | perf overlay |
+| Galaxy map, web (CPU throttled 4x) | 60 fps (54 stars, 200 fleets) | perf overlay |
+| Battle viewer, web (CPU throttled 4x) | ≥ 30 fps (400 VFX primitives) | perf overlay |
+| Initial web download | < 25 MB (`.pck` + `.wasm` + audio) | `export_web.ps1` size report |
 | Save / load, web | ≤ 300 / 500 ms; file ≤ 1 MB pre-gzip | Session timings |
 | Undo (restore checkpoint + ≤ 9 re-applies) at T150 | ≤ 80 ms native, ≤ 200 ms web; ≤ 6 checkpoints held | `tools/perf/undo_bench.gd` (from P05) |
 
-Timing is never asserted in the gated GUT suite; the soak and probe tools fail their own runs at > 2x budget. The **reference laptop** is named by the owner before P11 (H9).
+Timing is never asserted in the gated GUT suite; the soak and probe tools fail their own runs at > 2x budget. There is no named reference machine (BRIEF "Performance target", owner: max compatibility): web numbers are the low-end target (Compatibility renderer / WebGL 2, single-threaded, Chrome/Firefox/Edge/Safari desktop, ~2018 integrated-graphics laptop, 4 GB RAM), measured locally in Chrome with the CPU throttled 4x. Galaxy map 60 fps, battle viewer ≥ 30 fps, initial web download < 25 MB, minimum window 1280x720 with UI scale, mouse-only playable.
 
 ---
 
@@ -362,7 +364,7 @@ Each phase ends **exported to web, captured, playable or testable**, all prior t
 
 **P10 — Balance gate**: data-only tuning until `run_soak --design balanced280` and `--probes` PASS; Seat-the-Swans report reviewed. No code changes except bug fixes.
 
-**P11 — Web hardening and human playtests**: reference laptop perf (H9), size check (`.pck` ≤ 15 MB with licensed audio, zip ≤ 25 MB), copy-coverage failure on missing keys, 5 recorded playtests against GDD §17.4 H1-H10, owner trademark check on title/faction names, release.
+**P11 — Web hardening and human playtests**: low-end target perf (H9, CPU throttled 4x), size check (`.pck` ≤ 15 MB with licensed audio, zip ≤ 25 MB), copy-coverage failure on missing keys, 5 recorded playtests against GDD §17.4 H1-H10, owner trademark check on title/faction names, release.
 
 STRETCH phases after P11, one per GDD §18 item.
 
