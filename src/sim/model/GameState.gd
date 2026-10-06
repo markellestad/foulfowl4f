@@ -4,11 +4,16 @@ extends RefCounted
 var version: int = 1
 var settings: GameSettings = null
 var turn: int = 1
+var turn_cap: int = 200
 var next_ids: Dictionary = {}
 var systems: Array[StarSystem] = []
 var planets: Array[Planet] = []
 var monster_spawns: Array[Dictionary] = []
 var gen_min_sep: int = 0
+var empires: Array[Empire] = []
+var colonies: Dictionary = {}
+var report: TurnReport = null
+var cmd_log: Array[Dictionary] = []
 
 func alloc_id(kind: String) -> int:
 	var cur: int = int(next_ids.get(kind, 0))
@@ -40,15 +45,32 @@ func to_dict() -> Dictionary:
 	for k in next_ids.keys():
 		n_ids[str(k)] = int(next_ids[k])
 
+	var emp_arr: Array = []
+	for e in empires:
+		emp_arr.append(e.to_dict())
+
+	var col_dict: Dictionary = {}
+	for cid in Ids.sorted_keys(colonies):
+		col_dict[str(cid)] = colonies[cid].to_dict()
+
+	var cmds: Array = []
+	for c in cmd_log:
+		cmds.append(c.duplicate(true))
+
 	return {
 		"version": version,
 		"settings": settings.to_dict() if settings != null else {},
 		"turn": turn,
+		"turn_cap": turn_cap,
 		"next_ids": n_ids,
 		"systems": sys_arr,
 		"planets": plan_arr,
 		"monster_spawns": spawns,
-		"gen_min_sep": gen_min_sep
+		"gen_min_sep": gen_min_sep,
+		"empires": emp_arr,
+		"colonies": col_dict,
+		"report": report.to_dict() if report != null else null,
+		"cmd_log": cmds
 	}
 
 static func from_dict(d: Dictionary) -> GameState:
@@ -60,6 +82,7 @@ static func from_dict(d: Dictionary) -> GameState:
 	else:
 		gs.settings = (GameSettings as Variant).call(&"new")
 	gs.turn = int(d.get("turn", 1))
+	gs.turn_cap = int(d.get("turn_cap", 200))
 	gs.gen_min_sep = int(d.get("gen_min_sep", 0))
 
 	var raw_nids: Dictionary = d.get("next_ids", {})
@@ -87,5 +110,29 @@ static func from_dict(d: Dictionary) -> GameState:
 				"kind": str(m_data.get("kind", "")),
 				"system_id": int(m_data.get("system_id", -1))
 			})
+
+	gs.empires.clear()
+	var raw_emp: Array = d.get("empires", [])
+	for e_data in raw_emp:
+		if e_data is Dictionary:
+			gs.empires.append(Empire.from_dict(e_data))
+
+	gs.colonies.clear()
+	var raw_cols: Dictionary = d.get("colonies", {})
+	for k in raw_cols.keys():
+		var cid: int = int(k)
+		if raw_cols[k] is Dictionary:
+			gs.colonies[cid] = Colony.from_dict(raw_cols[k])
+
+	if d.has("report") and d["report"] is Dictionary:
+		gs.report = TurnReport.from_dict(d["report"])
+	else:
+		gs.report = null
+
+	gs.cmd_log.clear()
+	var raw_cmds: Array = d.get("cmd_log", [])
+	for c in raw_cmds:
+		if c is Dictionary:
+			gs.cmd_log.append((c as Dictionary).duplicate(true))
 
 	return gs

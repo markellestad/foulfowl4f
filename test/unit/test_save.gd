@@ -4,6 +4,7 @@ func _build_sample_state() -> GameState:
 	var gs: GameState = GameState.new()
 	gs.version = 1
 	gs.turn = 5
+	gs.turn_cap = 200
 	gs.gen_min_sep = 45
 	gs.settings = GameSettings.new()
 	gs.settings.preset = "evening_standard"
@@ -56,6 +57,44 @@ func _build_sample_state() -> GameState:
 		"system_id": 0
 	})
 
+	var emp: Empire = Empire.new()
+	emp.id = 0
+	emp.race = "pheasants"
+	emp.traits = ["talon_adepts", "flush"]
+	emp.treasury = 100
+	emp.capital_colony_id = 0
+	emp.tech.known = ["start", "feed_hall"]
+	var tm: TimedMod = TimedMod.new()
+	tm.source_key = "event_bonus"
+	tm.effects = [{"stat": "growth_pct", "op": "pct", "value": 10}]
+	tm.until_turn = 10
+	emp.timed_mods.append(tm)
+	gs.empires.append(emp)
+
+	var col: Colony = Colony.new()
+	col.id = 0
+	col.planet_id = 0
+	col.owner = 0
+	col.species = "pheasants"
+	col.pop_milli = 8000
+	col.farmers = 3
+	col.workers = 3
+	col.scientists = 2
+	col.preset = "capital"
+	col.buildings = ["grand_nest", "the_yard"]
+	var qi: QueueItem = QueueItem.new()
+	qi.kind = "building"
+	qi.ref_id = "feed_hall"
+	qi.count = 1
+	qi.added_by = "player"
+	col.queue.append(qi)
+	gs.colonies[0] = col
+
+	var rep: TurnReport = TurnReport.new()
+	rep.turn = 5
+	rep.add_entry("production", "notify.building_done", {"building": "the_yard", "place": "Gaia Prime"}, "colony", 0)
+	gs.report = rep
+
 	return gs
 
 func test_save_round_trip() -> void:
@@ -86,6 +125,17 @@ func test_save_round_trip() -> void:
 	assert_eq(loaded.next_ids.get("fleet"), 12)
 	assert_eq(loaded.next_ids.get("colony"), 4)
 	assert_eq(loaded.next_ids.get("design"), 8)
+
+	# Empires and colonies round trip
+	assert_eq(loaded.empires.size(), 1)
+	assert_eq(loaded.empires[0].race, "pheasants")
+	assert_true(loaded.colonies.has(0))
+	var loaded_col: Colony = loaded.colonies[0]
+	assert_eq(loaded_col.species, "pheasants")
+	assert_eq(loaded_col.queue.size(), 1)
+	assert_eq(loaded_col.queue[0].ref_id, "feed_hall")
+	assert_not_null(loaded.report)
+	assert_eq(loaded.report.entries.size(), 1)
 
 	# State hash equal
 	var hash_orig: int = StateHash.of_value(gs.to_dict())

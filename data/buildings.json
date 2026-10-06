@@ -1,0 +1,283 @@
+{
+  "rows": {
+    "grand_nest": {
+      "tech": "start",
+      "pp": 300,
+      "upkeep": 0,
+      "effects": [
+        { "stat": "food_flat", "op": "add", "value": 3 },
+        { "stat": "industry_flat", "op": "add", "value": 5 },
+        { "stat": "research_flat", "op": "add", "value": 3 },
+        { "stat": "credits_flat", "op": "add", "value": 5 },
+        { "stat": "scan_add", "op": "add", "value": 2 }
+      ],
+      "flags": [],
+      "capital_only": true,
+      "buildable": false,
+      "counts_as_yard": true
+    },
+    "the_yard": {
+      "tech": "start",
+      "pp": 60,
+      "upkeep": 1,
+      "effects": [],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": true
+    },
+    "boot_barracks": {
+      "tech": "start",
+      "pp": 40,
+      "upkeep": 1,
+      "effects": [],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "feed_hall": {
+      "tech": "better_feed",
+      "pp": 60,
+      "upkeep": 1,
+      "effects": [
+        { "stat": "food_flat", "op": "add", "value": 2 }
+      ],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "second_shift_hall": {
+      "tech": "second_shift",
+      "pp": 60,
+      "upkeep": 1,
+      "effects": [
+        { "stat": "industry_per_worker", "op": "add", "value": 1 },
+        { "stat": "industry_flat", "op": "add", "value": 3 }
+      ],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "research_roost": {
+      "tech": "research_roost",
+      "pp": 60,
+      "upkeep": 1,
+      "effects": [
+        { "stat": "research_per_scientist", "op": "add", "value": 1 },
+        { "stat": "research_flat", "op": "add", "value": 3 }
+      ],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "horizon_perch": {
+      "tech": "horizon_perch",
+      "pp": 80,
+      "upkeep": 1,
+      "effects": [],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "colony_mantle": {
+      "tech": "colony_mantle",
+      "pp": 100,
+      "upkeep": 2,
+      "effects": [],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "richer_dirt": {
+      "tech": "richer_dirt",
+      "pp": 80,
+      "upkeep": 1,
+      "effects": [
+        { "stat": "food_per_farmer", "op": "add", "value": 1 }
+      ],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "second_clutch": {
+      "tech": "molt_management",
+      "pp": 100,
+      "upkeep": 2,
+      "effects": [
+        { "stat": "growth_pct", "op": "pct", "value": 50 }
+      ],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "tireless_picks": {
+      "tech": "automated_incubators",
+      "pp": 100,
+      "upkeep": 2,
+      "effects": [
+        { "stat": "industry_per_worker", "op": "add", "value": 1 },
+        { "stat": "industry_flat", "op": "add", "value": 5 }
+      ],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "loud_abacus": {
+      "tech": "loud_abacus",
+      "pp": 120,
+      "upkeep": 2,
+      "effects": [
+        { "stat": "research_per_scientist", "op": "add", "value": 1 },
+        { "stat": "research_flat", "op": "add", "value": 5 }
+      ],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "more_perch": {
+      "tech": "more_perch",
+      "pp": 100,
+      "upkeep": 1,
+      "effects": [
+        { "stat": "pop_per_size", "op": "add", "value": 1 }
+      ],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "talon_batteries": {
+      "tech": "talon_batteries",
+      "pp": 120,
+      "upkeep": 2,
+      "effects": [],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "seed_exchange": {
+      "tech": "seed_exchange",
+      "pp": 150,
+      "upkeep": 0,
+      "effects": [
+        { "stat": "taxes_pct", "op": "pct", "value": 50 }
+      ],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "gravity_manners": {
+      "tech": "gravity_manners",
+      "pp": 150,
+      "upkeep": 2,
+      "effects": [],
+      "flags": ["gravity_manners"],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "night_lab": {
+      "tech": "night_lab",
+      "pp": 150,
+      "upkeep": 3,
+      "effects": [
+        { "stat": "research_flat", "op": "add", "value": 10 }
+      ],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "climate_lever": {
+      "tech": "climate_lever",
+      "pp": 150,
+      "upkeep": 2,
+      "effects": [
+        { "stat": "food_per_farmer", "op": "add", "value": 1 }
+      ],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "ugly_perch": {
+      "tech": "ugly_perch",
+      "pp": 250,
+      "upkeep": 3,
+      "effects": [
+        { "stat": "ship_cost_pct", "op": "pct", "value": -10 }
+      ],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "flock_brain": {
+      "tech": "flock_brain",
+      "pp": 200,
+      "upkeep": 3,
+      "effects": [
+        { "stat": "research_per_scientist", "op": "add", "value": 2 }
+      ],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "storm_mantle": {
+      "tech": "storm_mantle",
+      "pp": 200,
+      "upkeep": 3,
+      "effects": [],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "deep_scratch": {
+      "tech": "deep_scratch",
+      "pp": 200,
+      "upkeep": 3,
+      "effects": [
+        { "stat": "industry_per_worker", "op": "add", "value": 2 },
+        { "stat": "industry_flat", "op": "add", "value": 10 }
+      ],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "roost_gate": {
+      "tech": "roost_lanes",
+      "pp": 300,
+      "upkeep": 4,
+      "effects": [],
+      "flags": [],
+      "capital_only": false,
+      "buildable": true,
+      "counts_as_yard": false
+    },
+    "departure_roost": {
+      "tech": "exodus_keys",
+      "pp": 3000,
+      "upkeep": 0,
+      "effects": [],
+      "flags": [],
+      "capital_only": true,
+      "buildable": true,
+      "counts_as_yard": false
+    }
+  }
+}

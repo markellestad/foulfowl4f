@@ -1,0 +1,99 @@
+{
+  "rows": {
+    "capital": {
+      "farm_first": false,
+      "workers": 1,
+      "scientists": 1,
+      "build": [
+        "feed_hall",
+        "second_shift_hall",
+        "research_roost",
+        "tireless_picks",
+        "loud_abacus",
+        "more_perch",
+        "deep_scratch",
+        "flock_brain"
+      ],
+      "filler": "trade_goods",
+      "auto": true
+    },
+    "industry": {
+      "farm_first": false,
+      "workers": 3,
+      "scientists": 1,
+      "build": [
+        "second_shift_hall",
+        "tireless_picks",
+        "deep_scratch",
+        "the_yard",
+        "more_perch"
+      ],
+      "filler": "trade_goods",
+      "auto": true
+    },
+    "research": {
+      "farm_first": false,
+      "workers": 1,
+      "scientists": 3,
+      "build": [
+        "research_roost",
+        "loud_abacus",
+        "night_lab",
+        "flock_brain",
+        "more_perch"
+      ],
+      "filler": "trade_goods",
+      "auto": true
+    },
+    "breadbasket": {
+      "farm_first": true,
+      "workers": 1,
+      "scientists": 1,
+      "build": [
+        "feed_hall",
+        "richer_dirt",
+        "climate_lever",
+        "second_clutch",
+        "more_perch"
+      ],
+      "filler": "housing",
+      "auto": true
+    },
+    "frontier": {
+      "farm_first": false,
+      "workers": 1,
+      "scientists": 1,
+      "build": [
+        "feed_hall",
+        "boot_barracks",
+        "second_shift_hall",
+        "research_roost"
+      ],
+      "filler": "housing",
+      "auto": true
+    },
+    "fortress": {
+      "farm_first": false,
+      "workers": 2,
+      "scientists": 1,
+      "build": [
+        "boot_barracks",
+        "horizon_perch",
+        "colony_mantle",
+        "talon_batteries",
+        "ugly_perch",
+        "storm_mantle"
+      ],
+      "filler": "trade_goods",
+      "auto": true
+    },
+    "manual": {
+      "farm_first": false,
+      "workers": 1,
+      "scientists": 1,
+      "build": [],
+      "filler": "trade_goods",
+      "auto": false
+    }
+  }
+}
