@@ -22,6 +22,15 @@ func clear_all() -> void:
 	queue_redraw()
 
 func add_shot(from_pos: Vector2, to_pos: Vector2, band: String) -> void:
+	var dir: Vector2 = (to_pos - from_pos).normalized()
+	# Muzzle spark/streak at origin
+	sparks.append({
+		"pos": from_pos + dir * 4.0,
+		"vel": dir * randf_range(30.0, 70.0),
+		"ttl": 0.15,
+		"color": Color(1.0, 0.95, 0.6)
+	})
+
 	match band:
 		"talon":
 			beams.append({
@@ -42,7 +51,6 @@ func add_shot(from_pos: Vector2, to_pos: Vector2, band: String) -> void:
 				"band": "beak"
 			})
 		_: # horizon or other
-			var dir: Vector2 = (to_pos - from_pos).normalized()
 			missiles.append({
 				"pos": from_pos,
 				"dir": dir,
@@ -63,10 +71,11 @@ func add_hit(pos: Vector2, was_shield: bool, shooter_dir: Vector2) -> void:
 			"ttl": 0.3
 		})
 
-	var spark_count: int = 4 if reduce_motion else 8
+	# Burst with flecks at impact
+	var spark_count: int = 5 if reduce_motion else 9
 	for i in range(spark_count):
-		var ang: float = randf() * TAU
-		var spd: float = randf_range(40.0, 120.0)
+		var ang: float = (-shooter_dir).angle() + randf_range(-1.4, 1.4)
+		var spd: float = randf_range(60.0, 160.0)
 		sparks.append({
 			"pos": pos,
 			"vel": Vector2(cos(ang), sin(ang)) * spd,
@@ -89,7 +98,7 @@ func add_swat_flash(pos: Vector2) -> void:
 	flashes.append({
 		"pos": pos,
 		"radius": 14.0,
-		"ttl": 0.2
+		"ttl": 0.22
 	})
 	queue_redraw()
 
@@ -179,23 +188,34 @@ func _process(delta: float) -> void:
 		queue_redraw()
 
 func _draw() -> void:
-	# 1. Beams
+	# 1. Beams with muzzle spark
 	for b in beams:
 		var c: Color = b["color"]
 		c.a *= clampf(b["ttl"] / 0.25, 0.0, 1.0)
 		draw_line(b["from"], b["to"], c, b["width"])
+		# Directional streak at muzzle
+		var b_dir: Vector2 = (b["to"] - b["from"]).normalized()
+		draw_line(b["from"], b["from"] + b_dir * 14.0, Color(1.0, 1.0, 0.8, c.a), b["width"] + 1.5)
 
-	# 2. Missiles (darts with trail)
+	# 2. Missiles (darts with directional arrowhead, no round blob)
 	for m in missiles:
 		var p: Vector2 = m["pos"]
 		var d: Vector2 = m["dir"]
-		draw_line(p - d * 16.0, p, Color(0.4, 0.8, 1.0, 0.9), 2.5)
-		draw_circle(p, 3.0, Color(1.0, 1.0, 1.0, 0.95))
+		draw_line(p - d * 18.0, p, Color(0.4, 0.8, 1.0, 0.9), 2.5)
+		var left_fin: Vector2 = p - d * 6.0 + Vector2(-d.y, d.x) * 3.0
+		var right_fin: Vector2 = p - d * 6.0 - Vector2(-d.y, d.x) * 3.0
+		var arrow := PackedVector2Array([p + d * 2.0, left_fin, p - d * 2.0, right_fin])
+		draw_colored_polygon(arrow, Color(1.0, 1.0, 1.0, 0.95))
 
-	# 3. Flashes (swat intercepts)
+	# 3. Flashes (swat intercepts: starburst flecks, no round blob)
 	for fl in flashes:
-		var a: float = clampf(fl["ttl"] / 0.2, 0.0, 1.0)
-		draw_circle(fl["pos"], fl["radius"], Color(1.0, 0.9, 0.3, a * 0.8))
+		var a: float = clampf(fl["ttl"] / 0.22, 0.0, 1.0)
+		var p: Vector2 = fl["pos"]
+		var c := Color(1.0, 0.9, 0.3, a * 0.95)
+		draw_line(p - Vector2(10, 0), p + Vector2(10, 0), c, 1.5)
+		draw_line(p - Vector2(0, 10), p + Vector2(0, 10), c, 1.5)
+		draw_line(p - Vector2(6, 6), p + Vector2(6, 6), c, 1.2)
+		draw_line(p - Vector2(-6, 6), p + Vector2(6, -6), c, 1.2)
 
 	# 4. Shield arc segment (~60 deg facing shot)
 	for sh in shields:
@@ -207,14 +227,16 @@ func _draw() -> void:
 		var rad: float = sh["radius"]
 		for step_i in range(-3, 4):
 			var ang: float = base_ang + deg_to_rad(float(step_i) * 10.0)
-			# Faceted jagged arc
 			var r_jitter: float = rad + (float(abs(step_i) % 2) * 2.0)
 			arc_pts.append(center + Vector2(cos(ang), sin(ang)) * r_jitter)
 		draw_polyline(arc_pts, Color(0.3, 0.8, 1.0, a), 2.5)
 
-	# 5. Sparks
+	# 5. Sparks / flecks (directional fleck lines, no round blob)
 	for s in sparks:
-		draw_circle(s["pos"], 1.5, s["color"])
+		var sp: Vector2 = s["pos"]
+		var vel: Vector2 = s["vel"]
+		var v_dir: Vector2 = vel.normalized() if vel.length_squared() > 0.0 else Vector2.RIGHT
+		draw_line(sp, sp + v_dir * 3.5, s["color"], 1.2)
 
 	# 6. Feathers
 	for f in feathers:

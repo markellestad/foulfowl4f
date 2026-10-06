@@ -8,6 +8,9 @@ var left_glyphs: Dictionary = {} # uid -> Node2D
 var right_glyphs: Dictionary = {} # uid -> Node2D
 var vfx = null
 
+var left_header: Label = null
+var right_header: Label = null
+
 var current_distance: int = 10
 var stage_width: float = 1280.0
 var stage_height: float = 720.0
@@ -15,6 +18,31 @@ var stage_height: float = 720.0
 func _init() -> void:
 	vfx = VfxLayerClass.new()
 	add_child(vfx)
+
+	left_header = Label.new()
+	left_header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	left_header.add_theme_font_size_override("font_size", 15)
+	add_child(left_header)
+
+	right_header = Label.new()
+	right_header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	right_header.add_theme_font_size_override("font_size", 15)
+	add_child(right_header)
+
+func set_headers(left_text: String, col_left: Color, right_text: String, col_right: Color) -> void:
+	left_header.text = left_text
+	left_header.add_theme_color_override("font_color", col_left)
+	right_header.text = right_text
+	right_header.add_theme_color_override("font_color", col_right)
+	update_header_positions()
+
+func update_header_positions() -> void:
+	var center_x: float = stage_width * 0.5
+	var offset: float = 60.0 + (float(current_distance) * 28.0)
+	left_header.size = Vector2(260, 24)
+	left_header.position = Vector2(center_x - offset - 130.0, 95.0)
+	right_header.size = Vector2(260, 24)
+	right_header.position = Vector2(center_x + offset - 130.0, 95.0)
 
 func setup_parties(left_units: Array, right_units: Array, col_left: Color, col_right: Color) -> void:
 	for g in left_glyphs.values():
@@ -43,6 +71,7 @@ func set_distance(d: int) -> void:
 	update_positions()
 
 func update_positions() -> void:
+	update_header_positions()
 	var center_x: float = stage_width * 0.5
 	var offset: float = 60.0 + (float(current_distance) * 28.0)
 	var left_x: float = center_x - offset

@@ -11,13 +11,22 @@ var shield: int = 0
 var facing_left: bool = false
 var is_destroyed: bool = false
 var color: Color = Color(0.85, 0.85, 0.9)
+var _name_lbl: Label = null
 
 func _init() -> void:
-	pass
+	_name_lbl = Label.new()
+	_name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_name_lbl.position = Vector2(-60, -28)
+	_name_lbl.size = Vector2(120, 16)
+	_name_lbl.add_theme_font_size_override("font_size", 11)
+	_name_lbl.add_theme_color_override("font_color", Color(0.9, 0.9, 0.95, 0.9))
+	add_child(_name_lbl)
 
 func setup(u_data: Dictionary, p_color: Color, p_facing_left: bool = false) -> void:
 	unit_uid = int(u_data.get("uid", -1))
 	unit_name = str(u_data.get("name_key", "Ship"))
+	if _name_lbl != null:
+		_name_lbl.text = unit_name
 	hull = str(u_data.get("hull_id", "small"))
 	hp = int(u_data.get("hp", 10))
 	hp_max = maxi(1, int(u_data.get("hp_max", 10)))
@@ -25,6 +34,8 @@ func setup(u_data: Dictionary, p_color: Color, p_facing_left: bool = false) -> v
 	color = p_color
 	facing_left = p_facing_left
 	is_destroyed = (hp <= 0)
+	if _name_lbl != null and is_destroyed:
+		_name_lbl.modulate.a = 0.3
 	queue_redraw()
 
 func set_hp(new_hp: int) -> void:
@@ -32,12 +43,15 @@ func set_hp(new_hp: int) -> void:
 	if hp <= 0:
 		hp = 0
 		is_destroyed = true
+		if _name_lbl != null:
+			_name_lbl.modulate.a = 0.3
 	queue_redraw()
 
 func _draw() -> void:
 	if is_destroyed:
-		# Draw dim wreck marker
-		draw_circle(Vector2.ZERO, 6.0, Color(0.3, 0.3, 0.3, 0.4))
+		# Draw dim wreck marker (crossed debris lines, no round blob)
+		draw_line(Vector2(-5, -5), Vector2(5, 5), Color(0.4, 0.4, 0.4, 0.4), 1.5)
+		draw_line(Vector2(-5, 5), Vector2(5, -5), Color(0.4, 0.4, 0.4, 0.4), 1.5)
 		return
 
 	var base_pts: PackedVector2Array = BirdShapes.side(race, hull)
