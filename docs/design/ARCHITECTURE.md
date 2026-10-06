@@ -1,4 +1,4 @@
-# Foul Fowl 4X — Technical Architecture
+# Foul Fowl: Fly, Flock, Forage, Fight — Technical Architecture
 
 Revision 4 (red team round 2), 2026-10-06. Engine: Godot 4.6.2, GDScript, static typing. Companions: `GDD.md` (what), `BRIEF.md` (why, incl. open source and licensing), `COPY_PLAN.md` (strings), `docs/engineering/PLAN.md` (the build plan and phase briefs).
 

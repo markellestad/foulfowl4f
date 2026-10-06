@@ -1,4 +1,4 @@
-# Foul Fowl 4X — Engineering Plan
+# Foul Fowl: Fly, Flock, Forage, Fight — Engineering Plan
 
 Revision 1, 2026-10-06. Written for the builder (agy: Gemini 3.8 Flash, no memory between runs, one git worktree and one PR per phase) and the orchestrator who reviews and merges each PR.
 

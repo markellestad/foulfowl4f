@@ -12,4 +12,4 @@ Packs used / referenced:
 
 ## Music: Developer Original Soundtrack
 All music tracks are original works by the developer / owner.
-All rights reserved by the owner, redistributed in this repository by permission of the owner for Foul Fowl 4X.
+All rights reserved by the owner, redistributed in this repository by permission of the owner for Foul Fowl: Fly, Flock, Forage, Fight.

@@ -1,4 +1,4 @@
-# Foul Fowl 4X
+# Foul Fowl: Fly, Flock, Forage, Fight
 
 > "Foul Fowl 4X?
 > Ducks.
