@@ -1,0 +1,42 @@
+{
+  "source_root_default": "",
+  "source_root_env": "FOULFOWL_SOUND_ASSETS",
+  "items": [
+    {
+      "slot": "ui_click",
+      "source": "SCI-FI_UI_SFX_PACK/Clicks/Click.wav",
+      "target": "assets/audio/licensed/ui_click.ogg",
+      "kind": "sfx"
+    },
+    {
+      "slot": "ui_confirm",
+      "source": "SCI-FI_UI_SFX_PACK/Clicks/Click_Pitched_Up.wav",
+      "target": "assets/audio/licensed/ui_confirm.ogg",
+      "kind": "sfx"
+    },
+    {
+      "slot": "ui_back",
+      "source": "SCI-FI_UI_SFX_PACK/Clicks/Click_Pitched_Down.wav",
+      "target": "assets/audio/licensed/ui_back.ogg",
+      "kind": "sfx"
+    },
+    {
+      "slot": "ui_error",
+      "source": "SCI-FI_UI_SFX_PACK/Clicks/Click_Low.wav",
+      "target": "assets/audio/licensed/ui_error.ogg",
+      "kind": "sfx"
+    },
+    {
+      "slot": "ui_open",
+      "source": "SCI-FI_UI_SFX_PACK/FX Sounds/Air_FX.wav",
+      "target": "assets/audio/licensed/ui_open.ogg",
+      "kind": "sfx"
+    },
+    {
+      "slot": "ui_close",
+      "source": "SCI-FI_UI_SFX_PACK/FX Sounds/Air_FX_Pitched_Down.wav",
+      "target": "assets/audio/licensed/ui_close.ogg",
+      "kind": "sfx"
+    }
+  ]
+}

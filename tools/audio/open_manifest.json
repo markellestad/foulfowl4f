@@ -1,0 +1,49 @@
+{
+  "source_root_default": "",
+  "source_root_env": "FOULFOWL_SOUND_ASSETS",
+  "items": [
+    {
+      "slot": "ui_click",
+      "source": "kenney_interface-sounds/Audio/click_001.ogg",
+      "target": "assets/audio/open/sfx/ui_click.ogg",
+      "kind": "sfx"
+    },
+    {
+      "slot": "ui_back",
+      "source": "kenney_interface-sounds/Audio/back_001.ogg",
+      "target": "assets/audio/open/sfx/ui_back.ogg",
+      "kind": "sfx"
+    },
+    {
+      "slot": "ui_confirm",
+      "source": "kenney_interface-sounds/Audio/confirmation_001.ogg",
+      "target": "assets/audio/open/sfx/ui_confirm.ogg",
+      "kind": "sfx"
+    },
+    {
+      "slot": "ui_error",
+      "source": "kenney_interface-sounds/Audio/error_001.ogg",
+      "target": "assets/audio/open/sfx/ui_error.ogg",
+      "kind": "sfx"
+    },
+    {
+      "slot": "ui_open",
+      "source": "kenney_interface-sounds/Audio/open_001.ogg",
+      "target": "assets/audio/open/sfx/ui_open.ogg",
+      "kind": "sfx"
+    },
+    {
+      "slot": "ui_close",
+      "source": "kenney_interface-sounds/Audio/close_001.ogg",
+      "target": "assets/audio/open/sfx/ui_close.ogg",
+      "kind": "sfx"
+    },
+    {
+      "slot": "music_menu",
+      "source": "IESunoMusic/empire/Unknown-Untitled-293cf0ca-c4c3-4b65-a4e0-181154d1a885.wav",
+      "target": "assets/audio/open/music/music_menu.ogg",
+      "kind": "music",
+      "trim_s": 120
+    }
+  ]
+}
