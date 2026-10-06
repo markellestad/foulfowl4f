@@ -4,6 +4,7 @@ var _db: ContentDB
 
 func before_all() -> void:
 	_db = ContentDB.load_from("res://data")
+	Copy.load_file("res://data/copy/en.json")
 
 func _setup_state(race_id: String = "test_neutral", traits: Array[String] = []) -> Dictionary:
 	var gs: GameState = GameState.new()
@@ -245,3 +246,57 @@ func test_piscivore_and_gravity() -> void:
 		if l.get("source_key") == "gravity":
 			has_grav_after = true
 	assert_false(has_grav_after, "gravity_manners removes gravity penalty")
+ 
+func test_growth_formatter_invariants() -> void:
+	# Blockaded
+	assert_eq(Growth.format_growth(8000, 12000, 316, true), "Blockaded")
+	# Pop at or above max
+	assert_eq(Growth.format_growth(12000, 12000, 316, false), "Full")
+	assert_eq(Growth.format_growth(12500, 12000, 316, false), "Full")
+	# Zero or negative growth
+	assert_eq(Growth.format_growth(8000, 12000, 0, false), "No growth")
+	assert_eq(Growth.format_growth(8000, 12000, -100, false), "No growth")
+	# 8000 pop, 12000 max, 316 growth: next threshold 9000, needed 1000, ceil_div(1000, 316) = 4
+	assert_eq(Growth.format_growth(8000, 12000, 316, false), "+1 pop in 4 turns")
+	# 8800 pop, 12000 max, 316 growth: needed 200, ceil_div(200, 316) = 1
+	assert_eq(Growth.format_growth(8800, 12000, 316, false), "+1 pop in 1 turn")
+	# 8999 pop, 12000 max, 1 growth: needed 1, ceil_div(1, 1) = 1
+	assert_eq(Growth.format_growth(8999, 12000, 1, false), "+1 pop in 1 turn")
+	# Exactly at pop unit threshold 5000 / 10000, growth 500: needed 1000 -> 2 turns
+	assert_eq(Growth.format_growth(5000, 10000, 500, false), "+1 pop in 2 turns")
+
+func test_breakdown_source_labels_never_empty() -> void:
+	var ctx: Dictionary = _setup_state("pheasants", ["good_industry"])
+	var gs: GameState = ctx["gs"]
+	var col: Colony = ctx["colony"]
+	col.buildings.append("grand_nest")
+	col.workers = 4
+
+	var yields: Dictionary = Economy.colony_output(_db, gs, col.id)
+	var ind_res: ModResult = yields["industry"]
+	assert_true(ind_res != null, "Industry ModResult exists")
+	assert_true(ind_res.lines.size() >= 2, "Industry has multiple lines (base, trait/building)")
+
+	for l in ind_res.lines:
+		var src_key: String = str(l.get("source_key", l.get("source", "")))
+		assert_false(src_key.is_empty(), "Line must have a non-empty source_key or source")
+		var formatted: String = StatTooltip.format_source(src_key)
+		assert_false(formatted.is_empty(), "format_source must return non-empty label for %s" % src_key)
+		assert_ne(formatted, "Unknown", "format_source should resolve known key %s" % src_key)
+
+	# Verify StatTooltip.build produces UI labels that are all non-empty
+	var tooltip_ctl: Control = StatTooltip.build("Industry Breakdown", ind_res)
+	assert_true(tooltip_ctl != null)
+	tooltip_ctl.free()
+	var text_rep: String = StatTooltip.text_for("Industry Breakdown", ind_res)
+	assert_false(text_rep.is_empty())
+	assert_false(text_rep.contains(": :"), "No double colons or empty label in text representation")
+
+	# Test individual format_source resolution for traits, buildings, presets, jobs
+	assert_eq(StatTooltip.format_source("workers"), "Workers")
+	assert_eq(StatTooltip.format_source("farmers"), "Farmers")
+	assert_eq(StatTooltip.format_source("scientists"), "Scientists")
+	assert_eq(StatTooltip.format_source("grand_nest"), "Grand Nest")
+	assert_eq(StatTooltip.format_source("good_industry"), "Good Industry")
+	assert_eq(StatTooltip.format_source("capital"), "Capital")
+

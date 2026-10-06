@@ -22,7 +22,7 @@ func next(ctx: TurnContext) -> bool:
 	for i in range(_cursor, end_idx):
 		var eid: int = int(_work_empires[i])
 		Governor.assign_jobs(ctx.db, ctx.gs, eid)
-		Governor.fill_queues(ctx.db, ctx.gs, eid)
+		Governor.fill_queues(ctx.db, ctx.gs, eid, ctx.report)
 
 	_cursor = end_idx
 	return _cursor >= _work_empires.size()

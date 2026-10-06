@@ -77,20 +77,24 @@ func _populate_entries(container: VBoxContainer) -> void:
 	var grouped: Dictionary = {
 		"production": [],
 		"colony": [],
+		"governor": [],
 		"finance": [],
 		"other": []
 	}
 
 	for entry in report.entries:
 		var kind: String = str(entry.get("kind", "other"))
+		if kind == "colonies":
+			kind = "colony"
 		if not grouped.has(kind):
 			kind = "other"
 		grouped[kind].append(entry)
 
-	var kind_order: Array[String] = ["production", "colony", "finance", "other"]
+	var kind_order: Array[String] = ["production", "colony", "governor", "finance", "other"]
 	var kind_titles: Dictionary = {
 		"production": Copy.t("ui.label.production"),
 		"colony": Copy.t("ui.label.colonies"),
+		"governor": Copy.t("ui.label.governor"),
 		"finance": Copy.t("ui.label.finance"),
 		"other": "General"
 	}
@@ -107,8 +111,8 @@ func _populate_entries(container: VBoxContainer) -> void:
 			var row := Ui.hbox(8)
 			row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-			var key: String = str(entry.get("key", ""))
-			var p: Dictionary = entry.get("params", {}) as Dictionary
+			var key: String = str(entry.get("key", entry.get("text_key", "")))
+			var p: Dictionary = entry.get("params", entry.get("args", {})) as Dictionary
 
 			# Format params if needed (e.g. building name)
 			var formatted_p: Dictionary = p.duplicate()
@@ -117,15 +121,36 @@ func _populate_entries(container: VBoxContainer) -> void:
 				var b_key: String = "building." + b_ref + ".name"
 				if Copy.has(b_key):
 					formatted_p["building"] = Copy.t(b_key)
+			if formatted_p.has("item"):
+				var item_ref: String = str(formatted_p["item"])
+				var b_key: String = "building." + item_ref + ".name"
+				var f_key: String = "filler." + item_ref + ".name"
+				if Copy.has(b_key):
+					formatted_p["item"] = Copy.t(b_key)
+				elif Copy.has(f_key):
+					formatted_p["item"] = Copy.t(f_key)
+
+			var t_kind: String = str(entry.get("target_kind", entry.get("target_type", "")))
+			var t_id: int = int(entry.get("target_id", -1))
+
+			if formatted_p.has("place") and Session.state != null and t_kind == "colony" and t_id >= 0 and Session.state.colonies.has(t_id):
+				var c_target: Colony = Session.state.colonies[t_id]
+				var pl_target: Planet = Session.state.planets[c_target.planet_id]
+				var sys_target: StarSystem = Session.state.systems[pl_target.system_id]
+				var s_name: String = ""
+				if sys_target.is_orn:
+					s_name = Copy.t("place.orn.name")
+				elif sys_target.name_id > 0:
+					s_name = Copy.t("star.name.%d" % sys_target.name_id)
+				else:
+					s_name = "Star %d" % sys_target.id
+				formatted_p["place"] = "%s - Orbit %d" % [s_name, pl_target.orbit + 1]
 
 			var msg: String = Copy.f(key, formatted_p, key)
 			var lbl := Ui.label("• " + msg)
 			lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			row.add_child(lbl)
-
-			var t_kind: String = str(entry.get("target_kind", ""))
-			var t_id: int = int(entry.get("target_id", -1))
 			if t_kind == "colony" and t_id != -1:
 				var btn_goto := Ui.button(Copy.t("ui.label.goto"), func() -> void:
 					_goto_colony(t_id)

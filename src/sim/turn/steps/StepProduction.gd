@@ -26,7 +26,7 @@ func next(ctx: TurnContext) -> bool:
 			var planet: Planet = ctx.gs.planets[col.planet_id]
 			ctx.report.add_entry("production", "notify.building_done", {
 				"building": str(b),
-				"place": "Star %d Orbit %d" % [planet.system_id, planet.orbit]
+				"place": "Star %d Orbit %d" % [planet.system_id, planet.orbit + 1]
 			}, "colony", cid)
 
 		var tg_cr: int = int(res.get("trade_goods_credits", 0))

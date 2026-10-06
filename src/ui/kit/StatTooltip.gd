@@ -2,13 +2,20 @@ class_name StatTooltip
 extends PanelContainer
 
 static func format_source(src: String) -> String:
-	var key: String = "ui.mod." + src
-	if Copy.has(key):
-		return Copy.t(key)
-	var b_key: String = "building." + src + ".name"
-	if Copy.has(b_key):
-		return Copy.t(b_key)
-	return src.capitalize()
+	if src.is_empty():
+		return Copy.t("ui.mod.base") if Copy.has("ui.mod.base") else "Base"
+	var keys: Array[String] = [
+		"ui.mod." + src,
+		"building." + src + ".name",
+		"trait." + src + ".name",
+		"ui.preset." + src,
+		"ui.label." + src,
+	]
+	for k in keys:
+		if Copy.has(k):
+			return Copy.t(k)
+	var cap: String = src.replace("_", " ").capitalize()
+	return cap if not cap.is_empty() else "Base"
 
 static func format_line(line: Dictionary) -> String:
 	var op: String = str(line.get("op", "add"))
@@ -53,7 +60,8 @@ static func build(title: String, mod_res: ModResult) -> Control:
 	if mod_res != null:
 		for l in mod_res.lines:
 			var row := Ui.hbox(12)
-			var src_name: String = format_source(str(l.get("source", "")))
+			var raw_src: String = str(l.get("source_key", l.get("source", "")))
+			var src_name: String = format_source(raw_src)
 			var val_str: String = format_line(l)
 
 			var l_src := Ui.label(src_name)
@@ -85,7 +93,8 @@ static func text_for(title: String, mod_res: ModResult) -> String:
 		return title
 	var lines: Array[String] = [title, "----------------"]
 	for l in mod_res.lines:
-		var src_name: String = format_source(str(l.get("source", "")))
+		var raw_src: String = str(l.get("source_key", l.get("source", "")))
+		var src_name: String = format_source(raw_src)
 		var val_str: String = format_line(l)
 		lines.append("%s: %s" % [src_name, val_str])
 	lines.append("----------------")

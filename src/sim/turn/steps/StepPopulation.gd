@@ -90,6 +90,12 @@ func next(ctx: TurnContext) -> bool:
 		if new_u > old_u:
 			# When pop units increase from growth, assign new pop to workers
 			col.workers += (new_u - old_u)
+			if col.owner == 0:
+				var planet: Planet = ctx.gs.planets[col.planet_id]
+				ctx.report.add_entry("colony", "notify.growth", {
+					"pop": str(new_u),
+					"place": "Star %d Orbit %d" % [planet.system_id, planet.orbit + 1]
+				}, "colony", cid)
 
 	_cursor = end_idx
 	return _cursor >= _work_colonies.size()

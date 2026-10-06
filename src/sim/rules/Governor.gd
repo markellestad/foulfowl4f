@@ -113,7 +113,7 @@ static func assign_jobs(db: ContentDB, gs: GameState, empire_id: int) -> void:
 			col.workers = 0
 			col.scientists = 0
 
-static func fill_queues(db: ContentDB, gs: GameState, empire_id: int) -> void:
+static func fill_queues(db: ContentDB, gs: GameState, empire_id: int, report: TurnReport = null) -> void:
 	var emp: Empire = gs.empires[empire_id]
 	var max_q: int = db.bal("queue_max")
 
@@ -157,6 +157,14 @@ static func fill_queues(db: ContentDB, gs: GameState, empire_id: int) -> void:
 			qi.why_key = "summary.why_queued.preset"
 			col.queue.append(qi)
 
+			if report != null and empire_id == 0:
+				var planet: Planet = gs.planets[col.planet_id]
+				report.add_entry("governor", "notify.governor_queued", {
+					"item": b_str,
+					"building": b_str,
+					"place": "Star %d Orbit %d" % [planet.system_id, planet.orbit + 1]
+				}, "colony", col.id)
+
 		if col.queue.is_empty():
 			var filler: String = str(pdef.get("filler", "trade_goods"))
 			var qi: QueueItem = QueueItem.new()
@@ -166,3 +174,10 @@ static func fill_queues(db: ContentDB, gs: GameState, empire_id: int) -> void:
 			qi.added_by = "governor"
 			qi.why_key = "summary.why_queued.preset"
 			col.queue.append(qi)
+
+			if report != null and empire_id == 0:
+				var planet: Planet = gs.planets[col.planet_id]
+				report.add_entry("governor", "notify.governor_queued", {
+					"item": filler,
+					"place": "Star %d Orbit %d" % [planet.system_id, planet.orbit + 1]
+				}, "colony", col.id)

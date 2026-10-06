@@ -40,8 +40,10 @@ static func _matches_filter(db: ContentDB, eff: Dictionary, climate: String, ban
 
 static func eval(db: ContentDB, gs: GameState, stat: String, base: int, ctx: Dictionary) -> ModResult:
 	var lines: Array[Dictionary] = []
+	var base_src: String = str(ctx.get("base_source", "base"))
 	lines.append({
-		"source_key": "base",
+		"source_key": base_src,
+		"source": base_src,
 		"op": "base",
 		"value": base
 	})
@@ -245,6 +247,10 @@ static func eval(db: ContentDB, gs: GameState, stat: String, base: int, ctx: Dic
 	var sum_pct: int = 0
 
 	for eff in effects_to_apply:
+		if not eff.has("source"):
+			eff["source"] = eff.get("source_key", "")
+		if not eff.has("source_key"):
+			eff["source_key"] = eff.get("source", "")
 		lines.append(eff)
 		var op: String = eff["op"]
 		var val: int = eff["value"]

@@ -100,17 +100,25 @@ static func colony_output(db: ContentDB, gs: GameState, colony_id: int) -> Dicti
 	}
 
 	var raw_food: int = colony.farmers * (jy["food_per_farmer"] as ModResult).value
-	var food_res: ModResult = Modifiers.eval(db, gs, "food", raw_food, ctx)
+	var f_ctx: Dictionary = ctx.duplicate()
+	f_ctx["base_source"] = "farmers"
+	var food_res: ModResult = Modifiers.eval(db, gs, "food", raw_food, f_ctx)
 
 	var raw_ind: int = colony.workers * (jy["pp_per_worker"] as ModResult).value
-	var ind_res: ModResult = Modifiers.eval(db, gs, "industry", raw_ind, ctx)
+	var ind_ctx: Dictionary = ctx.duplicate()
+	ind_ctx["base_source"] = "workers"
+	var ind_res: ModResult = Modifiers.eval(db, gs, "industry", raw_ind, ind_ctx)
 
 	var raw_res: int = colony.scientists * (jy["rp_per_scientist"] as ModResult).value
-	var res_res: ModResult = Modifiers.eval(db, gs, "research", raw_res, ctx)
+	var res_ctx: Dictionary = ctx.duplicate()
+	res_ctx["base_source"] = "scientists"
+	var res_res: ModResult = Modifiers.eval(db, gs, "research", raw_res, res_ctx)
 
 	var pop_u: int = colony.pop_units()
 	var raw_tax: int = pop_u * db.bal("tax_per_pop")
-	var tax_res: ModResult = Modifiers.eval(db, gs, "taxes", raw_tax, ctx)
+	var tax_ctx: Dictionary = ctx.duplicate()
+	tax_ctx["base_source"] = "pop"
+	var tax_res: ModResult = Modifiers.eval(db, gs, "taxes", raw_tax, tax_ctx)
 
 	var cred_res: ModResult = Modifiers.eval(db, gs, "credits", 0, ctx)
 

@@ -137,6 +137,16 @@ static func _cap_p02_turn_summary(router: UiRouter) -> void:
 	s.player_race = "pheasants"
 	s.seat_swans = true
 	Session.new_game(s)
+
+	var col: Colony = Session.state.colonies[0]
+	col.pop_milli = 8900
+	var qi := QueueItem.new()
+	qi.kind = "building"
+	qi.ref_id = "feed_hall"
+	qi.count = 1
+	col.queue.append(qi)
+	col.progress_pp = 55
+
 	Session.game.end_turn_headless()
 	router.show_screen(&"turn_summary", {"report": Session.state.report})
 

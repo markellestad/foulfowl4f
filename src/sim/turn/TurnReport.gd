@@ -8,8 +8,11 @@ func add_entry(kind: String, text_key: String, args: Dictionary = {}, target_typ
 	entries.append({
 		"kind": kind,
 		"text_key": text_key,
+		"key": text_key,
 		"args": args.duplicate(true),
+		"params": args.duplicate(true),
 		"target_type": target_type,
+		"target_kind": target_type,
 		"target_id": target_id
 	})
 

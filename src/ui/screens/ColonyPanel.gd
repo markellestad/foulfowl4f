@@ -248,8 +248,9 @@ func refresh() -> void:
 	var max_pop: int = Economy.max_pop_units(db, gs, col.id)
 	_pop_lbl.text = "%s: %d / %d" % [Copy.t("ui.label.pop"), col.pop_units(), max_pop]
 
+	var max_m: int = Economy.max_pop_milli(db, gs, col.id)
 	var growth_milli: int = Growth.calc_growth(db, gs, col.id)
-	_growth_lbl.text = "+%d / turn" % growth_milli
+	_growth_lbl.text = Growth.format_growth(col.pop_milli, max_m, growth_milli, col.blockaded)
 
 	_lock_check.set_pressed_no_signal(col.jobs_locked)
 	_lbl_farmers.text = "%s: %d" % [Copy.t("ui.label.farmers"), col.farmers]
