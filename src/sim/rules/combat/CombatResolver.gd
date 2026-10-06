@@ -94,10 +94,28 @@ static func resolve(input: CombatInput) -> BattleLog:
 	var next_missile_id: int = 1
 	var total_rounds: int = 8
 
+	# Evaluate retreat thresholds and escape rounds
+	var party_escape_round: Dictionary = {}
+	for p in parties:
+		party_escape_round[p.party_id] = 2
+		var enemy_p: CombatParty = null
+		for other in parties:
+			if other.party_id != p.party_id and other.empire_id != p.empire_id:
+				enemy_p = other
+				break
+		if enemy_p != null:
+			if Retreat.should_retreat(p, enemy_p):
+				p.retreating = true
+			var own_regret: bool = "instant_regret" in p.traits
+			var enemy_tractor: bool = ("tractor" in enemy_p.traits) or ("enemy_retreat_plus_2" in enemy_p.traits)
+			var enemy_flush: bool = ("flush" in enemy_p.traits) and enemy_p.is_first_battle_of_war
+			var enemy_no_exit: bool = ("no_exit_home" in enemy_p.traits) and enemy_p.is_colony_defense
+			party_escape_round[p.party_id] = Retreat.calc_escape_round(own_regret, enemy_tractor, enemy_flush, enemy_no_exit)
+
 	# Check early end before round 1 (e.g. only one side has armed ships)
 	var live_armed_parties_pre: Array[CombatParty] = []
 	for p in parties:
-		if p.has_live_armed():
+		if p.has_live_armed() and not p.escaped:
 			live_armed_parties_pre.append(p)
 	if live_armed_parties_pre.size() <= 1 and parties.size() >= 2:
 		# Unarmed side present vs armed side: battle will resolve in round 1
@@ -284,6 +302,8 @@ static func resolve(input: CombatInput) -> BattleLog:
 						continue # Launches in Step 4
 					if bool(mount.get("swat", false)) and swat_intercepted.has("%d_%d" % [shooter.uid, m_idx]):
 						continue # Already intercepted in Step 2
+					if p.retreating and not bool(mount.get("swat", false)):
+						continue # While retreating it moves toward 12 and fires only Swat mounts
 
 					# Find candidate targets
 					var candidates: Array[CombatUnit] = []
@@ -479,12 +499,27 @@ static func resolve(input: CombatInput) -> BattleLog:
 			else:
 				round_data["destroyed_uids"].append(u.uid)
 
+		# Retreat escapes and receipt
+		for p in parties:
+			if p.retreating and not p.escaped and round_num >= party_escape_round.get(p.party_id, 2):
+				var receipt: CombatUnit = Retreat.apply_receipt(p)
+				p.escaped = true
+				if receipt != null:
+					round_data["destroyed_uids"].append(receipt.uid)
+					log.receipt_lines.append({
+						"party_id": p.party_id,
+						"empire_id": p.empire_id,
+						"unit_uid": receipt.uid,
+						"name_key": receipt.name_key,
+						"hull_id": receipt.hull_id
+					})
+
 		log.rounds.append(round_data)
 
 		# Check early end
 		var live_armed_parties: Array[CombatParty] = []
 		for p in parties:
-			if p.has_live_armed():
+			if p.has_live_armed() and not p.escaped:
 				live_armed_parties.append(p)
 
 		if live_armed_parties.size() <= 1:
@@ -498,7 +533,7 @@ static func resolve(input: CombatInput) -> BattleLog:
 	# Determine winner & standout
 	var armed_survivor_parties: Array[CombatParty] = []
 	for p in parties:
-		if p.has_live_armed():
+		if p.has_live_armed() and not p.escaped:
 			armed_survivor_parties.append(p)
 
 	if armed_survivor_parties.size() == 1:
