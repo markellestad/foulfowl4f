@@ -164,8 +164,18 @@ func _build_ui() -> void:
 
 	bp_grid.add_child(Ui.label("Posture:", "Muted"))
 	_opt_posture = OptionButton.new()
-	_opt_posture.add_item("Aggressive", 0)
-	_opt_posture.add_item("Defensive", 1)
+	var postures := ["auto", "close", "talon", "standoff", "retreat"]
+	var posture_tips := {
+		"auto": "Adjusts target distance to match the weapons and ammo of the fleet.",
+		"close": "Close to distance 0 for Beak range weapons.",
+		"talon": "Hold Talon range (distance 5) for beam weapons.",
+		"standoff": "Stand off at distance 12 for Horizon missiles.",
+		"retreat": "Escape combat at distance 12 after paying the retreat receipt."
+	}
+	for i in range(postures.size()):
+		var p: String = postures[i]
+		_opt_posture.add_item(Copy.t("battle.orders.posture." + p), i)
+		_opt_posture.set_item_tooltip(i, posture_tips[p])
 	_opt_posture.item_selected.connect(_on_battle_plan_changed)
 	bp_grid.add_child(_opt_posture)
 
@@ -212,16 +222,13 @@ func refresh() -> void:
 	# Location text
 	if flt.system_id >= 0 and flt.system_id < state.systems.size():
 		var sys: StarSystem = state.systems[flt.system_id]
-		var s_name: String = "Star %d" % sys.id
-		if sys.is_orn:
-			s_name = Copy.t("place.orn.name")
-		elif sys.name_id > 0:
-			s_name = Copy.t("star.name.%d" % sys.name_id)
+		var s_name: String = Copy.system_name(sys)
 		_loc_lbl.text = "Location: %s" % s_name
 	elif flt.dest_system_id >= 0 and flt.dest_system_id < state.systems.size():
 		var d_sys: StarSystem = state.systems[flt.dest_system_id]
+		var d_name: String = Copy.system_name(d_sys)
 		var eta: int = max(1, flt.arrive_turn - state.turn)
-		_loc_lbl.text = "In transit to Star %d (ETA: %d turns)" % [d_sys.id, eta]
+		_loc_lbl.text = "In transit to %s (ETA: %d turns)" % [d_name, eta]
 	else:
 		_loc_lbl.text = "Location: Deep Space"
 
@@ -305,7 +312,9 @@ func refresh() -> void:
 	# Battle plan values
 	if flt.plan != null:
 		var bp: BattlePlan = flt.plan
-		_opt_posture.select(0 if bp.posture == "aggressive" else 1)
+		var postures := ["auto", "close", "talon", "standoff", "retreat"]
+		var p_idx: int = postures.find(bp.posture)
+		_opt_posture.select(p_idx if p_idx >= 0 else 0)
 		match bp.target_priority:
 			"nearest": _opt_target.select(0)
 			"weakest": _opt_target.select(1)
@@ -462,7 +471,9 @@ func _on_battle_plan_changed(_idx: int) -> void:
 	var cmd := CmdSetBattlePlan.new()
 	cmd.empire_id = flt.owner
 	cmd.fleet_id = flt.id
-	cmd.posture = "aggressive" if _opt_posture.selected == 0 else "defensive"
+	var postures := ["auto", "close", "talon", "standoff", "retreat"]
+	var p_sel: int = _opt_posture.selected
+	cmd.posture = postures[p_sel] if (p_sel >= 0 and p_sel < postures.size()) else "auto"
 	match _opt_target.selected:
 		0: cmd.target_priority = "nearest"
 		1: cmd.target_priority = "weakest"

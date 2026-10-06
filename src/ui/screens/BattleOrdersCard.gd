@@ -77,18 +77,21 @@ func _create_card(req: Dictionary) -> Dictionary:
 	panel.add_child(vbox)
 
 	var sys_id: int = int(req.get("system_id", 0))
+	var s_name: String = Copy.system_name_by_id(sys_id)
 	var sys_lbl := Label.new()
-	sys_lbl.text = "SYSTEM %d" % sys_id
+	sys_lbl.text = s_name.to_upper()
 	sys_lbl.add_theme_font_size_override("font_size", 18)
 	vbox.add_child(sys_lbl)
 
 	# Enemy intel
 	var enemy_vis: Dictionary = req.get("enemy_visible", {})
-	var intel_text: String = "Enemy force: Unknown"
+	var intel_text: String = "Enemy force: None"
 	if not enemy_vis.is_empty():
-		var hulls_str: Array = []
+		var hulls_str: Array[String] = []
 		for h_key in enemy_vis.keys():
-			hulls_str.append("%s: %d" % [h_key, int(enemy_vis[h_key])])
+			var count: int = int(enemy_vis[h_key])
+			var size_name: String = Copy.t("ui.size." + str(h_key).to_lower(), str(h_key)).to_lower()
+			hulls_str.append("%d %s" % [count, size_name])
 		intel_text = "Enemy: " + ", ".join(hulls_str)
 	var intel_lbl := Label.new()
 	intel_lbl.text = intel_text
@@ -117,8 +120,18 @@ func _create_card(req: Dictionary) -> Dictionary:
 	vbox.add_child(Ui.label("Battle Posture:"))
 	var posture_opt := OptionButton.new()
 	var postures := ["auto", "close", "talon", "standoff", "retreat"]
+	var posture_tips := {
+		"auto": "Adjusts target distance to match the weapons and ammo of the fleet.",
+		"close": "Close to distance 0 for Beak range weapons.",
+		"talon": "Hold Talon range (distance 5) for beam weapons.",
+		"standoff": "Stand off at distance 12 for Horizon missiles.",
+		"retreat": "Escape combat at distance 12 after paying the retreat receipt."
+	}
 	for p in postures:
-		posture_opt.add_item(p.capitalize())
+		var p_name: String = Copy.t("battle.orders.posture." + p)
+		posture_opt.add_item(p_name)
+		var item_idx: int = posture_opt.item_count - 1
+		posture_opt.set_item_tooltip(item_idx, posture_tips[p])
 	var cur_posture: String = str(plan.get("posture", "auto")).to_lower()
 	var p_idx: int = postures.find(cur_posture)
 	if p_idx >= 0: posture_opt.selected = p_idx
@@ -129,7 +142,8 @@ func _create_card(req: Dictionary) -> Dictionary:
 	var prio_opt := OptionButton.new()
 	var priorities := ["auto", "biggest", "swat", "band_talon", "band_beak", "band_horizon", "defenses", "transports"]
 	for pr in priorities:
-		prio_opt.add_item(pr.replace("_", " ").capitalize())
+		var pr_text: String = Copy.t("battle.orders.priority." + pr)
+		prio_opt.add_item(pr_text)
 	var cur_prio: String = str(plan.get("target_priority", "auto")).to_lower()
 	var prio_idx: int = priorities.find(cur_prio)
 	if prio_idx >= 0: prio_opt.selected = prio_idx
@@ -139,8 +153,8 @@ func _create_card(req: Dictionary) -> Dictionary:
 	vbox.add_child(Ui.label("Swat Escort Mode:"))
 	var swat_opt := OptionButton.new()
 	var swat_modes := ["missiles_first", "ships_first"]
-	swat_opt.add_item("Missiles First (Intercept)")
-	swat_opt.add_item("Ships First (Fire at Line)")
+	for sw in swat_modes:
+		swat_opt.add_item(Copy.t("battle.orders.swat." + sw))
 	var cur_swat: String = str(plan.get("swat_mode", "missiles_first")).to_lower()
 	var swat_idx: int = swat_modes.find(cur_swat)
 	if swat_idx >= 0: swat_opt.selected = swat_idx
@@ -150,9 +164,8 @@ func _create_card(req: Dictionary) -> Dictionary:
 	vbox.add_child(Ui.label("Retreat Threshold:"))
 	var ret_opt := OptionButton.new()
 	var ret_thresh := ["never", "half", "even"]
-	ret_opt.add_item("Never Retreat")
-	ret_opt.add_item("Half (< 50% Odds)")
-	ret_opt.add_item("Even (< 100% Odds)")
+	for rt in ret_thresh:
+		ret_opt.add_item(Copy.t("battle.orders.retreat." + rt))
 	var cur_ret: String = str(plan.get("retreat_threshold", "never")).to_lower()
 	var ret_idx: int = ret_thresh.find(cur_ret)
 	if ret_idx >= 0: ret_opt.selected = ret_idx
@@ -202,8 +215,9 @@ func _create_auto_panel(autos: Array) -> PanelContainer:
 	vbox.add_child(desc)
 
 	for sys_id in autos:
+		var s_name: String = Copy.system_name_by_id(int(sys_id))
 		var lbl := Label.new()
-		lbl.text = "• System %d" % int(sys_id)
+		lbl.text = "• " + s_name
 		vbox.add_child(lbl)
 
 	return panel
