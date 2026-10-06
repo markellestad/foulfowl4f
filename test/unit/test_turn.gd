@@ -18,6 +18,7 @@ func _create_game(seed_str: String = "FOWL_TINY") -> GameState:
 
 func test_pipeline_order() -> void:
 	var expected: Array[StringName] = [
+		&"movement",
 		&"production",
 		&"population",
 		&"finance",
