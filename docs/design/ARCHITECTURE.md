@@ -11,7 +11,7 @@ This document is written for the builder agent. Section 16 is the phased build p
 1. **The simulation is pure data.** Everything under `src/sim/` is `RefCounted` classes and static functions. No `Node`, no scene tree, no signals, no autoload references, no `Time`, no `randi()`/`randf()`, no floats in state or decisions. It runs identically in a headless test, in the soak tool, in the editor and on the web.
 2. **Determinism.** `(seed, settings, ordered command log) -> identical state hash`, on every platform. Integer math only in the sim; every random draw comes from a keyed stream (§4.4); every iteration over a collection is in ascending id order.
 3. **One command API.** The player UI and the AI mutate the game only by submitting `Cmd` objects the sim validates (§4.5). There is no second path.
-4. **The AI sees only what the player would see** — enforced structurally by `AiView` (§8.1), not by discipline.
+4. **The AI sees only what the player would see**, plus any vision printed on the difficulty card (GDD §13.1) — enforced structurally by `AiView` (§8.1), not by discipline.
 5. **Presentation replays, never decides.** The battle viewer plays a `BattleLog` produced by the resolver. Skipping, watching, replaying and headless all yield the same result.
 6. **Web-first.** Single-threaded web export (no `Thread`, no `WorkerThreadPool`, no `SharedArrayBuffer`). Long work is time-sliced across frames (§7.3).
 7. **Content is data.** Races, traits, techs, hulls, parts, buildings, presets, events, monsters, balance constants and copy live in JSON under `res://data/` (§5).
@@ -32,7 +32,7 @@ data/
   events.json  monsters.json  audio.json
   copy/en.json                   all player-facing strings (writer-owned, §5.4)
 audio/music/*.ogg  audio/sfx/*.ogg  audio/CREDITS.md
-fonts/                           (owner-supplied OFL font, optional)
+fonts/                           (empty by default: Godot's built-in font is the plan; optional owner-approved OFL swap)
 src/
   sim/                           PURE DATA. No Node, no autoload, no float.
     core/        Rng.gd IntMath.gd Ids.gd StateHash.gd Log.gd
@@ -199,7 +199,7 @@ Planning-phase commands change **orders and settings only** (jobs, preset, queue
                "homeworld": {"climate": "terran", "size": "large"}, "personalities": ["aggressor","imperialist"],
                "color": "#F5F5F5", "glyph": "crown", "bird_shape": "swan" }, ...] }
 ```
-Every def has `"id"`. Display names are **not** in mechanics files; they come from `copy/en.json` by convention key `name.<kind>.<id>` (e.g. `name.tech.deep_space_scanner`), with the id prettified as fallback.
+Every def has `"id"`. Display names are **not** in mechanics files; they come from `copy/en.json` by key `<kind>.<id>.name` (e.g. `tech.deep_space_scanner.name`; scheme in `COPY_PLAN.md`), with the id prettified as fallback.
 
 ### 5.3 Effects and the stat vocabulary
 
@@ -214,7 +214,7 @@ Examples of stats: `food_per_farmer`, `pp_per_worker`, `rp_per_scientist`, `flat
 
 ### 5.4 Copy layer
 
-`data/copy/en.json` is a flat `{key: string}` map owned by the writer. Keys used by code are listed in `src/autoload/Copy.gd` constants or follow the naming conventions (`name.*`, `desc.*`, `blurb.race.*`, `diplo.<race>.<situation>`, `event.<id>.title/body`, `tip.*`, `loading.*`). A test emits the list of keys the code and content reference and the subset missing from `en.json` (warning, not failure, until Phase 10; failure after).
+`data/copy/en.json` is a flat `{key: string}` map owned by the writer. The key scheme and the mapping of every GDD `[COPY: key]` slot to a meme-bible line or a gap is `docs/design/COPY_PLAN.md`; it supersedes the `name.<kind>.<id>` convention above (use `<kind>.<id>.name`). Keys used by code are listed in `src/autoload/Copy.gd` constants or follow that scheme. A test emits the list of keys the code and content reference and the subset missing from `en.json` (warning, not failure, until Phase 10; failure after).
 
 ### 5.5 ContentDB
 
@@ -277,7 +277,7 @@ Pop >= 0; treasury >= 0; every ship belongs to exactly one fleet; every fleet's 
 
 `AiView` is constructed per AI empire per turn from `GameState` and that empire's `Knowledge`. It exposes:
 - the empire's own entities in full (colonies, fleets, designs, techs, treasury);
-- foreign information **only** from `Knowledge` (explored systems, seen colonies, visible fleets, known designs, relations, treaties);
+- foreign information **only** from `Knowledge` (explored systems, seen colonies, visible fleets, known designs, relations, treaties); declared difficulty vision (Honk Admiral: player designs; Lights-Off Ledger: player colonies and fleets) is written into that empire's `Knowledge` by the `visibility` step, so `AiView` itself never special-cases difficulty;
 - static galaxy geometry (star positions, explored planets);
 - read-only `ContentDB`, `Modifiers` evaluation for its own objects, and `Rng.keyed(seed, turn, Rng.AI, empire_id, salt)`.
 
@@ -300,16 +300,19 @@ Auto-design, auto-explore, auto-colonise suggestions, the governor and power est
 - Input: system id, the parties (each: empire id, list of `CombatUnit` built from ships and planet defenses with all modifiers pre-evaluated into plain ints), doctrine per party, nebula flag, keyed RNG.
 - Output: `BattleLog` + per-unit final HP + retreat set + orbit controller.
 - Rules: GDD §9. Implementation notes:
-  - Units sorted by (party empire id, unit id). Each round: moves -> missile arrivals (PD first) -> fire (targets chosen and rolls made against the start-of-step snapshot, damage accumulated into a pending array) -> apply -> launches -> cleanup.
+  - Units sorted by (party empire id, unit id). Each party has a **line** (max slots per GDD §9.2: 8, Titan = 2, Geese 10, +1 Hyper-Preened Cognition) and an ordered **reserve** (largest hull, then id). Each round: reserves fill empty line slots -> moves -> missile arrivals (PD first) -> fire (line units only; targets chosen and rolls made against the start-of-step snapshot, damage accumulated into a pending array) -> apply -> launches -> cleanup -> retreat checks.
+  - Retreat (GDD §9.6): escape at the end of round 2 (modifiers shift it); the **receipt** destroys the party's slowest ship (ties: most damaged, lowest id), logged as a `retreat_receipt` event.
+  - Percent damage modifiers (band traits, v_formation, flush, Hyper-Preened, Guardian-Marked) are pre-summed per unit per round into one integer percent before the roll.
   - Target choice uses expected damage (integer, per-mille) — no floats.
   - RNG draw order is fixed: by unit order then mount index; an **order-independence test** shuffles input order and expects an identical log hash.
 - `BattleLog` (compact, persisted for the last turn):
 ```
 { system_id, turn, nebula, parties: [{empire_id, doctrine, units: [{uid, kind: "ship"|"planet", design_id, hull, hp_max, shield, bird_shape}]}],
   rounds: [{ advance: {empire_id: c}, events: [ [type, src_uid, dst_uid, value, weapon_class], ... ] }],
-  result: { winner_empire_id | -1, retreated: [...], destroyed: [...] } }
+  result: { winner_empire_id | -1, retreated: [...], destroyed: [...],
+            autopsy: { deciding_band: "talon"|"beak"|"horizon", standout_uid, receipt_uid | -1, damage_by_band: {empire_id: {band: int}} } } }
 ```
-Event types: `fire_hit`, `fire_miss`, `shield_block`, `missile_launch`, `missile_hit`, `missile_miss`, `pd_kill`, `destroyed`, `retreat`, `heal`, `suppressed`.
+Event types: `reserve_in`, `fire_hit`, `fire_miss`, `shield_block`, `missile_launch`, `missile_hit`, `missile_miss`, `pd_kill`, `destroyed`, `retreat`, `retreat_receipt`, `heal`, `suppressed`. The autopsy is computed by the resolver from these events (so the viewer and the summary card agree).
 
 ---
 
@@ -354,7 +357,7 @@ Main (Node)                               Main.gd: boot, ContentDB, routing, Cap
 ### 11.3 Layout and theming rules
 
 - Base resolution 1280x720, stretch mode `canvas_items`, aspect `expand`. UI scale setting multiplies `get_window().content_scale_factor`.
-- `ThemeFactory.build(palette, font, scale) -> Theme` creates the whole theme in code (no `.tres` theme to hand-edit). `Palette.gd` holds color tokens (background, panel, text, accent, positive, negative, warning) plus the 8 empire colors/glyphs; a high-contrast variant.
+- `ThemeFactory.build(palette, font, scale) -> Theme` creates the whole theme in code. `font` defaults to Godot's built-in font (`ThemeDB.fallback_font`); an owner-supplied font in `fonts/` is a one-line swap (no `.tres` theme to hand-edit). `Palette.gd` holds color tokens (background, panel, text, accent, positive, negative, warning) plus the 8 empire colors/glyphs; a high-contrast variant.
 - **Fixed-width rule** (lesson from the owner's other project): any container whose content changes (button labels with numbers, rows that gain buttons) gets an explicit `custom_minimum_size.x` and clipping; dynamic detail goes into tooltips, never into button faces. Tables use fixed column widths.
 - Tooltips: `StatTooltip` (a `PanelContainer` built in `_make_custom_tooltip`) renders `ModResult.lines`.
 
@@ -392,7 +395,7 @@ Main (Node)                               Main.gd: boot, ContentDB, routing, Cap
 
 ### 12.3 Bird shapes
 
-`BirdShapes.gd` returns `PackedVector2Array` polygons for 8 families (duck, pheasant, swan, goose, owl, crow, penguin, hummingbird) in three uses: map fleet icon (12-16 px chevron-like silhouette), ship glyph (side view), and race portrait (larger, 2-3 polygons + eye dot) for diplomacy and the race screen. All tinted by `EmpireStyle`.
+`BirdShapes.gd` returns `PackedVector2Array` polygons for 8 families (swan, pheasant, duck, owl, penguin, crow, goose, chicken) in three uses: map fleet icon (12-16 px chevron-like silhouette), ship glyph (side view), and race portrait (larger, 2-3 polygons + eye dot) for diplomacy and the race screen. All tinted by `EmpireStyle`.
 
 ---
 
@@ -454,7 +457,7 @@ Main (Node)                               Main.gd: boot, ContentDB, routing, Cap
 - First run and after adding any `class_name`: `"$GODOT_EXE" --headless --path C:/Dev/FoulFowl --import`
 - Tests: `"$GODOT_EXE" --headless --path C:/Dev/FoulFowl -s addons/gut/gut_cmdln.gd -gdir=res://test -ginclude_subdirs -gexit`
 - Wrapper (use this): `python tools/run_tests.py [--filter test_combat]` — runs the above, fails on non-zero exit, on any `SCRIPT ERROR` / `ERROR:` / `Parse Error` line in the log, and if the GUT summary line is missing or reports 0 tests (an all-skipped green is a failure).
-- Soak: `python tools/soak/run_soak.py --seeds 1-10 --size small --players 4 --difficulty raptor` -> runs `"$GODOT_EXE" --headless --path . -s res://tools/soak/soak_main.gd -- <args>` per seed, writes `build/soak/report.json` + a markdown summary (end turn, victory type, winner race, per-turn timing p50/p95, colonies/techs curves, invariant violations, script errors). Exit non-zero on: any script error, any invariant violation, any game not finishing by the cap, budget exceeded 2x.
+- Soak: `python tools/soak/run_soak.py --seeds 1-10 --size small --players 4 --difficulty flighted` -> runs `"$GODOT_EXE" --headless --path . -s res://tools/soak/soak_main.gd -- <args>` per seed, writes `build/soak/report.json` + a markdown summary (end turn, victory type, winner race, per-turn timing p50/p95, colonies/techs curves, invariant violations, script errors). Exit non-zero on: any script error, any invariant violation, any game not finishing by the cap, budget exceeded 2x.
 - Windowed capture for visual QA: `"$GODOT_EXE" --path . -- --capture=<screen> --fixture=res://test/fixtures/<name>.json --out=<abs png path>` -> `CaptureMode` loads the fixture state, opens the screen, waits 10 frames, saves the viewport PNG, quits.
 - **Never** use `--check-only` (it boots the game and hangs).
 
@@ -470,7 +473,7 @@ Invariants and contracts only — no tuning snapshots. A test that pins a balanc
 | Economy | Growth formula vs hand-computed cases from GDD §5.2; food import and starvation paths; overflow carry; rush cost; governor keeps empire food >= 0 whenever feasible; jobs sum to pop |
 | Research | Choose-one locks siblings; Creative gets all; Uncreative is seeded; queue advance; overflow |
 | Ships/movement | Design space never exceeded; miniaturisation floor 50%; auto-design deterministic and legal; travel turns; range legality; wormhole; nebula |
-| Combat | Order-independence (shuffled input -> same log hash); shields reduce per hit (beam full, kinetic half, nebula none); retreat timing; PD intercept; planet suppression; battles end <= 8 rounds; 500 random battles without errors or invariant violations |
+| Combat | Order-independence (shuffled input -> same log hash); shields reduce per hit (Talon full, Beak half, nebula none); battle line never exceeds its slots and reserves fill in order; retreat at round 2 with exactly one receipt; PD intercept; planet suppression; battles end <= 8 rounds; 500 random battles without errors or invariant violations |
 | Ground | Duel resolution terminates; occupation applied; tech capture keyed |
 | AI | `AiView` isolation (unseen fleet does not change commands); AI commands always validate; Tiny 1-seed 60-turn AI-only run without invariant violations |
 | Diplomacy/Council | Vote tally and 2/3 threshold; Defy declares war from every voter for the winner; capitulation transfer; each victory type triggers on a fixture |
@@ -489,7 +492,7 @@ Accept: `--import` clean; `run_tests.py` green with test_rng, test_intmath, test
 
 **P1 — Galaxy and map**
 Files: `sim/model/{GameState,GameSettings,StarSystem,Planet}.gd`, `sim/gen/{GalaxyGenerator,NameGen}.gd`, `sim/save/Serializer.gd`, `data/galaxy.json`, `render/galaxy/{GalaxyMapView,MapCamera,StarfieldLayer,NebulaLayer,StarLayer}.gd`, `ui/kit/{Ui,ThemeFactory,Palette}.gd`, `ui/screens/{ScreenBase,UiRouter,MainMenu,NewGameScreen,GalaxyScreen}.gd`, `main/CaptureMode.gd`.
-Accept: `test_galaxy_gen`: for seeds 1-200 x {tiny, small}: exact star count, separation rule, fair-start rule, Avian Prime is the most central star, wormhole rule, generation twice -> equal hash; `test_serializer` round-trip; capture `galaxy` PNG shows stars, nebulae, names.
+Accept: `test_galaxy_gen`: for seeds 1-200 x {tiny, small}: exact star count, separation rule, race-aware fair-start rule, Orn is the most central star, wormhole rule, generation twice -> equal hash; `test_serializer` round-trip; capture `galaxy` PNG shows stars, nebulae, names.
 
 **P2 — Colonies, economy, turn loop** 
 Files: `sim/model/{Empire,Species,Colony,QueueItem}.gd`, `sim/rules/{Modifiers,Economy,Growth,Production,Governor}.gd`, `sim/turn/{TurnProcessor,TurnReport}.gd`, `sim/commands/{Cmd,CmdColony}.gd`, `data/{traits,races,buildings,presets}.json`, `ui/screens/{TopBar,ColonyPanel,ColoniesListScreen,TurnSummaryScreen}.gd`, `ui/kit/{DataTable,StatTooltip}.gd`.
@@ -512,8 +515,8 @@ Files: `sim/ai/{AiPlayer,AiView,AiAssess,AiResearch,AiDesign,AiColonies,AiExpans
 Accept: AI isolation + AI-validity tests; `run_soak.py --seeds 1-10 --size small` exits 0: every game ends (conquest or cap), zero script errors and invariant violations, median AI colonies at T80 >= 5, budgets met. Playable: a real game against 3 AIs that can be won or lost by conquest.
 
 **P7 — Diplomacy, council, espionage, victory**
-Files: `sim/rules/{Diplomacy,Council,Espionage,Victory,Score}.gd`, `sim/ai/{AiDiplomacy,AiEspionage}.gd`, `sim/commands/CmdDiplo.gd`, `ui/screens/{DiplomacyScreen,CouncilScreen,VictoryScreen}.gd`.
-Accept: diplomacy/council/victory tests; soak 20 seeds: >= 80% of games end by victory before the cap and council victories occur in at least one seed.
+Files: `sim/rules/{Diplomacy,Council,Espionage,Victory,Score}.gd` (Coalition lives in `Diplomacy.gd`), `sim/ai/{AiDiplomacy,AiEspionage}.gd`, `sim/commands/CmdDiplo.gd`, `ui/screens/{DiplomacyScreen,CouncilScreen,VictoryScreen}.gd`.
+Accept: diplomacy/council/victory tests plus Coalition trip/end thresholds (35%/30%, notorious 30%/25%) on fixtures; soak 20 seeds: >= 80% of games end by victory before the cap and Grand Roost victories occur in at least one seed.
 
 **P8 — Races and balance**
 Files: `ui/screens/RaceDesignerScreen.gd`, `NewGameScreen.gd` (full options incl. Swans toggle and seed string), trait effects completed in `data/traits.json`/`races.json`, soak balance report section.
@@ -521,7 +524,7 @@ Accept: content race-budget tests; custom-race validation tests; soak 40 seeds r
 
 **P9 — Events, QoL, accessibility, audio**
 Files: `data/events.json`, `sim/rules/Events.gd`, `ui/screens/{SettingsScreen,SaveLoadScreen,AvipediaScreen,HelpOverlay}.gd`, `autoload/Sfx.gd` (full), `data/audio.json`, `audio/**`, `tools/audio/{manifest.json,import_audio.py}`.
-Accept: events tests (Lucky immunity, keyed); settings persist; every hotkey in the table is bound (test reads the table and the router map); `import_audio.py` reports budget OK; UI smoke tests for all screens; capture at 75%, 100%, 200% UI scale.
+Accept: events tests (lucky immunity, keyed, each GDD §20 MVP event fires on a fixture and applies its effect); settings persist; every hotkey in the table is bound (test reads the table and the router map); `import_audio.py` reports budget OK; UI smoke tests for all screens; capture at 75%, 100%, 200% UI scale.
 
 **P10 — Web, copy, polish**
 Files: `data/copy/en.json` (from the writer), `tools/check_build_size.py`, export preset tuning.
