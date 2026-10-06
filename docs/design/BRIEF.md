@@ -30,3 +30,11 @@ A **Master of Orion-style space 4X** (MoO1/MoO2 lineage) where every empire is a
   - **NOT committed:** sounds from the paid/licensed packs (David Dumais "Explosion SFX Pack", Shapeforms packs, `SCI-FI_UI_SFX_PACK`, "Sci-Fi Combat Systems Sound Effects Pack"). Their licenses allow use in a shipped game but not redistribution of the raw files, which a public repo would do. They live under `assets/audio/licensed/` (gitignored), copied and converted at build time by `tools/fetch_licensed_audio` from a committed manifest (source path + target name per sound) pointing at the owner's local SoundAssets folder. The game must run and sound acceptable WITHOUT the licensed folder (fall back to the open sound for each slot), so a fresh clone of the public repo works.
   - Credits screen lists Kenney (CC0, credited anyway), the font, and the licensed packs by vendor name.
 - No real trademarks as product names (parody/reference in copy is fine).
+
+## Performance target (owner, 2026-10-06: "max compatibility")
+No specific reference machine. Target the lowest common denominator so the itch page works for everyone:
+- Godot **Compatibility** renderer (WebGL 2), single-threaded web export (no SharedArrayBuffer, no special itch headers).
+- Runs on Chrome, Firefox, Edge and Safari (desktop), on a ~2018 laptop with integrated graphics and 4 GB RAM: steady 60 fps on the galaxy map, battle viewer >= 30 fps, no single frame over 50 ms during End Turn.
+- Minimum window 1280x720, UI scale option; mouse-only playable (keyboard shortcuts optional).
+- Download small: initial web build under ~25 MB, audio streamed/compressed OGG.
+- The local performance check uses the dev machine with the browser's CPU throttled 4x as the stand-in for the low-end target.
