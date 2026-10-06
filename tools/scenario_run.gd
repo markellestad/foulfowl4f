@@ -316,5 +316,125 @@ func _execute_action(act: Dictionary, game: SimGame, db: ContentDB) -> String:
 				return "outpost_best outpost error: %s" % o_err
 			return ""
 
+		"set_war":
+			var a: int = int(act.get("a", 0))
+			var b: int = int(act.get("b", 1))
+			Wars.set_war(game.gs, a, b, true)
+			return ""
+
+		"spawn_fleet":
+			var target_sys_id: int = int(act.get("system", -1))
+			if act.has("at_empire_capital"):
+				var target_eid: int = int(act["at_empire_capital"])
+				for s in game.gs.systems:
+					if s.home_of == target_eid:
+						target_sys_id = s.id
+						break
+			if target_sys_id < 0 or target_sys_id >= game.gs.systems.size():
+				return "spawn_fleet: invalid target system %d" % target_sys_id
+
+			var flt := Fleet.new()
+			flt.id = game.gs.alloc_id("fleet")
+			flt.owner = eid
+			flt.system_id = target_sys_id
+			flt.x = game.gs.systems[target_sys_id].x
+			flt.y = game.gs.systems[target_sys_id].y
+			flt.name = "Invasion Strike"
+			game.gs.fleets[flt.id] = flt
+
+			# 1. Sparrow design
+			var sparrow_des: ShipDesign = null
+			for d in game.gs.designs.values():
+				if d.empire_id == eid and d.name.to_lower().contains("sparrow"):
+					sparrow_des = d
+					break
+			if sparrow_des == null:
+				sparrow_des = AutoDesign.design_for_role(db, game.gs, eid, "escort")
+			if sparrow_des == null:
+				sparrow_des = ShipDesign.new()
+				sparrow_des.id = game.gs.alloc_id("design")
+				sparrow_des.empire_id = eid
+				sparrow_des.name = "Sparrow"
+				sparrow_des.hull = "small"
+				sparrow_des.engine = "standard_engine"
+				sparrow_des.weapons = [{"part": "wick_talon", "mount": "standard", "count": 4}]
+				game.gs.designs[sparrow_des.id] = sparrow_des
+
+			var sparrow_stats: Dictionary = DesignRules.stats(db, game.gs, sparrow_des)
+			var sparrow_count: int = int(act.get("sparrows", 8))
+			for _i in range(sparrow_count):
+				var s := Ship.new()
+				s.id = game.gs.alloc_id("ship")
+				s.design_id = sparrow_des.id
+				s.owner = eid
+				s.fleet_id = flt.id
+				s.hp = int(sparrow_stats.get("hp", 10))
+				s.built_turn = game.gs.turn
+				game.gs.ships[s.id] = s
+				flt.ship_ids.append(s.id)
+
+			# 2. Boot ship design
+			var boot_des: ShipDesign = null
+			for d in game.gs.designs.values():
+				if d.empire_id == eid and (d.role == "boot_ship" or d.name.to_lower().contains("boot")):
+					boot_des = d
+					break
+			if boot_des == null:
+				boot_des = AutoDesign.design_for_role(db, game.gs, eid, "boot_ship")
+				if boot_des != null:
+					boot_des.id = game.gs.alloc_id("design")
+					game.gs.designs[boot_des.id] = boot_des
+			if boot_des == null:
+				boot_des = ShipDesign.new()
+				boot_des.id = game.gs.alloc_id("design")
+				boot_des.empire_id = eid
+				boot_des.name = "Boot Ship"
+				boot_des.hull = "small"
+				boot_des.engine = "standard_engine"
+				boot_des.role = "boot_ship"
+				boot_des.specials = ["boot_pod"]
+				game.gs.designs[boot_des.id] = boot_des
+
+			var boot_stats: Dictionary = DesignRules.stats(db, game.gs, boot_des)
+			var boot_count: int = int(act.get("boot_ships", 5))
+			for _i in range(boot_count):
+				var s := Ship.new()
+				s.id = game.gs.alloc_id("ship")
+				s.design_id = boot_des.id
+				s.owner = eid
+				s.fleet_id = flt.id
+				s.hp = int(boot_stats.get("hp", 10))
+				s.built_turn = game.gs.turn
+				game.gs.ships[s.id] = s
+				flt.ship_ids.append(s.id)
+
+			return ""
+
+		"order_invade":
+			var target_cid: int = int(act.get("colony_id", -1))
+			if act.has("at_empire_capital"):
+				var target_eid: int = int(act["at_empire_capital"])
+				for c in game.gs.colonies.values():
+					var p: Planet = game.gs.planets[c.planet_id]
+					var sys: StarSystem = game.gs.systems[p.system_id]
+					if sys.home_of == target_eid:
+						target_cid = c.id
+						break
+			if target_cid < 0 or not game.gs.colonies.has(target_cid):
+				return "order_invade: colony %d not found" % target_cid
+
+			var target_col: Colony = game.gs.colonies[target_cid]
+			var target_sys: StarSystem = game.gs.system_of_planet(target_col.planet_id)
+			if target_sys == null:
+				return "order_invade: system not found for colony %d" % target_cid
+
+			for f in game.gs.fleets.values():
+				if f.owner == eid and f.system_id == target_sys.id:
+					f.order = {
+						"type": "invade",
+						"colony_id": target_cid
+					}
+			return ""
+
 		_:
 			return "unknown action: %s" % action_type

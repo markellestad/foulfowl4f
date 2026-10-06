@@ -1,6 +1,9 @@
 class_name Blockade
 extends RefCounted
 
+static func get_orbit_controller(gs: GameState, db: ContentDB, system_id: int) -> int:
+	return orbit_controller_for_system(gs, db, system_id)
+
 static func orbit_controller_for_system(gs: GameState, db: ContentDB, system_id: int) -> int:
 	if gs == null or system_id < 0 or system_id >= gs.systems.size():
 		return -1

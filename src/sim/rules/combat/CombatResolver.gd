@@ -497,6 +497,7 @@ static func resolve(input: CombatInput) -> BattleLog:
 						"hp_after": u.hp
 					})
 			else:
+				u.hp = 0
 				round_data["destroyed_uids"].append(u.uid)
 
 		# Retreat escapes and receipt

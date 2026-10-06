@@ -46,7 +46,7 @@ func to_dict() -> Dictionary:
 		"design_id": design_id,
 		"hull_id": hull_id,
 		"hull_space": hull_space,
-		"hp": hp,
+		"hp": maxi(0, hp),
 		"hp_max": hp_max,
 		"shield": shield,
 		"evasion": evasion,

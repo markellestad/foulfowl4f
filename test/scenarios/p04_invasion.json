@@ -1,0 +1,56 @@
+{
+  "name": "p04_invasion",
+  "settings": {
+    "preset": "tiny",
+    "seed_string": "FOWL",
+    "player_race": "pheasants",
+    "difficulty": "flighted",
+    "seat_swans": true
+  },
+  "turns": 8,
+  "actions": [
+    {
+      "turn": 1,
+      "action": "set_war",
+      "a": 0,
+      "b": 1
+    },
+    {
+      "turn": 1,
+      "action": "spawn_fleet",
+      "empire": 0,
+      "at_empire_capital": 1,
+      "sparrows": 8,
+      "boot_ships": 5
+    },
+    {
+      "turn": 1,
+      "action": "order_invade",
+      "empire": 0,
+      "at_empire_capital": 1
+    }
+  ],
+  "checks_every_turn": [
+    "invariants_clean",
+    "viewer_equals_resolver"
+  ],
+  "expect": [
+    {
+      "turn": 1,
+      "check": "battle_at",
+      "system_of_empire_capital": 1
+    },
+    {
+      "turn": 1,
+      "check": "orbit_controlled",
+      "empire": 0,
+      "system_of_empire_capital": 1
+    },
+    {
+      "turn": 3,
+      "check": "colony_owner",
+      "colony_of_empire_capital": 1,
+      "owner": 0
+    }
+  ]
+}

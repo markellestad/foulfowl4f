@@ -1,6 +1,8 @@
 class_name ScenarioChecks
 extends RefCounted
 
+const BattlePlayerClass = preload("res://src/render/battle/BattlePlayer.gd")
+
 static func run(check_name: String, game: SimGame, params: Dictionary) -> String:
 	match check_name:
 		"invariants_clean":
@@ -83,6 +85,79 @@ static func run(check_name: String, game: SimGame, params: Dictionary) -> String
 			var pct: int = 100 if in_range_total == 0 else IntMath.floor_div(explored_count * 100, in_range_total)
 			if pct < min_val:
 				return "explored_in_range_pct %d%% < min %d%% (%d/%d)" % [pct, min_val, explored_count, in_range_total]
+			return ""
+
+		"battle_at":
+			var sys_id: int = int(params.get("system", -1))
+			if params.has("system_of_empire_capital"):
+				var target_eid: int = int(params["system_of_empire_capital"])
+				var emp: Empire = game.gs.empires[target_eid]
+				if emp.capital_colony_id >= 0 and game.gs.colonies.has(emp.capital_colony_id):
+					sys_id = game.gs.colonies[emp.capital_colony_id].system_id
+				else:
+					for s in game.gs.systems:
+						if s.home_of == target_eid:
+							sys_id = s.id
+							break
+			var target_turn: int = int(params.get("turn", game.gs.turn))
+			var found: bool = false
+			for bl in game.gs.battle_logs:
+				if int(bl.get("turn", -1)) == target_turn and (sys_id == -1 or int(bl.get("system_id", -1)) == sys_id):
+					found = true
+					break
+			if not found:
+				return "battle_at: no battle found at system %d on turn %d" % [sys_id, target_turn]
+			return ""
+
+		"orbit_controlled":
+			var eid: int = int(params.get("empire", 0))
+			var sys_id: int = int(params.get("system", -1))
+			if params.has("system_of_empire_capital"):
+				var target_eid: int = int(params["system_of_empire_capital"])
+				var emp: Empire = game.gs.empires[target_eid]
+				if emp.capital_colony_id >= 0 and game.gs.colonies.has(emp.capital_colony_id):
+					sys_id = game.gs.colonies[emp.capital_colony_id].system_id
+				else:
+					for s in game.gs.systems:
+						if s.home_of == target_eid:
+							sys_id = s.id
+							break
+			var controller: int = Blockade.get_orbit_controller(game.gs, game.db, sys_id)
+			if controller != eid:
+				return "orbit_controlled: system %d controller is %d, expected %d" % [sys_id, controller, eid]
+			return ""
+
+		"colony_owner":
+			var target_cid: int = int(params.get("colony_id", -1))
+			if params.has("colony_of_empire_capital"):
+				var target_eid: int = int(params["colony_of_empire_capital"])
+				for c in game.gs.colonies.values():
+					var p: Planet = game.gs.planets[c.planet_id]
+					var sys: StarSystem = game.gs.systems[p.system_id]
+					if sys.home_of == target_eid:
+						target_cid = c.id
+						break
+			var expected_owner: int = int(params.get("owner", 0))
+			if target_cid < 0 or not game.gs.colonies.has(target_cid):
+				return "colony_owner: colony %d not found" % target_cid
+			var col: Colony = game.gs.colonies[target_cid]
+			if col.owner != expected_owner:
+				return "colony_owner: colony %d owner is %d, expected %d" % [target_cid, col.owner, expected_owner]
+			return ""
+
+		"viewer_equals_resolver":
+			if game.gs.battle_logs.is_empty():
+				return "viewer_equals_resolver: no battle logs found"
+			for blog_dict in game.gs.battle_logs:
+				var blog: BattleLog = BattleLog.from_dict(blog_dict)
+				var player = BattlePlayerClass.new(blog)
+				player.play_all()
+				for fu in blog.final_units:
+					var uid: int = int(fu.get("uid", -1))
+					var expected_hp: int = int(fu.get("hp", 0))
+					var actual_hp: int = player.get_unit_hp(uid)
+					if actual_hp != expected_hp:
+						return "viewer_equals_resolver mismatch unit %d: expected hp %d, got %d" % [uid, expected_hp, actual_hp]
 			return ""
 
 		_:
