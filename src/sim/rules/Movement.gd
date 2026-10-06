@@ -9,6 +9,8 @@ static func fleet_map_speed(db: ContentDB, gs: GameState, fleet_id: int) -> int:
 	var mod: ModResult = Modifiers.eval(db, gs, "map_speed_add", 0, {"empire_id": flt.owner})
 	for sid in flt.ship_ids:
 		var s: Ship = gs.ships[sid]
+		if not gs.designs.has(s.design_id):
+			continue
 		var des: ShipDesign = gs.designs[s.design_id]
 		var st: Dictionary = DesignRules.stats(db, gs, des)
 		var sp: int = int(st.get("map_speed", 2)) + mod.value

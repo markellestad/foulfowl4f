@@ -141,9 +141,8 @@ func test_outpost_validation_and_economy() -> void:
 	# Order outpost and step orbital
 	f_stake.order = {"type": "outpost", "planet_id": ast_p.id}
 	var tp: TurnProcessor = TurnProcessor.new(gs, _db)
-	# Advance through movement to orbital
-	tp.run_next_substep() # movement
-	tp.run_next_substep() # orbital
+	while tp.step_index <= TurnProcessor.STEP_ORDER.find(&"orbital") and tp.status != TurnProcessor.Status.DONE:
+		tp.run_next_substep()
 
 	# Verify outpost was founded
 	assert_true(ast_p.colony_id >= 0, "Planet has colony_id set")
@@ -195,8 +194,8 @@ func test_colonization_resolution_and_spare_nest() -> void:
 	nest_fleet.order = {"type": "colonize", "planet_id": sn_planet.id}
 
 	var tp: TurnProcessor = TurnProcessor.new(gs, _db)
-	tp.run_next_substep() # movement
-	tp.run_next_substep() # orbital
+	while tp.step_index <= TurnProcessor.STEP_ORDER.find(&"orbital") and tp.status != TurnProcessor.Status.DONE:
+		tp.run_next_substep()
 
 	assert_true(sn_planet.colony_id >= 0, "Planet has colony_id")
 	var new_col: Colony = gs.colonies[sn_planet.colony_id]
@@ -265,8 +264,8 @@ func test_contested_colonization_keyed_coin() -> void:
 		gs.fleets[f1.id] = f1
 
 		var tp: TurnProcessor = TurnProcessor.new(gs, _db)
-		tp.run_next_substep() # movement
-		tp.run_next_substep() # orbital
+		while tp.step_index <= TurnProcessor.STEP_ORDER.find(&"orbital") and tp.status != TurnProcessor.Status.DONE:
+			tp.run_next_substep()
 
 		assert_true(target_p.colony_id >= 0, "Colony founded")
 		var col: Colony = gs.colonies[target_p.colony_id]

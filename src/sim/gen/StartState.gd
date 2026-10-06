@@ -143,3 +143,5 @@ static func apply(gs: GameState, db: ContentDB) -> void:
 
 	for i in range(gs.empires.size()):
 		Governor.assign_jobs(db, gs, i)
+
+	Monsters.spawn_monsters(gs, db)

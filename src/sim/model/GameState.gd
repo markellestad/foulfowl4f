@@ -18,6 +18,12 @@ var fleets: Dictionary = {}
 var knowledge: Dictionary = {}
 var report: TurnReport = null
 var cmd_log: Array[Dictionary] = []
+var wars: Dictionary = {}
+var battle_logs: Array[Dictionary] = []
+var stalemates: Dictionary = {}
+var monsters_empire: int = 100
+var guardian_marked: Dictionary = {}
+var loot: Dictionary = {}
 
 func alloc_id(kind: String) -> int:
 	var cur: int = int(next_ids.get(kind, 0))
@@ -77,6 +83,10 @@ func to_dict() -> Dictionary:
 	for c in cmd_log:
 		cmds.append(c.duplicate(true))
 
+	var blog_arr: Array = []
+	for bl in battle_logs:
+		blog_arr.append((bl as Dictionary).duplicate(true))
+
 	return {
 		"version": version,
 		"settings": settings.to_dict() if settings != null else {},
@@ -94,7 +104,13 @@ func to_dict() -> Dictionary:
 		"fleets": flt_dict,
 		"knowledge": knw_dict,
 		"report": report.to_dict() if report != null else null,
-		"cmd_log": cmds
+		"cmd_log": cmds,
+		"wars": wars.duplicate(),
+		"battle_logs": blog_arr,
+		"stalemates": stalemates.duplicate(true),
+		"monsters_empire": monsters_empire,
+		"guardian_marked": guardian_marked.duplicate(),
+		"loot": loot.duplicate()
 	}
 
 static func from_dict(d: Dictionary) -> GameState:
@@ -186,5 +202,18 @@ static func from_dict(d: Dictionary) -> GameState:
 	for c in raw_cmds:
 		if c is Dictionary:
 			gs.cmd_log.append((c as Dictionary).duplicate(true))
+
+	gs.wars = (d.get("wars", {}) as Dictionary).duplicate()
+
+	gs.battle_logs.clear()
+	var raw_blogs: Array = d.get("battle_logs", [])
+	for bl in raw_blogs:
+		if bl is Dictionary:
+			gs.battle_logs.append((bl as Dictionary).duplicate(true))
+
+	gs.stalemates = (d.get("stalemates", {}) as Dictionary).duplicate(true)
+	gs.monsters_empire = int(d.get("monsters_empire", 100))
+	gs.guardian_marked = (d.get("guardian_marked", {}) as Dictionary).duplicate()
+	gs.loot = (d.get("loot", {}) as Dictionary).duplicate()
 
 	return gs

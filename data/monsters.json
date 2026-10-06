@@ -1,0 +1,43 @@
+{
+  "rows": {
+    "guardian": {
+      "id": "guardian",
+      "warning": true,
+      "reward": "guardian",
+      "units": [
+        {
+          "name_key": "guardian",
+          "hp": 3000,
+          "shield": 9,
+          "evasion": -20,
+          "acc": 0,
+          "weapons": [
+            { "part": "last_glare", "count": 6 },
+            { "part": "indoor_torpedo", "count": 2 }
+          ],
+          "specials": [
+            "self_sealing_nest"
+          ]
+        }
+      ]
+    },
+    "leviathan": {
+      "id": "leviathan",
+      "warning": false,
+      "reward": "",
+      "units": [
+        {
+          "name_key": "leviathan",
+          "hp": 400,
+          "shield": 2,
+          "evasion": 0,
+          "acc": 0,
+          "weapons": [
+            { "part": "leviathan_beak", "count": 4 }
+          ],
+          "specials": []
+        }
+      ]
+    }
+  }
+}

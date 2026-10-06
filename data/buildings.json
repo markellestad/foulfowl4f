@@ -34,7 +34,10 @@
       "flags": [],
       "capital_only": false,
       "buildable": true,
-      "counts_as_yard": false
+      "counts_as_yard": false,
+      "defense": {
+        "garrison": 4
+      }
     },
     "feed_hall": {
       "tech": "better_feed",
@@ -82,7 +85,14 @@
       "flags": [],
       "capital_only": false,
       "buildable": true,
-      "counts_as_yard": false
+      "counts_as_yard": false,
+      "defense": {
+        "launchers": 3,
+        "weapon": "best_horizon",
+        "fallback": "hatch_dart",
+        "ammo": -1,
+        "hp": 40
+      }
     },
     "colony_mantle": {
       "tech": "colony_mantle",
@@ -92,7 +102,11 @@
       "flags": [],
       "capital_only": false,
       "buildable": true,
-      "counts_as_yard": false
+      "counts_as_yard": false,
+      "defense": {
+        "planet_shield": 5,
+        "bomb_pct": -50
+      }
     },
     "richer_dirt": {
       "tech": "richer_dirt",
@@ -164,7 +178,13 @@
       "flags": [],
       "capital_only": false,
       "buildable": true,
-      "counts_as_yard": false
+      "counts_as_yard": false,
+      "defense": {
+        "talons": 4,
+        "weapon": "best_talon",
+        "mount": "primary_mount",
+        "hp": 0
+      }
     },
     "seed_exchange": {
       "tech": "seed_exchange",
@@ -222,7 +242,13 @@
       "flags": [],
       "capital_only": false,
       "buildable": true,
-      "counts_as_yard": false
+      "counts_as_yard": false,
+      "defense": {
+        "talons": 6,
+        "weapon": "best_talon",
+        "hp": 400,
+        "shield": "best_mantle"
+      }
     },
     "flock_brain": {
       "tech": "flock_brain",
@@ -244,7 +270,11 @@
       "flags": [],
       "capital_only": false,
       "buildable": true,
-      "counts_as_yard": false
+      "counts_as_yard": false,
+      "defense": {
+        "planet_shield": 10,
+        "bomb_pct": -75
+      }
     },
     "deep_scratch": {
       "tech": "deep_scratch",
