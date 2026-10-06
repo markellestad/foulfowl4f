@@ -5,6 +5,7 @@ enum Status { RUNNING, NEEDS_INPUT, DONE }
 
 const STEP_ORDER: Array[StringName] = [
 	&"movement",
+	&"orbital",
 	&"production",
 	&"population",
 	&"finance",
@@ -37,6 +38,8 @@ func _create_step(step_name: StringName) -> TurnStep:
 	match step_name:
 		&"movement":
 			return StepMovement.new()
+		&"orbital":
+			return StepOrbital.new()
 		&"production":
 			return StepProduction.new()
 		&"population":

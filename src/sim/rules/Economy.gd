@@ -167,6 +167,16 @@ static func max_pop_milli(db: ContentDB, gs: GameState, colony_id: int) -> int:
 static func max_pop_units(db: ContentDB, gs: GameState, colony_id: int) -> int:
 	return IntMath.floor_div(max_pop_milli(db, gs, colony_id), 1000)
 
+static func colony_count(gs: GameState, empire_id: int) -> int:
+	var count: int = 0
+	for c in gs.colonies.values():
+		if c.owner == empire_id and not c.is_outpost:
+			count += 1
+	return count
+
+static func admin_cost(_gs: GameState, _empire_id: int, col_count: int, db: ContentDB) -> int:
+	return admin_cost_for(col_count, db)
+
 static func admin_cost_for(colony_count: int, db: ContentDB) -> int:
 	if colony_count <= 1:
 		return 0
