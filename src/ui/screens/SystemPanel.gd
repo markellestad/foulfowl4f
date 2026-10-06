@@ -1,6 +1,8 @@
 class_name SystemPanel
 extends PanelContainer
 
+signal colony_selected(colony_id: int)
+
 var db: ContentDB = null
 var state: GameState = null
 var current_system_id: int = -1
@@ -151,5 +153,28 @@ func _build_planet_card(p: Planet, player_traits: Array[String]) -> Control:
 		max_pop = Habitability.max_pop(db, player_traits, p, empty_flags)
 	var pop_lbl := Ui.label("max pop %d" % max_pop, "OK" if max_pop >= 8 else "Muted")
 	row2.add_child(pop_lbl)
+
+	# Row 3: Colony info (if colonized)
+	var col_id: int = -1
+	if state != null:
+		for cid in state.colonies.keys():
+			var c: Colony = state.colonies[cid]
+			if c.planet_id == p.id:
+				col_id = cid
+				break
+	if col_id != -1:
+		var c: Colony = state.colonies[col_id]
+		var col_row := Ui.hbox(8)
+		v.add_child(col_row)
+		var sp_key: String = "race.%s.species" % c.species
+		var sp_name: String = Copy.t(sp_key) if Copy.has(sp_key) else c.species.capitalize()
+		var col_lbl := Ui.label("Colony: %s (%d pop)" % [sp_name, c.pop_units()], "Gold")
+		col_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		col_row.add_child(col_lbl)
+		var btn_view := Ui.button("Manage", func() -> void:
+			colony_selected.emit(col_id)
+		)
+		btn_view.custom_minimum_size = Vector2(70, 24)
+		col_row.add_child(btn_view)
 
 	return panel

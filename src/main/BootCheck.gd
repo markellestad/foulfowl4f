@@ -41,5 +41,21 @@ static func run(main: Node) -> void:
 		return
 	print("BOOT_GALAXY_OK stars=%d" % gs.systems.size())
 
+	Session.new_game(s)
+	if Session.game == null or Session.state.turn != 1:
+		print("BOOT_FAIL Session new_game failed")
+		main.get_tree().quit(1)
+		return
+
+	for i in range(3):
+		Session.game.end_turn_headless()
+
+	if Session.state.turn != 4:
+		print("BOOT_FAIL expected turn 4, got %d" % Session.state.turn)
+		main.get_tree().quit(1)
+		return
+
+	print("BOOT_SIM_OK turn=%d" % Session.state.turn)
+
 	print("BOOT_OK")
 	main.get_tree().quit(0)

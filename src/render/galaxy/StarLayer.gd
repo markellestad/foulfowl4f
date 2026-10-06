@@ -102,7 +102,28 @@ func _draw() -> void:
 			draw_line(pos + Vector2(b_sz, b_sz), pos + Vector2(b_sz - b_arm, b_sz), b_col, 1.5)
 			draw_line(pos + Vector2(b_sz, b_sz), pos + Vector2(b_sz, b_sz - b_arm), b_col, 1.5)
 
-		# Star name & homeworld glyph
+		# Check system owner from colonies or home_of
+		var owner_empire_id: int = -1
+		if state != null:
+			for pid in sys.planet_ids:
+				for cid in state.colonies.keys():
+					var col: Colony = state.colonies[cid]
+					if col.planet_id == pid:
+						owner_empire_id = col.owner
+						break
+				if owner_empire_id != -1:
+					break
+
+		if owner_empire_id == -1 and sys.home_of != -1:
+			owner_empire_id = sys.home_of
+
+		var owner_race: String = ""
+		if state != null and owner_empire_id >= 0 and owner_empire_id < state.empires.size():
+			owner_race = state.empires[owner_empire_id].race
+		elif Session.settings != null and owner_empire_id >= 0 and owner_empire_id < Session.settings.seats.size():
+			owner_race = Session.settings.seats[owner_empire_id]
+
+		# Star name & owner glyph
 		var s_name: String = ""
 		if sys.is_orn:
 			s_name = Copy.t("place.orn.name")
@@ -114,16 +135,13 @@ func _draw() -> void:
 			var str_sz: Vector2 = _font.get_string_size(s_name, HORIZONTAL_ALIGNMENT_CENTER, -1, _font_size)
 			var text_pos := Vector2(pos.x - str_sz.x * 0.5, pos.y + text_y_offset)
 			var text_color: Color = Palette.TEXT
-			if sys.home_of != -1:
-				var h_race: String = Session.settings.seats[sys.home_of] if Session.settings != null and sys.home_of < Session.settings.seats.size() else ""
-				if Palette.EMPIRE.has(h_race):
-					text_color = Palette.EMPIRE[h_race]
+			if owner_race != "" and Palette.EMPIRE.has(owner_race):
+				text_color = Palette.EMPIRE[owner_race]
 			draw_string(_font, text_pos, s_name, HORIZONTAL_ALIGNMENT_CENTER, -1, _font_size, text_color)
 
-		if sys.home_of != -1:
-			var h_race: String = Session.settings.seats[sys.home_of] if Session.settings != null and sys.home_of < Session.settings.seats.size() else ""
-			var rdef: Dictionary = race_rows.get(h_race, {})
-			var glyph: String = str(rdef.get("glyph", "crown"))
-			var emp_col: Color = Palette.EMPIRE.get(h_race, Palette.GOLD)
+		if owner_race != "":
+			var rdef: Dictionary = race_rows.get(owner_race, {})
+			var glyph: String = str(rdef.get("glyph", "circle"))
+			var emp_col: Color = Palette.EMPIRE.get(owner_race, Palette.GOLD)
 			var glyph_y: float = pos.y + (32.0 if show_names else 16.0)
 			EmpireStyle.draw_glyph(self, glyph, Vector2(pos.x, glyph_y), 10.0, emp_col)

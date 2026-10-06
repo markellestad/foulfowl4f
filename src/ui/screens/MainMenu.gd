@@ -48,8 +48,9 @@ func build() -> void:
 	btn_new.custom_minimum_size = Vector2(240, 36)
 	btn_col.add_child(btn_new)
 
-	var btn_cont := Ui.button(Copy.t("ui.label.continue"), _on_continue, Copy.t("ui.label.coming_soon"))
-	btn_cont.disabled = true
+	var latest_auto: String = Session.latest_autosave()
+	var btn_cont := Ui.button(Copy.t("ui.label.continue"), _on_continue, "" if latest_auto != "" else Copy.t("ui.label.coming_soon"))
+	btn_cont.disabled = (latest_auto == "")
 	btn_cont.custom_minimum_size = Vector2(240, 36)
 	btn_col.add_child(btn_cont)
 
@@ -80,6 +81,11 @@ func _on_new_game() -> void:
 
 func _on_continue() -> void:
 	_start_music_if_needed()
+	var slot: String = Session.latest_autosave()
+	if slot != "":
+		var err: String = Session.load_game(slot)
+		if err == "" and router != null:
+			router.show_screen(&"galaxy")
 
 func _on_settings() -> void:
 	_start_music_if_needed()

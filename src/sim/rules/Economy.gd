@@ -156,6 +156,9 @@ static func max_pop_milli(db: ContentDB, gs: GameState, colony_id: int) -> int:
 	var total_max_units: int = sz_val * pps_res.value + flat_res.value
 	return total_max_units * 1000
 
+static func max_pop_units(db: ContentDB, gs: GameState, colony_id: int) -> int:
+	return IntMath.floor_div(max_pop_milli(db, gs, colony_id), 1000)
+
 static func admin_cost_for(colony_count: int, db: ContentDB) -> int:
 	if colony_count <= 1:
 		return 0

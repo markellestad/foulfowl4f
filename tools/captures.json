@@ -24,6 +24,26 @@
       "id": "P01_system_panel",
       "phase": "P01",
       "out": "build/captures/P01_system_panel.png"
+    },
+    {
+      "id": "P02_galaxy_topbar",
+      "phase": "P02",
+      "out": "build/captures/P02_galaxy_topbar.png"
+    },
+    {
+      "id": "P02_colony_panel",
+      "phase": "P02",
+      "out": "build/captures/P02_colony_panel.png"
+    },
+    {
+      "id": "P02_colonies_list",
+      "phase": "P02",
+      "out": "build/captures/P02_colonies_list.png"
+    },
+    {
+      "id": "P02_turn_summary",
+      "phase": "P02",
+      "out": "build/captures/P02_turn_summary.png"
     }
   ]
 }

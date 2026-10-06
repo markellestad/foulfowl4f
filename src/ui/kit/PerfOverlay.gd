@@ -1,6 +1,8 @@
 class_name PerfOverlay
 extends CanvasLayer
 
+static var instance: PerfOverlay = null
+
 var end_turn_worst_ms: int = 0
 
 var _label: Label = null
@@ -8,6 +10,7 @@ var _recent_deltas: Array[float] = []
 var _time_accum: float = 0.0
 
 func _init() -> void:
+	instance = self
 	layer = 100
 
 func _ready() -> void:
