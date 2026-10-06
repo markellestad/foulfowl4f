@@ -1,0 +1,43 @@
+{
+  "name": "p02_solo_150",
+  "settings": {
+    "preset": "tiny",
+    "seed_string": "FOWL",
+    "player_race": "pheasants",
+    "difficulty": "flighted",
+    "seat_swans": true
+  },
+  "turns": 150,
+  "player_auto": true,
+  "commands": [
+    {
+      "turn": 3,
+      "cmd": {
+        "kind": "queue_add",
+        "empire_id": 0,
+        "colony_id": 0,
+        "kind_item": "building",
+        "ref_id": "feed_hall",
+        "count": 1,
+        "index": 0
+      }
+    }
+  ],
+  "checks_every_turn": [
+    "invariants_clean"
+  ],
+  "expect": [
+    {
+      "turn": 150,
+      "check": "capital_pop_min",
+      "empire": 0,
+      "value": 10
+    },
+    {
+      "turn": 150,
+      "check": "treasury_min",
+      "empire": 0,
+      "value": 0
+    }
+  ]
+}
