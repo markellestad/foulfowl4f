@@ -1,0 +1,47 @@
+{
+  "sections": [
+    {
+      "id": "code",
+      "lines": [
+        "Code: MIT License."
+      ]
+    },
+    {
+      "id": "font",
+      "lines": [
+        "Atkinson Hyperlegible by the Braille Institute, SIL Open Font License 1.1."
+      ]
+    },
+    {
+      "id": "audio_open",
+      "lines": [
+        "Sound effects: Kenney (kenney.nl), CC0. Credited anyway.",
+        "Music: original tracks by the developer."
+      ]
+    },
+    {
+      "id": "tools",
+      "lines": [
+        "Made with Godot Engine (godotengine.org), MIT License."
+      ]
+    }
+  ],
+  "licensed_vendors": [
+    {
+      "pack": "Explosion SFX Pack",
+      "vendor": "David Dumais Audio"
+    },
+    {
+      "pack": "Sci-Fi Weapons and free sound effects",
+      "vendor": "Shapeforms Audio"
+    },
+    {
+      "pack": "SCI-FI UI SFX PACK",
+      "vendor": "SCI-FI UI SFX PACK vendor"
+    },
+    {
+      "pack": "Sci-Fi Combat Systems Sound Effects Pack",
+      "vendor": "Sci-Fi Combat Systems pack vendor"
+    }
+  ]
+}

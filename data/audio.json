@@ -1,0 +1,39 @@
+{
+  "slots": {
+    "ui_click": {
+      "bus": "UI",
+      "open": "res://assets/audio/open/sfx/ui_click.ogg",
+      "licensed": "res://assets/audio/licensed/ui_click.ogg"
+    },
+    "ui_back": {
+      "bus": "UI",
+      "open": "res://assets/audio/open/sfx/ui_back.ogg",
+      "licensed": "res://assets/audio/licensed/ui_back.ogg"
+    },
+    "ui_confirm": {
+      "bus": "UI",
+      "open": "res://assets/audio/open/sfx/ui_confirm.ogg",
+      "licensed": "res://assets/audio/licensed/ui_confirm.ogg"
+    },
+    "ui_error": {
+      "bus": "UI",
+      "open": "res://assets/audio/open/sfx/ui_error.ogg",
+      "licensed": "res://assets/audio/licensed/ui_error.ogg"
+    },
+    "ui_open": {
+      "bus": "UI",
+      "open": "res://assets/audio/open/sfx/ui_open.ogg",
+      "licensed": "res://assets/audio/licensed/ui_open.ogg"
+    },
+    "ui_close": {
+      "bus": "UI",
+      "open": "res://assets/audio/open/sfx/ui_close.ogg",
+      "licensed": "res://assets/audio/licensed/ui_close.ogg"
+    },
+    "music_menu": {
+      "bus": "Music",
+      "open": "res://assets/audio/open/music/music_menu.ogg",
+      "licensed": null
+    }
+  }
+}
