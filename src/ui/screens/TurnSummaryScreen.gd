@@ -75,6 +75,7 @@ func build() -> void:
 
 func _populate_entries(container: VBoxContainer) -> void:
 	var grouped: Dictionary = {
+		"military": [],
 		"production": [],
 		"colony": [],
 		"governor": [],
@@ -90,8 +91,9 @@ func _populate_entries(container: VBoxContainer) -> void:
 			kind = "other"
 		grouped[kind].append(entry)
 
-	var kind_order: Array[String] = ["production", "colony", "governor", "finance", "other"]
+	var kind_order: Array[String] = ["military", "production", "colony", "governor", "finance", "other"]
 	var kind_titles: Dictionary = {
+		"military": "Military",
 		"production": Copy.t("ui.label.production"),
 		"colony": Copy.t("ui.label.colonies"),
 		"governor": Copy.t("ui.label.governor"),
@@ -157,6 +159,16 @@ func _populate_entries(container: VBoxContainer) -> void:
 				)
 				btn_goto.custom_minimum_size = Vector2(70, 24)
 				row.add_child(btn_goto)
+			elif key == "military.battle" and formatted_p.has("log_index") and Session.state != null:
+				var l_idx: int = int(formatted_p["log_index"])
+				if l_idx >= 0 and l_idx < Session.state.battle_logs.size():
+					var b_log: Dictionary = Session.state.battle_logs[l_idx]
+					var btn_replay := Ui.button("Replay", func() -> void:
+						if router != null:
+							router.show_screen(&"battle_screen", {"log": b_log})
+					)
+					btn_replay.custom_minimum_size = Vector2(70, 24)
+					row.add_child(btn_replay)
 
 			container.add_child(row)
 

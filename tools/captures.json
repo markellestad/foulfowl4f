@@ -59,6 +59,21 @@
       "id": "P03_range_overlay",
       "phase": "P03",
       "out": "build/captures/P03_range_overlay.png"
+    },
+    {
+      "id": "P04_battle_orders",
+      "phase": "P04",
+      "out": "build/captures/P04_battle_orders.png"
+    },
+    {
+      "id": "P04_battle_viewer",
+      "phase": "P04",
+      "out": "build/captures/P04_battle_viewer.png"
+    },
+    {
+      "id": "P04_autopsy",
+      "phase": "P04",
+      "out": "build/captures/P04_autopsy.png"
     }
   ]
 }

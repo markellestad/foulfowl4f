@@ -14,3 +14,6 @@ static func of_bytes(b: PackedByteArray) -> int:
 static func of_value(v: Variant) -> int:
 	var s: String = JSON.stringify(v, "", true)
 	return of_bytes(s.to_utf8_buffer())
+
+static func hash_dict(d: Dictionary) -> int:
+	return of_value(d)

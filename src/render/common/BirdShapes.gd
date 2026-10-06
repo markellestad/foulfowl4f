@@ -116,3 +116,26 @@ static func draw_icon(canvas: CanvasItem, race: String, pos: Vector2, size: floa
 		var ry: float = sx * sin_a + sy * cos_a
 		xformed.append(pos + Vector2(rx, ry))
 	canvas.draw_colored_polygon(xformed, color)
+
+static func side(race: String, hull: String = "small") -> PackedVector2Array:
+	var pts := PackedVector2Array([
+		Vector2(1.0, 0.0),
+		Vector2(0.4, -0.35),
+		Vector2(-0.3, -0.45),
+		Vector2(-0.9, -0.7),
+		Vector2(-0.7, 0.0),
+		Vector2(-0.4, 0.35),
+		Vector2(0.2, 0.45),
+		Vector2(0.7, 0.2)
+	])
+	var scale: float = 1.0
+	match hull.to_lower():
+		"small": scale = 0.8
+		"medium": scale = 1.1
+		"large": scale = 1.5
+		"huge", "titan": scale = 2.0
+		"planet": scale = 2.5
+	var res := PackedVector2Array()
+	for p in pts:
+		res.append(p * scale)
+	return res

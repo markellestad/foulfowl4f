@@ -20,6 +20,8 @@ var _btn_split: Button = null
 var _btn_merge: Button = null
 var _btn_colonize: Button = null
 var _btn_outpost: Button = null
+var _btn_bombard: Button = null
+var _btn_invade: Button = null
 
 # Battle Plan controls
 var _opt_posture: OptionButton = null
@@ -107,6 +109,18 @@ func _build_ui() -> void:
 	_btn_merge = Ui.button("Merge Fleets", _on_merge_clicked)
 	_btn_merge.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	act_row3.add_child(_btn_merge)
+
+	# Action buttons row 4: Bombard & Invade
+	var act_row4 := Ui.hbox(6)
+	root.add_child(act_row4)
+
+	_btn_bombard = Ui.button("Bombard", _on_bombard_clicked)
+	_btn_bombard.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	act_row4.add_child(_btn_bombard)
+
+	_btn_invade = Ui.button("Invade", _on_invade_clicked)
+	_btn_invade.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	act_row4.add_child(_btn_invade)
 
 	var div2 := ColorRect.new()
 	div2.custom_minimum_size = Vector2(0, 1)
@@ -385,6 +399,35 @@ func _on_outpost_clicked() -> void:
 			Session.submit(cmd)
 			refresh()
 			break
+
+func _on_bombard_clicked() -> void:
+	if state == null or not state.fleets.has(current_fleet_id):
+		return
+	var flt: Fleet = state.fleets[current_fleet_id]
+	var cmd := CmdFleetBombard.new()
+	cmd.empire_id = flt.owner
+	cmd.fleet_id = flt.id
+	Session.submit(cmd)
+	refresh()
+
+func _on_invade_clicked() -> void:
+	if state == null or not state.fleets.has(current_fleet_id):
+		return
+	var flt: Fleet = state.fleets[current_fleet_id]
+	var target_sys_id: int = flt.system_id if flt.system_id >= 0 else flt.dest_system_id
+	if target_sys_id < 0 or target_sys_id >= state.systems.size():
+		return
+	var target_sys: StarSystem = state.systems[target_sys_id]
+	for pid in target_sys.planet_ids:
+		for col in state.colonies.values():
+			if col.planet_id == pid and Wars.is_at_war(state, flt.owner, col.owner):
+				var cmd := CmdFleetInvade.new()
+				cmd.empire_id = flt.owner
+				cmd.fleet_id = flt.id
+				cmd.colony_id = col.id
+				Session.submit(cmd)
+				refresh()
+				return
 
 func _on_move_ship_up() -> void:
 	_shift_selected_ship(-1)

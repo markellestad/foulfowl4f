@@ -33,6 +33,12 @@ static func run(main: Node, id: String, out_path: String) -> void:
 			_cap_p03_designer(router)
 		"P03_range_overlay":
 			_cap_p03_range_overlay(router)
+		"P04_battle_orders":
+			_cap_p04_battle_orders(router)
+		"P04_battle_viewer":
+			_cap_p04_battle_viewer(router)
+		"P04_autopsy":
+			_cap_p04_autopsy(router)
 		_:
 			print("CAPTURE_FAIL unknown id: ", id)
 			main.get_tree().quit(1)
@@ -387,6 +393,92 @@ static func _exec_scenario_action(game: SimGame, act: Dictionary) -> void:
 				cmd_o.fleet_id = stake_fleet.id
 				cmd_o.planet_id = target_p.id
 				game.submit(cmd_o)
+
+static func _cap_p04_battle_orders(router: UiRouter) -> void:
+	var reqs: Array = [
+		{
+			"system_id": 1,
+			"enemy_visible": {"small": 3, "medium": 1},
+			"odds_pct": 65,
+			"plan": {"posture": "talon", "target_priority": "biggest", "swat_mode": "missiles_first", "retreat_threshold": "half"},
+			"projection": {"talon_round": 2, "beak_round": 5}
+		},
+		{
+			"system_id": 3,
+			"enemy_visible": {"small": 2},
+			"odds_pct": 82,
+			"plan": {"posture": "close", "target_priority": "auto", "swat_mode": "missiles_first", "retreat_threshold": "never"},
+			"projection": {"talon_round": 1, "beak_round": 3}
+		}
+	]
+	router.show_screen(&"battle_orders", {"requests": reqs, "auto": [4]})
+
+static func _cap_p04_battle_viewer(router: UiRouter) -> void:
+	var blog := BattleLog.new()
+	blog.system_id = 2
+	blog.turn = 5
+	for i in range(4):
+		blog.initial_units.append({
+			"uid": 10 + i,
+			"empire_id": 0,
+			"name_key": "Swat Escort",
+			"hull_id": "small",
+			"hp": 15,
+			"hp_max": 15,
+			"shield": 2
+		})
+	for i in range(4):
+		blog.initial_units.append({
+			"uid": 20 + i,
+			"empire_id": 1,
+			"name_key": "Dart Frigate",
+			"hull_id": "small",
+			"hp": 12,
+			"hp_max": 12,
+			"shield": 0
+		})
+	blog.rounds.append({
+		"round_num": 2,
+		"distances": {"1_2": 9},
+		"shots": [],
+		"horizon_hits": [],
+		"swat_intercepts": [
+			{"swat_uid": 10, "hit": true},
+			{"swat_uid": 11, "hit": true}
+		],
+		"destroyed_uids": []
+	})
+	var screen = router.show_screen(&"battle_screen", {"log": blog})
+	if screen != null and screen.stage != null:
+		screen.range_strip.set_distance(9)
+		screen.stage.set_distance(9)
+		for i in range(5):
+			var from_p: Vector2 = screen.stage.get_unit_pos(20 + (i % 4))
+			var to_p: Vector2 = screen.stage.get_unit_pos(10 + (i % 4))
+			screen.stage.vfx.add_shot(from_p, to_p, "horizon")
+		for i in range(3):
+			var sp: Vector2 = screen.stage.get_unit_pos(10 + i) + Vector2(randf_range(-20, 20), randf_range(-20, 20))
+			screen.stage.vfx.add_swat_flash(sp)
+
+static func _cap_p04_autopsy(router: UiRouter) -> void:
+	var blog := BattleLog.new()
+	blog.system_id = 1
+	blog.turn = 4
+	blog.winner_empire_id = 0
+	blog.deciding_band = "talon"
+	blog.standout_ship_uid = 101
+	blog.receipt_lines.append({
+		"name_key": "Sparrow",
+		"hull_id": "small"
+	})
+	blog.final_units.append({
+		"uid": 101,
+		"name_key": "Peregrine Flag",
+		"damage_dealt": 84
+	})
+	var screen = router.show_screen(&"battle_screen", {"log": blog})
+	if screen != null:
+		screen._show_autopsy()
 
 static func _capture_and_save(main: Node, out_path: String) -> void:
 	var tree: SceneTree = main.get_tree()

@@ -62,5 +62,71 @@ static func run(main: Node) -> void:
 
 	print("BOOT_FLEET_OK fleets=%d ships=%d" % [Session.state.fleets.size(), Session.state.ships.size()])
 
+	# Fixed 4-vs-4 battle for BOOT_COMBAT_OK
+	var c_input := CombatInput.new()
+	c_input.system_id = 1
+	c_input.turn = 1
+	c_input.seed = 12345
+
+	var p0 := CombatParty.new()
+	p0.party_id = 1
+	p0.empire_id = 0
+	p0.posture = "auto"
+	for i in range(4):
+		var u0 := CombatUnit.new()
+		u0.uid = 100 + i
+		u0.empire_id = 0
+		u0.hull_id = "small"
+		u0.hull_space = 1
+		u0.hp = 10
+		u0.hp_max = 10
+		u0.is_armed = true
+		u0.combat_speed = 2
+		u0.main_band = "talon"
+		u0.weapons.append({
+			"part_id": "wick_talon",
+			"band": "talon",
+			"dmg_min": 3,
+			"dmg_max": 8,
+			"acc": 10,
+			"falloff_pct": 4
+		})
+		p0.units.append(u0)
+	c_input.parties.append(p0)
+
+	var p1 := CombatParty.new()
+	p1.party_id = 2
+	p1.empire_id = 1
+	p1.posture = "auto"
+	for i in range(4):
+		var u1 := CombatUnit.new()
+		u1.uid = 200 + i
+		u1.empire_id = 1
+		u1.hull_id = "small"
+		u1.hull_space = 1
+		u1.hp = 10
+		u1.hp_max = 10
+		u1.is_armed = true
+		u1.combat_speed = 2
+		u1.main_band = "talon"
+		u1.weapons.append({
+			"part_id": "wick_talon",
+			"band": "talon",
+			"dmg_min": 3,
+			"dmg_max": 8,
+			"acc": 10,
+			"falloff_pct": 4
+		})
+		p1.units.append(u1)
+	c_input.parties.append(p1)
+
+	var blog: BattleLog = CombatResolver.resolve(c_input)
+	if blog == null:
+		print("BOOT_FAIL CombatResolver.resolve returned null")
+		main.get_tree().quit(1)
+		return
+	var blog_hash: int = StateHash.hash_dict(blog.to_dict())
+	print("BOOT_COMBAT_OK hash=%d" % blog_hash)
+
 	print("BOOT_OK")
 	main.get_tree().quit(0)

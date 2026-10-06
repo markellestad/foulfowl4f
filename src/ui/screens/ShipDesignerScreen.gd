@@ -27,6 +27,7 @@ var _lbl_hp: Label = null
 var _lbl_speed: Label = null
 var _lbl_evasion: Label = null
 var _lbl_capabilities: Label = null
+var _lbl_exp_dmg: Label = null
 var _lbl_error: Label = null
 
 var _btn_save: Button = null
@@ -250,6 +251,12 @@ func build() -> void:
 	stats_grid.add_child(Ui.label("Special:", "Muted"))
 	_lbl_capabilities = Ui.label("None", "Gold")
 	stats_grid.add_child(_lbl_capabilities)
+
+	var dmg_box := Ui.hbox(8)
+	editor_v.add_child(dmg_box)
+	dmg_box.add_child(Ui.label("Expected Dmg/Rnd (d=3, vs shld 0/2/4/6/9):", "Muted"))
+	_lbl_exp_dmg = Ui.label("0 / 0 / 0 / 0 / 0")
+	dmg_box.add_child(_lbl_exp_dmg)
 
 	_lbl_error = Ui.label("", "Error")
 	editor_v.add_child(_lbl_error)
@@ -497,6 +504,14 @@ func _refresh_live_stats() -> void:
 	if int(st.get("range_dpc", 0)) > 0:
 		caps.append("+%d Range" % int(st["range_dpc"]))
 	_lbl_capabilities.text = ", ".join(caps) if not caps.is_empty() else "None"
+
+	if _lbl_exp_dmg != null:
+		var d0: int = CombatMath.expected_damage(db, state, des, 3, 0, 5)
+		var d2: int = CombatMath.expected_damage(db, state, des, 3, 2, 5)
+		var d4: int = CombatMath.expected_damage(db, state, des, 3, 4, 5)
+		var d6: int = CombatMath.expected_damage(db, state, des, 3, 6, 5)
+		var d9: int = CombatMath.expected_damage(db, state, des, 3, 9, 5)
+		_lbl_exp_dmg.text = "%d / %d / %d / %d / %d" % [d0, d2, d4, d6, d9]
 
 func _refresh_designs_list() -> void:
 	for c in _designs_list.get_children():
