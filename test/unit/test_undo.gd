@@ -137,6 +137,182 @@ func test_submit_then_undo_restores_hash_per_kind() -> void:
 	assert_true(game.undo())
 	assert_eq(game.state_hash(), h_before_buy)
 
+	# 8. design_save
+	var h8: int = game.state_hash()
+	var c8 := CmdDesignSave.new()
+	c8.empire_id = 0
+	c8.design_data = {
+		"name": "Sparrow II",
+		"hull": "small",
+		"drive": "walk_drive",
+		"weapons": [{"part": "wick_talon", "mount": "", "count": 2}]
+	}
+	assert_eq(game.submit(c8), "")
+	assert_ne(game.state_hash(), h8)
+	assert_true(game.undo())
+	assert_eq(game.state_hash(), h8)
+
+	# 9. design_delete
+	game.submit(c8)
+	var h9: int = game.state_hash()
+	var new_des_id: int = -1
+	for d in game.gs.designs.values():
+		if d.empire_id == 0 and d.name == "Sparrow II":
+			new_des_id = d.id
+			break
+	var c9 := CmdDesignDelete.new()
+	c9.empire_id = 0
+	c9.design_id = new_des_id
+	assert_eq(game.submit(c9), "")
+	assert_ne(game.state_hash(), h9)
+	assert_true(game.undo())
+	assert_eq(game.state_hash(), h9)
+	game.undo()
+	assert_eq(game.state_hash(), h8)
+
+	# 10. fleet_move
+	var h10: int = game.state_hash()
+	var f0: Fleet = game.gs.fleets[0]
+	var in_range_sys_id: int = -1
+	for s in game.gs.systems:
+		if s.id != f0.system_id and FuelRange.in_range_system(_db, game.gs, 0, s.id):
+			in_range_sys_id = s.id
+			break
+	if in_range_sys_id >= 0:
+		var c10 := CmdFleetMove.new()
+		c10.empire_id = 0
+		c10.fleet_id = f0.id
+		c10.system_id = in_range_sys_id
+		assert_eq(game.submit(c10), "")
+		assert_ne(game.state_hash(), h10)
+		assert_true(game.undo())
+		assert_eq(game.state_hash(), h10)
+
+	# 11. fleet_split
+	var h11: int = game.state_hash()
+	var f11: Fleet = game.gs.fleets[0]
+	var c11 := CmdFleetSplit.new()
+	c11.empire_id = 0
+	c11.fleet_id = f11.id
+	c11.ship_ids = [f11.ship_ids[0]]
+	assert_eq(game.submit(c11), "")
+	assert_ne(game.state_hash(), h11)
+	assert_true(game.undo())
+	assert_eq(game.state_hash(), h11)
+
+	# 12. fleet_merge
+	var f12_pre: Fleet = game.gs.fleets[0]
+	c11.fleet_id = f12_pre.id
+	c11.ship_ids = [f12_pre.ship_ids[0]]
+	game.submit(c11)
+	var h12: int = game.state_hash()
+	var split_f_id: int = -1
+	for fid in game.gs.fleets.keys():
+		if fid != f12_pre.id and game.gs.fleets[fid].owner == 0:
+			split_f_id = fid
+			break
+	var c12 := CmdFleetMerge.new()
+	c12.empire_id = 0
+	c12.fleet_id = f12_pre.id
+	c12.other_id = split_f_id
+	assert_eq(game.submit(c12), "")
+	assert_ne(game.state_hash(), h12)
+	assert_true(game.undo())
+	assert_eq(game.state_hash(), h12)
+	game.undo()
+	assert_eq(game.state_hash(), h11)
+
+	# 13. fleet_auto_explore
+	var h13: int = game.state_hash()
+	var f13: Fleet = game.gs.fleets[0]
+	var c13 := CmdFleetAutoExplore.new()
+	c13.empire_id = 0
+	c13.fleet_id = f13.id
+	c13.on = true
+	assert_eq(game.submit(c13), "")
+	assert_ne(game.state_hash(), h13)
+	assert_true(game.undo())
+	assert_eq(game.state_hash(), h13)
+
+	# 14. colonize
+	var f14: Fleet = game.gs.fleets[0]
+	var dum_p := Planet.new()
+	dum_p.id = game.gs.planets.size()
+	dum_p.system_id = f14.system_id
+	dum_p.orbit = 8
+	dum_p.climate = "terran"
+	dum_p.size = "medium"
+	dum_p.minerals = "abundant"
+	game.gs.planets.append(dum_p)
+	game.checkpoints[game.turn_cmds.size()] = game.gs.to_dict()
+	var h14: int = game.state_hash()
+
+	var c14 := CmdColonize.new()
+	c14.empire_id = 0
+	c14.fleet_id = f14.id
+	c14.planet_id = dum_p.id
+	assert_eq(game.submit(c14), "")
+	assert_ne(game.state_hash(), h14)
+	assert_true(game.undo())
+	assert_eq(game.state_hash(), h14)
+
+	# 15. outpost
+	var f15: Fleet = game.gs.fleets[0]
+	var des_out := ShipDesign.new()
+	des_out.id = game.gs.alloc_id("design")
+	des_out.empire_id = 0
+	des_out.specials = ["perch_pod"]
+	des_out.hull = "small"
+	des_out.drive = "walk_drive"
+	game.gs.designs[des_out.id] = des_out
+	var s_out := Ship.new()
+	s_out.id = game.gs.alloc_id("ship")
+	s_out.design_id = des_out.id
+	s_out.owner = 0
+	game.gs.ships[s_out.id] = s_out
+	f15.ship_ids.append(s_out.id)
+	game.checkpoints[game.turn_cmds.size()] = game.gs.to_dict()
+	var h15: int = game.state_hash()
+
+	var c15 := CmdOutpost.new()
+	c15.empire_id = 0
+	c15.fleet_id = f15.id
+	c15.planet_id = dum_p.id
+	assert_eq(game.submit(c15), "")
+	assert_ne(game.state_hash(), h15)
+	assert_true(game.undo())
+	assert_eq(game.state_hash(), h15)
+
+	# 16. set_battle_plan
+	var f16: Fleet = game.gs.fleets[0]
+	var h16: int = game.state_hash()
+	var c16 := CmdSetBattlePlan.new()
+	c16.empire_id = 0
+	c16.fleet_id = f16.id
+	c16.posture = "standoff"
+	c16.target_priority = "biggest"
+	c16.swat_mode = "missiles"
+	c16.retreat_threshold = "half"
+	assert_eq(game.submit(c16), "")
+	assert_ne(game.state_hash(), h16)
+	assert_true(game.undo())
+	assert_eq(game.state_hash(), h16)
+
+	# 17. set_line_order
+	var f17: Fleet = game.gs.fleets[0]
+	var h17: int = game.state_hash()
+	var c17 := CmdSetLineOrder.new()
+	c17.empire_id = 0
+	c17.fleet_id = f17.id
+	var rev_sids: Array[int] = []
+	for sid in f17.ship_ids:
+		rev_sids.insert(0, sid)
+	c17.ship_ids = rev_sids
+	assert_eq(game.submit(c17), "")
+	assert_ne(game.state_hash(), h17)
+	assert_true(game.undo())
+	assert_eq(game.state_hash(), h17)
+
 func test_redo_cleared_by_new_submit() -> void:
 	var game: SimGame = _create_sim("REDO_TEST")
 	var c1 := CmdSetPreset.new()

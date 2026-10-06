@@ -19,6 +19,26 @@ static func from_dict(d: Dictionary) -> Cmd:
 			cmd = CmdQueueSetRepeat.new()
 		"buy":
 			cmd = CmdBuy.new()
+		"design_save":
+			cmd = CmdDesignSave.new()
+		"design_delete":
+			cmd = CmdDesignDelete.new()
+		"fleet_move":
+			cmd = CmdFleetMove.new()
+		"fleet_split":
+			cmd = CmdFleetSplit.new()
+		"fleet_merge":
+			cmd = CmdFleetMerge.new()
+		"fleet_auto_explore":
+			cmd = CmdFleetAutoExplore.new()
+		"colonize":
+			cmd = CmdColonize.new()
+		"outpost":
+			cmd = CmdOutpost.new()
+		"set_battle_plan":
+			cmd = CmdSetBattlePlan.new()
+		"set_line_order":
+			cmd = CmdSetLineOrder.new()
 		_:
 			return null
 

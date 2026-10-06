@@ -67,6 +67,67 @@ func test_command_round_trip() -> void:
 	c_buy.colony_id = 0
 	cmds.append(c_buy)
 
+	var c_dsave := CmdDesignSave.new()
+	c_dsave.empire_id = 0
+	c_dsave.design_data = {"name": "TestD", "hull": "small", "drive": "walk_drive"}
+	cmds.append(c_dsave)
+
+	var c_ddel := CmdDesignDelete.new()
+	c_ddel.empire_id = 0
+	c_ddel.design_id = 1
+	cmds.append(c_ddel)
+
+	var c_fmove := CmdFleetMove.new()
+	c_fmove.empire_id = 0
+	c_fmove.fleet_id = 1
+	c_fmove.system_id = 2
+	cmds.append(c_fmove)
+
+	var c_fsplit := CmdFleetSplit.new()
+	c_fsplit.empire_id = 0
+	c_fsplit.fleet_id = 1
+	c_fsplit.ship_ids = [1, 2]
+	cmds.append(c_fsplit)
+
+	var c_fmerge := CmdFleetMerge.new()
+	c_fmerge.empire_id = 0
+	c_fmerge.fleet_id = 1
+	c_fmerge.other_id = 2
+	cmds.append(c_fmerge)
+
+	var c_fauto := CmdFleetAutoExplore.new()
+	c_fauto.empire_id = 0
+	c_fauto.fleet_id = 1
+	c_fauto.on = true
+	cmds.append(c_fauto)
+
+	var c_col := CmdColonize.new()
+	c_col.empire_id = 0
+	c_col.fleet_id = 1
+	c_col.planet_id = 2
+	cmds.append(c_col)
+
+	var c_out := CmdOutpost.new()
+	c_out.empire_id = 0
+	c_out.fleet_id = 1
+	c_out.planet_id = 3
+	cmds.append(c_out)
+
+	var c_plan := CmdSetBattlePlan.new()
+	c_plan.empire_id = 0
+	c_plan.fleet_id = 1
+	c_plan.posture = "close"
+	c_plan.target_priority = "biggest"
+	c_plan.swat_mode = "missiles"
+	c_plan.retreat_threshold = "half"
+	cmds.append(c_plan)
+
+	var c_line := CmdSetLineOrder.new()
+	c_line.empire_id = 0
+	c_line.fleet_id = 1
+	c_line.ship_ids = [2, 1]
+	cmds.append(c_line)
+
 	for c in cmds:
 		var d1: Dictionary = c.to_dict()
 		var restored: Cmd = CmdRegistry.from_dict(d1)
@@ -290,3 +351,139 @@ func test_buy_refuse_and_allow() -> void:
 
 	# REFUSE: already requested
 	assert_eq(cmd_buy.validate(gs, _db), "refuse.already_requested")
+
+func test_design_commands_refuse_and_allow() -> void:
+	var ctx: Dictionary = _setup_game()
+	var gs: GameState = ctx["gs"]
+
+	# Save valid new design
+	var c_save := CmdDesignSave.new()
+	c_save.empire_id = 0
+	c_save.design_data = {
+		"name": "Sparrow II",
+		"hull": "small",
+		"drive": "walk_drive",
+		"weapons": [{"part": "wick_talon", "mount": "", "count": 2}]
+	}
+	assert_eq(c_save.validate(gs, _db), "", "Allows valid design")
+	c_save.apply(gs, _db)
+
+	# Verify design was stored
+	var d_id: int = -1
+	for d in gs.designs.values():
+		if d.empire_id == 0 and d.name == "Sparrow II":
+			d_id = d.id
+			break
+	assert_true(d_id >= 0, "Design saved with alloc_id")
+
+	# REFUSE: not owner on existing design
+	var c_edit := CmdDesignSave.new()
+	c_edit.empire_id = 1
+	c_edit.design_data = {"id": d_id, "name": "Hack", "hull": "small", "drive": "walk_drive"}
+	assert_eq(c_edit.validate(gs, _db), "refuse.not_owner")
+
+	# Delete design
+	var c_del := CmdDesignDelete.new()
+	c_del.empire_id = 0
+	c_del.design_id = d_id
+	assert_eq(c_del.validate(gs, _db), "")
+	c_del.apply(gs, _db)
+	assert_true(gs.designs[d_id].obsolete, "Design marked obsolete")
+
+	# REFUSE delete: queued in colony
+	var col: Colony = ctx["col"]
+	var qi := QueueItem.new()
+	qi.kind = "ship"
+	qi.ref_id = str(d_id)
+	col.queue.append(qi)
+	gs.designs[d_id].obsolete = false
+	assert_eq(c_del.validate(gs, _db), "refuse.design_in_use")
+	col.queue.clear()
+
+func test_fleet_commands_refuse_and_allow() -> void:
+	var ctx: Dictionary = _setup_game()
+	var gs: GameState = ctx["gs"]
+	var f: Fleet = gs.fleets[0]
+
+	# Move
+	var c_move := CmdFleetMove.new()
+	c_move.empire_id = 0
+	c_move.fleet_id = f.id
+
+	# REFUSE: same system
+	c_move.system_id = f.system_id
+	assert_eq(c_move.validate(gs, _db), "refuse.same_system")
+
+	# REFUSE: out of range
+	var far_sys_id: int = -1
+	var hw_sys: StarSystem = gs.systems[f.system_id]
+	for s in gs.systems:
+		if IntMath.dist(hw_sys.x, hw_sys.y, s.x, s.y) > 60:
+			far_sys_id = s.id
+			break
+	if far_sys_id >= 0:
+		c_move.system_id = far_sys_id
+		assert_eq(c_move.validate(gs, _db), "refuse.out_of_range")
+
+	# Split & Merge
+	var c_split := CmdFleetSplit.new()
+	c_split.empire_id = 0
+	c_split.fleet_id = f.id
+	c_split.ship_ids = [f.ship_ids[0]]
+	assert_eq(c_split.validate(gs, _db), "")
+	c_split.apply(gs, _db)
+
+	assert_eq(f.ship_ids.size(), 2)
+	var new_f_id: int = -1
+	for fid in gs.fleets.keys():
+		if fid != f.id and gs.fleets[fid].owner == 0 and gs.fleets[fid].system_id == f.system_id:
+			if gs.fleets[fid].ship_ids.size() == 1:
+				new_f_id = fid
+				break
+	assert_true(new_f_id >= 0, "Split created new fleet")
+
+	# Merge back
+	var c_merge := CmdFleetMerge.new()
+	c_merge.empire_id = 0
+	c_merge.fleet_id = f.id
+	c_merge.other_id = new_f_id
+	assert_eq(c_merge.validate(gs, _db), "")
+	c_merge.apply(gs, _db)
+	assert_eq(f.ship_ids.size(), 3, "Merged back to 3 ships")
+	assert_false(gs.fleets.has(new_f_id), "Merged fleet removed")
+
+	# Auto explore
+	var c_auto := CmdFleetAutoExplore.new()
+	c_auto.empire_id = 0
+	c_auto.fleet_id = f.id
+	c_auto.on = true
+	assert_eq(c_auto.validate(gs, _db), "")
+	c_auto.apply(gs, _db)
+	assert_true(f.auto_explore)
+
+	# Battle plan
+	var c_plan := CmdSetBattlePlan.new()
+	c_plan.empire_id = 0
+	c_plan.fleet_id = f.id
+	c_plan.posture = "standoff"
+	c_plan.target_priority = "biggest"
+	c_plan.swat_mode = "missiles"
+	c_plan.retreat_threshold = "half"
+	assert_eq(c_plan.validate(gs, _db), "")
+	c_plan.apply(gs, _db)
+	assert_eq(f.plan.posture, "standoff")
+	assert_eq(f.plan.retreat_threshold, "half")
+
+	# Line order
+	var c_line := CmdSetLineOrder.new()
+	c_line.empire_id = 0
+	c_line.fleet_id = f.id
+	var reversed_ships: Array[int] = [f.ship_ids[2], f.ship_ids[1], f.ship_ids[0]]
+	c_line.ship_ids = reversed_ships
+	assert_eq(c_line.validate(gs, _db), "")
+	c_line.apply(gs, _db)
+	assert_eq(f.line_order, reversed_ships)
+
+	# REFUSE line order: invalid permutation
+	c_line.ship_ids = [f.ship_ids[0], 9999]
+	assert_eq(c_line.validate(gs, _db), "refuse.unknown")
