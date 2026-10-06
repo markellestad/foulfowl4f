@@ -1,6 +1,10 @@
 class_name EmpireStyle
 extends RefCounted
 
+static func race_color(race: String) -> Color:
+	var r: String = race.to_lower()
+	return Palette.EMPIRE.get(r, Color("#d55e00"))
+
 static func draw_glyph(canvas: CanvasItem, glyph: String, pos: Vector2, size: float, color: Color) -> void:
 	var h: float = size * 0.5
 	match glyph:

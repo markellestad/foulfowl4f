@@ -92,6 +92,11 @@ func show_system(sys_id: int) -> void:
 	for child in _planets_container.get_children():
 		child.queue_free()
 
+	if not Visibility.is_explored(state, 0, sys_id):
+		var unexplored_lbl := Ui.label("Unexplored system. Send a scout to survey planets.", "Muted")
+		_planets_container.add_child(unexplored_lbl)
+		return
+
 	# Player race traits for habitability
 	var player_traits: Array[String] = []
 	if Session.settings != null and db != null:
@@ -164,17 +169,28 @@ func _build_planet_card(p: Planet, player_traits: Array[String]) -> Control:
 				break
 	if col_id != -1:
 		var c: Colony = state.colonies[col_id]
-		var col_row := Ui.hbox(8)
-		v.add_child(col_row)
-		var sp_key: String = "race.%s.species" % c.species
-		var sp_name: String = Copy.t(sp_key) if Copy.has(sp_key) else c.species.capitalize()
-		var col_lbl := Ui.label("Colony: %s (%d pop)" % [sp_name, c.pop_units()], "Gold")
-		col_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		col_row.add_child(col_lbl)
-		var btn_view := Ui.button("Manage", func() -> void:
-			colony_selected.emit(col_id)
-		)
-		btn_view.custom_minimum_size = Vector2(70, 24)
-		col_row.add_child(btn_view)
+		var is_own: bool = (c.owner == 0)
+		var knw: Knowledge = state.knowledge.get(0)
+		var k_col: Dictionary = knw.seen_colonies.get(col_id, {}) if knw != null else {}
+
+		if is_own or not k_col.is_empty():
+			var col_row := Ui.hbox(8)
+			v.add_child(col_row)
+
+			var sp_str: String = c.species if is_own else str(k_col.get("species", "alien"))
+			var pop_u: int = c.pop_units() if is_own else int(k_col.get("pop", 0))
+			var is_outp: bool = c.is_outpost if is_own else bool(k_col.get("is_outpost", false))
+
+			var prefix: String = "Outpost" if is_outp else "Colony"
+			var col_lbl := Ui.label("%s: %s (%d pop)" % [prefix, sp_str.capitalize(), pop_u], "Gold")
+			col_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			col_row.add_child(col_lbl)
+
+			if is_own and not is_outp:
+				var btn_view := Ui.button("Manage", func() -> void:
+					colony_selected.emit(col_id)
+				)
+				btn_view.custom_minimum_size = Vector2(70, 24)
+				col_row.add_child(btn_view)
 
 	return panel

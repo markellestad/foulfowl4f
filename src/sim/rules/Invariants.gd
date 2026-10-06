@@ -35,8 +35,8 @@ static func check(gs: GameState, db: ContentDB) -> Array[String]:
 		else:
 			planet_colonies[col.planet_id] = cid
 
-		# Check no colony on outpost-only body
-		if col.planet_id >= 0 and col.planet_id < gs.planets.size():
+		# Check no regular colony on outpost-only body
+		if not col.is_outpost and col.planet_id >= 0 and col.planet_id < gs.planets.size():
 			var p: Planet = gs.planets[col.planet_id]
 			var cdef: Dictionary = db.def("climates", p.climate)
 			if str(cdef.get("class", "")) == "outpost":

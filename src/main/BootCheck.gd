@@ -55,7 +55,12 @@ static func run(main: Node) -> void:
 		main.get_tree().quit(1)
 		return
 
-	print("BOOT_SIM_OK turn=%d" % Session.state.turn)
+	if Session.state.fleets.is_empty() or Session.state.ships.is_empty() or Session.state.designs.is_empty():
+		print("BOOT_FAIL fleets/ships/designs is empty")
+		main.get_tree().quit(1)
+		return
+
+	print("BOOT_FLEET_OK fleets=%d ships=%d" % [Session.state.fleets.size(), Session.state.ships.size()])
 
 	print("BOOT_OK")
 	main.get_tree().quit(0)

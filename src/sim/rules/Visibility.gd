@@ -162,3 +162,19 @@ static func rebuild(db: ContentDB, gs: GameState, empire_id: int) -> void:
 				}
 				if not knw.met.has(col.owner):
 					knw.met[col.owner] = gs.turn
+
+static func is_explored(gs: GameState, empire_id: int, system_id: int) -> bool:
+	var knw: Knowledge = gs.knowledge.get(empire_id)
+	return knw != null and knw.explored.has(system_id)
+
+static func visible_fleets(_db: ContentDB, gs: GameState, empire_id: int) -> Array[Fleet]:
+	var res: Array[Fleet] = []
+	var knw: Knowledge = gs.knowledge.get(empire_id)
+	for fid in Ids.sorted_keys(gs.fleets):
+		var f: Fleet = gs.fleets[fid]
+		if f.owner == empire_id:
+			res.append(f)
+		elif knw != null and knw.visible_fleets.has(fid):
+			res.append(f)
+	return res
+

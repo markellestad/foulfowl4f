@@ -44,6 +44,21 @@
       "id": "P02_turn_summary",
       "phase": "P02",
       "out": "build/captures/P02_turn_summary.png"
+    },
+    {
+      "id": "P03_fleet_panel",
+      "phase": "P03",
+      "out": "build/captures/P03_fleet_panel.png"
+    },
+    {
+      "id": "P03_designer",
+      "phase": "P03",
+      "out": "build/captures/P03_designer.png"
+    },
+    {
+      "id": "P03_range_overlay",
+      "phase": "P03",
+      "out": "build/captures/P03_range_overlay.png"
     }
   ]
 }

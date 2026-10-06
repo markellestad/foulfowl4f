@@ -2,12 +2,18 @@ class_name TopBar
 extends PanelContainer
 
 signal colonies_requested
+signal fleets_requested
+signal designer_requested
+signal overlay_toggle_requested
 signal menu_requested
 
 var _lbl_turn: Label = null
 var _lbl_credits: Label = null
 var _lbl_food: Label = null
 var _lbl_research: Label = null
+var _btn_overlay: Button = null
+var _btn_fleets: Button = null
+var _btn_designer: Button = null
 var _btn_colonies: Button = null
 var _btn_undo: Button = null
 var _btn_redo: Button = null
@@ -28,14 +34,14 @@ func _build_ui() -> void:
 	style.set_content_margin_all(6)
 	add_theme_stylebox_override("panel", style)
 
-	var hbox := Ui.hbox(16)
+	var hbox := Ui.hbox(12)
 	hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	add_child(hbox)
 
 	_lbl_turn = Ui.label("Turn: 1", "Heading")
 	hbox.add_child(_lbl_turn)
 
-	hbox.add_child(Ui.spacer(8))
+	hbox.add_child(Ui.spacer(6))
 
 	_lbl_credits = Ui.label("Credits: 0 (+0)", "Gold")
 	hbox.add_child(_lbl_credits)
@@ -49,6 +55,15 @@ func _build_ui() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.add_child(spacer)
+
+	_btn_overlay = Ui.button(Copy.t("ui.label.range_overlay") + " (1)", _on_overlay, "Toggle Range Overlay (1)")
+	hbox.add_child(_btn_overlay)
+
+	_btn_fleets = Ui.button("Fleets (F)", _on_fleets, "Fleets List (F)")
+	hbox.add_child(_btn_fleets)
+
+	_btn_designer = Ui.button("Designer (D)", _on_designer, "Ship Designer (D)")
+	hbox.add_child(_btn_designer)
 
 	_btn_colonies = Ui.button(Copy.t("ui.label.colonies") + " (Tab)", _on_colonies)
 	hbox.add_child(_btn_colonies)
@@ -128,6 +143,15 @@ func refresh() -> void:
 func _on_colonies() -> void:
 	colonies_requested.emit()
 
+func _on_fleets() -> void:
+	fleets_requested.emit()
+
+func _on_designer() -> void:
+	designer_requested.emit()
+
+func _on_overlay() -> void:
+	overlay_toggle_requested.emit()
+
 func _on_undo() -> void:
 	Session.undo()
 
@@ -155,6 +179,20 @@ func _unhandled_input(event: InputEvent) -> void:
 		_on_colonies()
 		get_viewport().set_input_as_handled()
 		return
+
+	if not key.ctrl_pressed and not key.alt_pressed:
+		if key.keycode == KEY_1:
+			_on_overlay()
+			get_viewport().set_input_as_handled()
+			return
+		elif key.keycode == KEY_F:
+			_on_fleets()
+			get_viewport().set_input_as_handled()
+			return
+		elif key.keycode == KEY_D:
+			_on_designer()
+			get_viewport().set_input_as_handled()
+			return
 
 	if key.ctrl_pressed:
 		if key.keycode == KEY_Z:

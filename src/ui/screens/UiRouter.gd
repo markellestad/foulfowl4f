@@ -7,6 +7,8 @@ const SCREENS: Dictionary = {
 	&"new_game": preload("res://src/ui/screens/NewGameScreen.gd"),
 	&"galaxy": preload("res://src/ui/screens/GalaxyScreen.gd"),
 	&"colonies_list": preload("res://src/ui/screens/ColoniesListScreen.gd"),
+	&"fleets_list": preload("res://src/ui/screens/FleetsListScreen.gd"),
+	&"ship_designer": preload("res://src/ui/screens/ShipDesignerScreen.gd"),
 	&"turn_summary": preload("res://src/ui/screens/TurnSummaryScreen.gd")
 }
 

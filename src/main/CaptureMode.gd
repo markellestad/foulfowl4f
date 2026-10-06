@@ -27,6 +27,12 @@ static func run(main: Node, id: String, out_path: String) -> void:
 			_cap_p02_colonies_list(router)
 		"P02_turn_summary":
 			_cap_p02_turn_summary(router)
+		"P03_fleet_panel":
+			_cap_p03_fleet_panel(router)
+		"P03_designer":
+			_cap_p03_designer(router)
+		"P03_range_overlay":
+			_cap_p03_range_overlay(router)
 		_:
 			print("CAPTURE_FAIL unknown id: ", id)
 			main.get_tree().quit(1)
@@ -149,6 +155,231 @@ static func _cap_p02_turn_summary(router: UiRouter) -> void:
 
 	Session.game.end_turn_headless()
 	router.show_screen(&"turn_summary", {"report": Session.state.report})
+
+static func _cap_p03_fleet_panel(router: UiRouter) -> void:
+	var s: GameSettings = (GameSettings as Variant).call(&"new")
+	s.preset = "tiny"
+	s.seed_string = "FOWL"
+	s.seed = Rng.seed_from_string("FOWL")
+	s.player_race = "pheasants"
+	s.difficulty = "flighted"
+	s.seat_swans = true
+	Session.new_game(s)
+
+	var flt_id: int = -1
+	for fid in Session.state.fleets.keys():
+		var f: Fleet = Session.state.fleets[fid]
+		if f.owner == 0:
+			flt_id = fid
+			break
+
+	var screen: GalaxyScreen = router.show_screen(&"galaxy", {"open_fleet": flt_id}) as GalaxyScreen
+	if screen != null and screen.map_view != null:
+		var hw_sys: StarSystem = null
+		for sys in Session.state.systems:
+			if sys.home_of == 0:
+				hw_sys = sys
+				break
+
+		# Nearest star system for preview move line
+		var target_sys_id: int = 3
+		if screen.map_view.fleet_layer != null:
+			screen.map_view.fleet_layer.set_move_preview(flt_id, target_sys_id)
+		if screen.map_view.camera != null and hw_sys != null:
+			screen.map_view.camera.center_on(Vector2(hw_sys.x * 4.0, hw_sys.y * 4.0))
+			screen.map_view.camera.zoom = Vector2(0.85, 0.85)
+			screen.map_view.camera.zoom_changed.emit(0.85)
+
+static func _cap_p03_designer(router: UiRouter) -> void:
+	var s: GameSettings = (GameSettings as Variant).call(&"new")
+	s.preset = "evening_standard"
+	s.seed_string = "FOWL"
+	s.seed = Rng.seed_from_string("FOWL")
+	s.player_race = "pheasants"
+	s.seat_swans = true
+	Session.new_game(s)
+
+	var screen: ShipDesignerScreen = router.show_screen(&"ship_designer") as ShipDesignerScreen
+	if screen != null:
+		var d := ShipDesign.new()
+		d.id = -1
+		d.empire_id = 0
+		d.name = "Kestrel Talon Line"
+		d.role = "talon_line"
+		d.hull = "medium"
+		d.drive = "walk_drive"
+		d.plate = "pinfeather_plate"
+		d.weapons = [{"part": "wick_talon", "mount": "", "count": 10}]
+		screen.current_design = d
+		screen.call("_load_design_to_ui", d)
+
+static func _cap_p03_range_overlay(router: UiRouter) -> void:
+	var s: GameSettings = (GameSettings as Variant).call(&"new")
+	s.preset = "tiny"
+	s.seed_string = "FOWL"
+	s.seed = Rng.seed_from_string("FOWL")
+	s.player_race = "pheasants"
+	s.difficulty = "flighted"
+	s.seat_swans = true
+	Session.new_game(s)
+
+	# Execute scenario turns up to 45
+	var f_sc := FileAccess.open("res://test/scenarios/p03_expand.json", FileAccess.READ)
+	if f_sc != null:
+		var json := JSON.new()
+		if json.parse(f_sc.get_as_text()) == OK:
+			var sc_data: Dictionary = json.data as Dictionary
+			var acts: Array = sc_data.get("actions", [])
+			for t in range(1, 46):
+				for act in acts:
+					if int(act.get("turn", 0)) == t:
+						_exec_scenario_action(Session.game, act)
+				if t < 45:
+					Session.game.end_turn_headless()
+
+	var screen: GalaxyScreen = router.show_screen(&"galaxy") as GalaxyScreen
+	if screen != null and screen.map_view != null:
+		if screen.map_view.overlay_layer != null:
+			screen.map_view.overlay_layer.set_enabled(true)
+		if screen.map_view.camera != null:
+			var s12: StarSystem = Session.state.systems[12]
+			var s3: StarSystem = Session.state.systems[3]
+			var mid_pos := Vector2((s12.x + s3.x) * 2.0, (s12.y + s3.y) * 2.0)
+			screen.map_view.camera.center_on(mid_pos)
+			screen.map_view.camera.zoom = Vector2(0.8, 0.8)
+			screen.map_view.camera.zoom_changed.emit(0.8)
+
+static func _exec_scenario_action(game: SimGame, act: Dictionary) -> void:
+	var a_name: String = str(act.get("action", ""))
+	var eid: int = int(act.get("empire", 0))
+	match a_name:
+		"auto_explore_all":
+			for f in game.gs.fleets.values():
+				if f.owner == eid:
+					var cmd := CmdFleetAutoExplore.new()
+					cmd.empire_id = eid
+					cmd.fleet_id = f.id
+					cmd.on = true
+					game.submit(cmd)
+		"colonize_best":
+			var nest_fleet: Fleet = null
+			for f in game.gs.fleets.values():
+				if f.owner == eid and f.system_id >= 0 and f.dest_system_id == -1:
+					for sid in f.ship_ids:
+						var s: Ship = game.gs.ships.get(sid)
+						if s != null:
+							var des: ShipDesign = game.gs.designs.get(s.design_id)
+							if des != null:
+								var st: Dictionary = DesignRules.stats(game.db, game.gs, des)
+								if bool(st.get("colonize", false)):
+									nest_fleet = f
+									break
+				if nest_fleet != null:
+					break
+			if nest_fleet == null:
+				return
+			var emp: Empire = game.gs.empires[eid]
+			var traits: Array[String] = emp.species_traits(game.db)
+			var flags: Array[String] = []
+			var best_pid: int = -1
+			var best_pop: int = -1
+			for p in game.gs.planets:
+				var is_owned: bool = false
+				for c in game.gs.colonies.values():
+					if c.planet_id == p.id:
+						is_owned = true
+						break
+				if is_owned or not FuelRange.in_range_system(game.db, game.gs, eid, p.system_id):
+					continue
+				var p_sz: int = Habitability.pop_per_size(game.db, traits, p.climate, flags)
+				if p_sz <= 0:
+					continue
+				var max_pop: int = p_sz * Economy.planet_size_val(p.size)
+				if max_pop > best_pop or (max_pop == best_pop and (best_pid == -1 or p.id < best_pid)):
+					best_pop = max_pop
+					best_pid = p.id
+			if best_pid != -1:
+				var target_p: Planet = game.gs.planets[best_pid]
+				if nest_fleet.system_id != target_p.system_id:
+					var cmd_m := CmdFleetMove.new()
+					cmd_m.empire_id = eid
+					cmd_m.fleet_id = nest_fleet.id
+					cmd_m.system_id = target_p.system_id
+					game.submit(cmd_m)
+				var cmd_c := CmdColonize.new()
+				cmd_c.empire_id = eid
+				cmd_c.fleet_id = nest_fleet.id
+				cmd_c.planet_id = target_p.id
+				game.submit(cmd_c)
+		"queue_role":
+			var role: String = str(act.get("role", ""))
+			var des_id: int = -1
+			for d in game.gs.designs.values():
+				if d.empire_id == eid and d.role == role and not d.obsolete:
+					des_id = d.id
+					break
+			if des_id == -1:
+				var best_d: ShipDesign = AutoDesign.design_for_role(game.db, game.gs, eid, role)
+				if best_d != null:
+					var cmd_save := CmdDesignSave.new()
+					cmd_save.empire_id = eid
+					cmd_save.design_data = best_d.to_dict()
+					game.submit(cmd_save)
+					for d in game.gs.designs.values():
+						if d.empire_id == eid and d.role == role and not d.obsolete:
+							des_id = d.id
+							break
+			if des_id != -1:
+				var cap_cid: int = game.gs.empires[eid].capital_colony_id
+				var cmd_q := CmdQueueAdd.new()
+				cmd_q.empire_id = eid
+				cmd_q.colony_id = cap_cid
+				cmd_q.kind_item = "ship"
+				cmd_q.ref_id = str(des_id)
+				cmd_q.count = 1
+				cmd_q.index = 0
+				game.submit(cmd_q)
+		"outpost_best":
+			var stake_fleet: Fleet = null
+			for f in game.gs.fleets.values():
+				if f.owner == eid and f.system_id >= 0 and f.dest_system_id == -1:
+					for sid in f.ship_ids:
+						var s: Ship = game.gs.ships.get(sid)
+						if s != null:
+							var des: ShipDesign = game.gs.designs.get(s.design_id)
+							if des != null:
+								var st: Dictionary = DesignRules.stats(game.db, game.gs, des)
+								if bool(st.get("outpost", false)):
+									stake_fleet = f
+									break
+				if stake_fleet != null:
+					break
+			if stake_fleet == null:
+				return
+			var best_pid: int = -1
+			for p in game.gs.planets:
+				var is_owned: bool = false
+				for c in game.gs.colonies.values():
+					if c.planet_id == p.id:
+						is_owned = true
+						break
+				if is_owned or not FuelRange.in_range_system(game.db, game.gs, eid, p.system_id):
+					continue
+				if best_pid == -1 or p.id < best_pid:
+					best_pid = p.id
+			if best_pid != -1:
+				var target_p: Planet = game.gs.planets[best_pid]
+				if stake_fleet.system_id != target_p.system_id:
+					var cmd_m := CmdFleetMove.new()
+					cmd_m.empire_id = eid
+					cmd_m.fleet_id = stake_fleet.id
+					cmd_m.system_id = target_p.system_id
+					game.submit(cmd_m)
+				var cmd_o := CmdOutpost.new()
+				cmd_o.empire_id = eid
+				cmd_o.fleet_id = stake_fleet.id
+				cmd_o.planet_id = target_p.id
+				game.submit(cmd_o)
 
 static func _capture_and_save(main: Node, out_path: String) -> void:
 	var tree: SceneTree = main.get_tree()
