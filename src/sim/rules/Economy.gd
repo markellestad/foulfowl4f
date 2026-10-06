@@ -195,6 +195,8 @@ static func empire_totals(db: ContentDB, gs: GameState, empire_id: int) -> Dicti
 		var col: Colony = gs.colonies[cid]
 		if col.owner != empire_id:
 			continue
+		if col.is_outpost:
+			continue
 		colony_count += 1
 		var out: Dictionary = colony_output(db, gs, cid)
 		food_total += (out["food"] as ModResult).value
@@ -214,8 +216,22 @@ static func empire_totals(db: ContentDB, gs: GameState, empire_id: int) -> Dicti
 	var surplus_food: int = max(0, food_balance)
 	var food_sale_cr: int = IntMath.floor_div(surplus_food, db.bal("food_sale_food_per_credit"))
 
+	var ship_upkeep_raw: int = 0
+	for sid in Ids.sorted_keys(gs.ships):
+		var s: Ship = gs.ships[sid]
+		if s.owner != empire_id:
+			continue
+		var des: ShipDesign = gs.designs.get(s.design_id)
+		if des != null:
+			var st: Dictionary = DesignRules.stats(db, gs, des)
+			if bool(st.get("armed", false)):
+				ship_upkeep_raw += int(st.get("upkeep", 0))
+
+	var ship_upkeep_mod: ModResult = Modifiers.eval(db, gs, "ship_upkeep_pct", 0, {"empire_id": empire_id})
+	var ship_upkeep: int = IntMath.ceil_div(ship_upkeep_raw * (100 + ship_upkeep_mod.value), 100)
+
 	var income: int = taxes_total + credits_flat_total + food_sale_cr
-	var expenses: int = upkeep + admin
+	var expenses: int = upkeep + admin + ship_upkeep
 	var net_credits: int = income - expenses
 
 	return {
@@ -229,6 +245,7 @@ static func empire_totals(db: ContentDB, gs: GameState, empire_id: int) -> Dicti
 		"surplus_food": surplus_food,
 		"food_sale_cr": food_sale_cr,
 		"upkeep": upkeep,
+		"ship_upkeep": ship_upkeep,
 		"admin": admin,
 		"income": income,
 		"expenses": expenses,

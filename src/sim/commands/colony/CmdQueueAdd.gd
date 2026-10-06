@@ -16,6 +16,8 @@ func validate(gs: GameState, db: ContentDB) -> String:
 	var col: Colony = gs.colonies[colony_id]
 	if col.owner != empire_id:
 		return "refuse.not_owner"
+	if col.is_outpost:
+		return "refuse.is_outpost"
 	if col.queue.size() >= db.bal("queue_max"):
 		return "refuse.queue_full"
 
@@ -36,6 +38,44 @@ func validate(gs: GameState, db: ContentDB) -> String:
 				return "refuse.already_built"
 		if bool(bdef.get("capital_only", false)) and col.id != emp.capital_colony_id:
 			return "refuse.capital_only"
+	elif kind_item == "ship":
+		var has_yard: bool = false
+		for b in col.buildings:
+			var bdef: Dictionary = db.def("buildings", b)
+			if bool(bdef.get("counts_as_yard", false)):
+				has_yard = true
+				break
+		if not has_yard:
+			return "refuse.no_yard"
+
+		var did: int = int(ref_id)
+		if not gs.designs.has(did):
+			return "refuse.unknown"
+		var des: ShipDesign = gs.designs[did]
+		if des.empire_id != empire_id:
+			return "refuse.not_owner"
+		if des.obsolete:
+			return "refuse.design_obsolete"
+		var hdef: Dictionary = db.def("hulls", des.hull)
+		if bool(hdef.get("yard_only", false)) and col.id != emp.capital_colony_id:
+			return "refuse.capital_only"
+	elif kind_item == "colony_base":
+		var pid: int = int(ref_id)
+		if pid < 0 or pid >= gs.planets.size():
+			return "refuse.unknown"
+		var planet: Planet = gs.planets[pid]
+		var col_planet: Planet = gs.planets[col.planet_id]
+		if planet.system_id != col_planet.system_id:
+			return "refuse.not_here"
+		var species_traits: Array[String] = []
+		var rdef: Dictionary = db.def("races", col.species)
+		for t in rdef.get("traits", []):
+			species_traits.append(str(t))
+		if Habitability.pop_per_size(db, species_traits, planet.climate, []) <= 0:
+			return "refuse.not_habitable"
+		for c in gs.colonies.values():
+			if c.planet_id == pid:
+				return "refuse.owned"
 	elif kind_item != "trade_goods" and kind_item != "housing":
 		return "refuse.unknown"
 

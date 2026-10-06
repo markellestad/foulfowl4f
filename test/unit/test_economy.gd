@@ -46,6 +46,64 @@ func _setup_state(race_id: String = "test_neutral", traits: Array[String] = []) 
 	gs.colonies[0] = col
 	emp.capital_colony_id = 0
 
+	# Starting designs
+	var d_sparrow: ShipDesign = ShipDesign.new()
+	d_sparrow.id = 0
+	d_sparrow.empire_id = 0
+	d_sparrow.name = "Sparrow"
+	d_sparrow.role = "talon_line"
+	d_sparrow.hull = "small"
+	d_sparrow.drive = "walk_drive"
+	d_sparrow.plate = "pinfeather_plate"
+	d_sparrow.weapons = [{"part": "wick_talon", "mount": "", "count": 4}]
+	gs.designs[0] = d_sparrow
+
+	var d_glance: ShipDesign = ShipDesign.new()
+	d_glance.id = 1
+	d_glance.empire_id = 0
+	d_glance.name = "Glance"
+	d_glance.role = "glance"
+	d_glance.hull = "small"
+	d_glance.drive = "walk_drive"
+	d_glance.plate = "pinfeather_plate"
+	d_glance.specials = ["glance_pod"]
+	gs.designs[1] = d_glance
+
+	var d_nest: ShipDesign = ShipDesign.new()
+	d_nest.id = 2
+	d_nest.empire_id = 0
+	d_nest.name = "Nest Ship"
+	d_nest.role = "nest_ship"
+	d_nest.hull = "medium"
+	d_nest.drive = "walk_drive"
+	d_nest.plate = "pinfeather_plate"
+	d_nest.specials = ["nest_pod"]
+	gs.designs[2] = d_nest
+
+	# Starting ships: 2 Sparrows (armed), 2 Glances, 1 Nest Ship
+	for i in range(2):
+		var s_sparrow: Ship = Ship.new()
+		s_sparrow.id = gs.ships.size()
+		s_sparrow.design_id = 0
+		s_sparrow.owner = 0
+		s_sparrow.hp = 20
+		gs.ships[s_sparrow.id] = s_sparrow
+
+	for i in range(2):
+		var s_glance: Ship = Ship.new()
+		s_glance.id = gs.ships.size()
+		s_glance.design_id = 1
+		s_glance.owner = 0
+		s_glance.hp = 20
+		gs.ships[s_glance.id] = s_glance
+
+	var s_nest: Ship = Ship.new()
+	s_nest.id = gs.ships.size()
+	s_nest.design_id = 2
+	s_nest.owner = 0
+	s_nest.hp = 60
+	gs.ships[s_nest.id] = s_nest
+
 	return { "gs": gs, "emp": emp, "planet": p, "colony": col }
 
 func test_opening_check() -> void:
@@ -75,7 +133,9 @@ func test_opening_check() -> void:
 	var totals: Dictionary = Economy.empire_totals(_db, gs, 0)
 	assert_eq(totals["food_need"], 8, "Food eaten = 8")
 	assert_eq(totals["upkeep"], 2, "Building upkeep = 2")
-	assert_eq(totals["net_credits"], 11, "Net credits = 13 - 2 = +11")
+	assert_eq(totals["ship_upkeep"], 2, "Ship upkeep = 2")
+	assert_eq(totals["expenses"], 4, "Total expenses = 2 (bldg) + 2 (ship) = 4")
+	assert_eq(totals["net_credits"], 9, "Net credits = 13 - 4 = +9")
 
 func test_growth_curve() -> void:
 	var ctx: Dictionary = _setup_state("plain_bird", [])
@@ -299,4 +359,52 @@ func test_breakdown_source_labels_never_empty() -> void:
 	assert_eq(StatTooltip.format_source("grand_nest"), "Grand Nest")
 	assert_eq(StatTooltip.format_source("good_industry"), "Good Industry")
 	assert_eq(StatTooltip.format_source("capital"), "Capital")
+
+func test_ship_production_and_nest_drain() -> void:
+	var ctx: Dictionary = _setup_state("pheasants", [])
+	var gs: GameState = ctx["gs"]
+	var col: Colony = ctx["colony"]
+
+	# Colony at 8 pop units has >= 3 pop units
+	assert_true(col.pop_units() >= 3)
+	var nest_des_id: int = 2 # Nest Ship design
+	var q_item: QueueItem = QueueItem.new()
+	q_item.kind = "ship"
+	q_item.ref_id = str(nest_des_id)
+	col.queue = [q_item]
+
+	var cost: int = Production.cost_for_item(_db, gs, col.id, q_item)
+	assert_eq(cost, 65)
+
+	# Produce 65 PP
+	col.progress_pp = 60
+	col.workers = 3
+	col.farmers = 3
+	col.scientists = 2
+	var old_pop_milli: int = col.pop_milli
+	var res: Dictionary = Production.process_colony(_db, gs, col.id)
+	assert_eq(res["completed_ships"].size(), 1, "Nest ship completed")
+	assert_eq(col.pop_milli, old_pop_milli - 1000, "Pop drained by 1000 milli")
+
+	# Now set colony pop to 2 pop units (2000 milli)
+	col.pop_milli = 2000
+	col.farmers = 1
+	col.workers = 1
+	col.scientists = 0
+	assert_eq(col.pop_units(), 2)
+
+	var q_item2: QueueItem = QueueItem.new()
+	q_item2.kind = "ship"
+	q_item2.ref_id = str(nest_des_id)
+	col.queue = [q_item2]
+	col.progress_pp = 60
+	# With 1 worker, PP available is 8, which is >= 65 - 60 = 5 needed
+
+	var res2: Dictionary = Production.process_colony(_db, gs, col.id)
+	assert_eq(res2["completed_ships"].size(), 0, "Nest ship does not complete when pop < 3")
+	assert_eq(col.progress_pp, cost, "Progress kept at cost")
+	assert_eq(res2["notices"].size(), 1, "Notice emitted")
+	assert_eq(res2["notices"][0]["key"], "notify.nest_waiting")
+	assert_eq(col.pop_milli, 2000, "Pop not drained while waiting")
+
 

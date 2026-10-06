@@ -19,6 +19,8 @@ func next(ctx: TurnContext) -> bool:
 	for i in range(_cursor, end_idx):
 		var cid: int = int(_work_list[i])
 		var col: Colony = ctx.gs.colonies[cid]
+		if col.is_outpost:
+			continue
 		var res: Dictionary = Production.process_colony(ctx.db, ctx.gs, cid)
 
 		var comps: Array = res.get("completed_buildings", [])
@@ -28,6 +30,10 @@ func next(ctx: TurnContext) -> bool:
 				"building": str(b),
 				"place": "Star %d Orbit %d" % [planet.system_id, planet.orbit + 1]
 			}, "colony", cid)
+
+		var nts: Array = res.get("notices", [])
+		for n in nts:
+			ctx.report.add_entry("production", str(n.get("key", "")), n.get("args", {}), "colony", cid)
 
 		var tg_cr: int = int(res.get("trade_goods_credits", 0))
 		if tg_cr > 0:
