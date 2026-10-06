@@ -2,7 +2,7 @@ extends Node
 
 signal state_changed(scope: String, ids: Array)
 
-var db: RefCounted = null
+var db: ContentDB = null
 
 func _ready() -> void:
-	pass
+	db = ContentDB.load_from("res://data")
