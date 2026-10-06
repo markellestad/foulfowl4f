@@ -340,33 +340,7 @@ Timing is never asserted in the gated GUT suite; the soak and probe tools fail t
 
 ## 16. Phased build plan
 
-Each phase ends **exported to web, captured, playable or testable**, all prior tests green, one PR-sized change. Product files listed; tests/data additional.
-
-**P0 — Skeleton, export, copy, font**: `project.godot` (Compatibility renderer, 1280x720, canvas_items), `export_presets.cfg` (Web threads off, include `*.json`, exclude `test/*,tools/*,docs/*,addons/gut/*,assets/audio/licensed/*` for public builds), GUT vendored, `Main.tscn/gd`, autoload stubs, `sim/core/*`, `sim/defs/*`, `ui/kit/{Ui,ThemeFactory,Palette}.gd`, `ui/screens/{ScreenBase,UiRouter,MainMenu}.gd`, `data/{balance,audio,credits}.json`, `data/copy/en.json` (Grok's lines), `tools/{run_tests,export_web}.py`. Accept: GUT green (rng, intmath, content, licensing); exported web build boots to a main menu showing en.json strings in Atkinson Hyperlegible; boot check passes.
-
-**P1 — Galaxy and map**: model/{GameState, GameSettings, StarSystem, Planet}, gen/*, save/Serializer, render/galaxy/*, NewGameScreen (presets, seed), GalaxyScreen, CaptureMode. Accept: generator tests over 200 seeds (counts, separation, race-aware fair start, 30% habitable beyond 9 pc, Orn central, wormhole); save round trip; capture.
-
-**P2 — Colonies and economy**: model/{Empire, Species, Colony, QueueItem}, rules/{Modifiers, Economy, Growth, Production, Governor, Specialization, MilitaryBudget}, turn/*, commands/{Cmd, CmdColony}, data/{traits, races (4 first-wave empires), buildings, presets, specializations}, screens/{TopBar, ColonyPanel, ColoniesListScreen, TurnSummaryScreen}, kit/{DataTable, StatTooltip}. Accept: economy tests incl. expansion costs, specialisation, budget; undo delta tests; 150-turn solo run invariant-clean; captures with breakdown tooltip.
-
-**P3 — Research**: data/techs.json (36 nodes, 108 techs), model/TechState, rules/Research, CmdResearch, ResearchScreen. Accept: fork/Creative/One-Note/transfer tests; no-dead-option content test; capture.
-
-**P4 — Ships, fleets, movement, colonisation, fog, refit**: data/{hulls, parts}, model/{ShipDesign, Ship, Fleet, BattlePlan, Knowledge}, rules/{DesignRules, AutoDesign, Refit, Movement, Colonization, Visibility}, commands/{CmdDesign, CmdFleet}, screens/{ShipDesignerScreen, FleetPanel, FleetsListScreen}, render/galaxy/{FleetLayer, OverlayLayer}, render/common/*. Accept: movement/range/colonise (pop drain)/outpost/refit tests; auto-explore covers Tiny by T60; captures.
-
-**P5 — Combat and siege**: rules/combat/*, rules/{Blockade, Bombardment, GroundCombat}, commands/CmdBattle, data/monsters.json, screens/{BattleOrdersCard, BattleScreen}, render/battle/*, TurnRunner pause. Accept: combat and siege tests (§15.2); Battle Orders pause round-trips through the command log; viewer replay final HP equals resolver result; captures of the card, strip and first Horizon wave.
-
-**P6 — AI v1, soak, probes; FIRST EVENING milestone (4 empires)**: sim/ai/* (incl. AiBattle), data/{personalities, difficulty}, tools/soak/*. Accept: AI tests; 20-game smoke soak (4 first-wave empires) with zero hard failures; probes P1-P6 pass; **owner plays one browser Evening Standard to the end** (Conquest or Called Game).
-
-**P7 — Diplomacy, Grand Roost, Coalition, espionage, victory**: rules/{Diplomacy, Council, Coalition, Espionage, Victory, Score}, ai/{AiDiplomacy, AiEspionage, AiWar coalition duty}, CmdDiplo, screens/{DiplomacyScreen, CouncilScreen, VictoryClockPanel, VictoryScreen}. Accept: diplomacy/council/coalition tests; probe P7; smoke soak shows all three victory types.
-
-**P8 — Remaining four empires and events**: trait plumbing for creative, piscivore, tolerant, heat_intolerant, huddle, cache, scavengers, informants, distrusted, uncreative, prefab_coops, nothing_wasted, night_hours; Evening Standard seating; rules/Events (6 MVP events). Accept: trait tests incl. yield precedence; event fixtures; all 8 race cards captured.
-
-**P9 — Presentation, audio, settings**: Sfx full + tools/audio/* + fetch_licensed_audio, CreditsScreen, Settings/SaveLoad/Avipedia/Help, screenshot cards, accessibility. Accept: licensing tests; open-only build sounds complete; UI scale captures 75/100/200%; hotkey table bound. **Mechanics frozen at the end of P9.**
-
-**P10 — Balance gate**: data-only tuning until `run_soak --design balanced280` and `--probes` PASS; Seat-the-Swans report reviewed. No code changes except bug fixes.
-
-**P11 — Web hardening and human playtests**: low-end target perf (H9, CPU throttled 4x), size check (`.pck` ≤ 15 MB with licensed audio, zip ≤ 25 MB), copy-coverage failure on missing keys, 5 recorded playtests against GDD §17.4 H1-H10, owner trademark check on title/faction names, release.
-
-STRETCH phases after P11, one per GDD §18 item.
+Moved to `docs/engineering/PLAN.md` (phase table, conventions, commands, acceptance protocol) and `docs/engineering/phases/P00.md` .. `P11.md` (one self-contained brief per phase). Revision 4 order: P00 skeleton → P01 galaxy → P02 economy + undo → P03 fleets → P04 combat → **P05 AI + vertical slice (first evening)** → P06 research → P07 economy depth/QoL → P08 diplomacy, Grand Roost, Coalition, espionage, Exodus → P09 remaining empires + events → P10 presentation (mechanics freeze) → P11 balance gate + release. Tool names in the plan (`tools/export_web.ps1`, `tools/gate.ps1`) supersede the `.py` names in §2 and §15.1.
 
 ---
 
