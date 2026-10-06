@@ -86,12 +86,23 @@ static func pop_per_size(db: ContentDB, traits: Array[String], climate: String, 
 
 	return pop
 
-static func max_pop(db: ContentDB, traits: Array[String], planet: Planet, flags: Array[String]) -> int:
+static func max_pop(db: ContentDB, traits: Array[String], planet: Planet, flags: Array[String], gs: GameState = null, colony_id: int = -1) -> int:
 	var galaxy_table: Dictionary = db.table("galaxy")
 	var sizes: Dictionary = galaxy_table.get("sizes", {})
 	var sz_info: Dictionary = sizes.get(planet.size, {})
 	var sz_val: int = int(sz_info.get("value", 0))
 	var pps: int = pop_per_size(db, traits, planet.climate, flags)
+	if colony_id >= 0 and gs != null and gs.colonies.has(colony_id):
+		var col: Colony = gs.colonies[colony_id]
+		var ctx: Dictionary = {
+			"empire_id": col.owner,
+			"colony_id": colony_id,
+			"climate": planet.climate,
+			"gravity": planet.gravity
+		}
+		var pps_res: ModResult = Modifiers.eval(db, gs, "pop_per_size", pps, ctx)
+		var flat_res: ModResult = Modifiers.eval(db, gs, "max_pop_flat", 0, ctx)
+		return sz_val * pps_res.value + flat_res.value
 	return sz_val * pps
 
 static func is_good_for(db: ContentDB, traits: Array[String], climate: String) -> bool:
