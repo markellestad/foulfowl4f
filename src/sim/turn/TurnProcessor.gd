@@ -4,6 +4,7 @@ extends RefCounted
 enum Status { RUNNING, NEEDS_INPUT, DONE }
 
 const STEP_ORDER: Array[StringName] = [
+	&"diplomacy",
 	&"movement",
 	&"combat",
 	&"orbital",
@@ -43,6 +44,8 @@ func _init(p_gs: GameState, p_db: ContentDB) -> void:
 
 func _create_step(step_name: StringName) -> TurnStep:
 	match step_name:
+		&"diplomacy":
+			return StepDiplomacy.new()
 		&"movement":
 			return StepMovement.new()
 		&"combat":

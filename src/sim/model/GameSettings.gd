@@ -8,6 +8,7 @@ var difficulty: String = "flighted"
 var player_race: String = "pheasants"
 var seat_swans: bool = true
 var seats: Array[String] = []
+var all_ai: bool = false
 
 func to_dict() -> Dictionary:
 	return {
@@ -17,7 +18,8 @@ func to_dict() -> Dictionary:
 		"difficulty": difficulty,
 		"player_race": player_race,
 		"seat_swans": seat_swans,
-		"seats": seats.duplicate()
+		"seats": seats.duplicate(),
+		"all_ai": all_ai
 	}
 
 static func from_dict(d: Dictionary) -> GameSettings:
@@ -28,6 +30,7 @@ static func from_dict(d: Dictionary) -> GameSettings:
 	s.difficulty = str(d.get("difficulty", "flighted"))
 	s.player_race = str(d.get("player_race", "pheasants"))
 	s.seat_swans = bool(d.get("seat_swans", true))
+	s.all_ai = bool(d.get("all_ai", false))
 	var raw_seats: Array = d.get("seats", [])
 	s.seats.clear()
 	for r in raw_seats:

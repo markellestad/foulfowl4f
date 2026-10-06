@@ -25,6 +25,17 @@ var monsters_empire: int = 100
 var guardian_marked: Dictionary = {}
 var loot: Dictionary = {}
 var pending_battle_requests: Array[int] = []
+var proposals: Array[Dictionary] = []
+var truces: Dictionary = {}
+var war_started_turn: Dictionary = {}
+var war_declarer: Dictionary = {}
+var last_battle_turn: Dictionary = {}
+var capitulation_offers: Array[Dictionary] = []
+var winner: int = -1
+var victory_type: String = ""
+var game_over: bool = false
+var one_more_turn: bool = false
+var news: Array[Dictionary] = []
 
 func alloc_id(kind: String) -> int:
 	var cur: int = int(next_ids.get(kind, 0))
@@ -112,7 +123,18 @@ func to_dict() -> Dictionary:
 		"monsters_empire": monsters_empire,
 		"guardian_marked": guardian_marked.duplicate(),
 		"loot": loot.duplicate(),
-		"pending_battle_requests": pending_battle_requests.duplicate()
+		"pending_battle_requests": pending_battle_requests.duplicate(),
+		"proposals": proposals.duplicate(true),
+		"truces": truces.duplicate(),
+		"war_started_turn": war_started_turn.duplicate(),
+		"war_declarer": war_declarer.duplicate(),
+		"last_battle_turn": last_battle_turn.duplicate(),
+		"capitulation_offers": capitulation_offers.duplicate(true),
+		"winner": winner,
+		"victory_type": victory_type,
+		"game_over": game_over,
+		"one_more_turn": one_more_turn,
+		"news": news.duplicate(true)
 	}
 
 static func from_dict(d: Dictionary) -> GameState:
@@ -220,5 +242,26 @@ static func from_dict(d: Dictionary) -> GameState:
 	gs.pending_battle_requests.clear()
 	for pbr in d.get("pending_battle_requests", []):
 		gs.pending_battle_requests.append(int(pbr))
+
+	gs.proposals.clear()
+	for p_item in d.get("proposals", []):
+		if p_item is Dictionary:
+			gs.proposals.append((p_item as Dictionary).duplicate(true))
+	gs.truces = (d.get("truces", {}) as Dictionary).duplicate()
+	gs.war_started_turn = (d.get("war_started_turn", {}) as Dictionary).duplicate()
+	gs.war_declarer = (d.get("war_declarer", {}) as Dictionary).duplicate()
+	gs.last_battle_turn = (d.get("last_battle_turn", {}) as Dictionary).duplicate()
+	gs.capitulation_offers.clear()
+	for c_item in d.get("capitulation_offers", []):
+		if c_item is Dictionary:
+			gs.capitulation_offers.append((c_item as Dictionary).duplicate(true))
+	gs.winner = int(d.get("winner", -1))
+	gs.victory_type = str(d.get("victory_type", ""))
+	gs.game_over = bool(d.get("game_over", false))
+	gs.one_more_turn = bool(d.get("one_more_turn", false))
+	gs.news.clear()
+	for n_item in d.get("news", []):
+		if n_item is Dictionary:
+			gs.news.append((n_item as Dictionary).duplicate(true))
 
 	return gs

@@ -1,0 +1,131 @@
+{
+  "rows": {
+    "unbothered": {
+      "id": "unbothered",
+      "expansion": 6,
+      "military": 7,
+      "aggression": 5,
+      "research": 8,
+      "diplomacy": 4,
+      "spy": 3,
+      "defense": 5,
+      "war_ratio_pct": 200,
+      "rules": [
+        "no_dogpile",
+        "accepts_tribute"
+      ],
+      "budget_rule": "stay_guarded"
+    },
+    "sportsman": {
+      "id": "sportsman",
+      "expansion": 6,
+      "military": 8,
+      "aggression": 7,
+      "research": 4,
+      "diplomacy": 5,
+      "spy": 2,
+      "defense": 4,
+      "war_ratio_pct": 120,
+      "rules": [
+        "targets_leader",
+        "no_backstab",
+        "rematch"
+      ],
+      "budget_rule": "war_on_contact"
+    },
+    "dealmaker": {
+      "id": "dealmaker",
+      "expansion": 7,
+      "military": 4,
+      "aggression": 3,
+      "research": 5,
+      "diplomacy": 9,
+      "spy": 3,
+      "defense": 4,
+      "war_ratio_pct": 150,
+      "rules": [
+        "war_only_below_minus_50_or_attacked"
+      ],
+      "budget_rule": "stay_guarded"
+    },
+    "librarian": {
+      "id": "librarian",
+      "expansion": 5,
+      "military": 4,
+      "aggression": 3,
+      "research": 10,
+      "diplomacy": 7,
+      "spy": 3,
+      "defense": 6,
+      "war_ratio_pct": 150,
+      "rules": [
+        "no_war_before_t80",
+        "refuse_peace_20_when_attacked"
+      ],
+      "budget_rule": "stay_guarded"
+    },
+    "patient_rock": {
+      "id": "patient_rock",
+      "expansion": 8,
+      "military": 5,
+      "aggression": 2,
+      "research": 5,
+      "diplomacy": 5,
+      "spy": 2,
+      "defense": 8,
+      "war_ratio_pct": 150,
+      "rules": [
+        "hostile_worlds_x2",
+        "lost_systems_are_targets",
+        "peace_when_clear"
+      ],
+      "budget_rule": "stay_guarded"
+    },
+    "borrower": {
+      "id": "borrower",
+      "expansion": 6,
+      "military": 5,
+      "aggression": 6,
+      "research": 6,
+      "diplomacy": 3,
+      "spy": 10,
+      "defense": 4,
+      "war_ratio_pct": 130,
+      "rules": [],
+      "budget_rule": "stay_guarded"
+    },
+    "neighbor": {
+      "id": "neighbor",
+      "expansion": 6,
+      "military": 8,
+      "aggression": 8,
+      "research": 3,
+      "diplomacy": 3,
+      "spy": 2,
+      "defense": 6,
+      "war_ratio_pct": 110,
+      "rules": [
+        "nearest_neighbor_from_t30",
+        "clean_capitulation",
+        "honk_log"
+      ],
+      "budget_rule": "war_on_contact"
+    },
+    "floor": {
+      "id": "floor",
+      "expansion": 7,
+      "military": 9,
+      "aggression": 4,
+      "research": 4,
+      "diplomacy": 4,
+      "spy": 2,
+      "defense": 6,
+      "war_ratio_pct": 130,
+      "rules": [
+        "no_war_before_t60",
+        "keep_attacking_while_ahead"
+      ],
+      "budget_rule": "war_on_contact"
+    }
+  }
+}

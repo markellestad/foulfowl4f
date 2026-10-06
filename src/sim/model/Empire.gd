@@ -13,6 +13,8 @@ var timed_mods: Array[TimedMod] = []
 var strike_next_turn: bool = false
 var food_last: Dictionary = {}
 var ai_memory: Dictionary = {}
+var military_budget: String = "guarded"
+var eliminated_turn: int = -1
 
 func _init() -> void:
 	tech = TechState.new()
@@ -50,7 +52,9 @@ func to_dict() -> Dictionary:
 		"timed_mods": tm_arr,
 		"strike_next_turn": strike_next_turn,
 		"food_last": fl,
-		"ai_memory": ai_memory.duplicate(true)
+		"ai_memory": ai_memory.duplicate(true),
+		"military_budget": military_budget,
+		"eliminated_turn": eliminated_turn
 	}
 
 static func from_dict(d: Dictionary) -> Empire:
@@ -78,4 +82,6 @@ static func from_dict(d: Dictionary) -> Empire:
 	for k in raw_fl.keys():
 		emp.food_last[str(k)] = int(raw_fl[k])
 	emp.ai_memory = (d.get("ai_memory", {}) as Dictionary).duplicate(true)
+	emp.military_budget = str(d.get("military_budget", "guarded"))
+	emp.eliminated_turn = int(d.get("eliminated_turn", -1))
 	return emp

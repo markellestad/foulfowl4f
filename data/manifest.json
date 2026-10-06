@@ -12,6 +12,7 @@
     "presets",
     "hulls",
     "parts",
-    "monsters"
+    "monsters",
+    "personalities"
   ]
 }

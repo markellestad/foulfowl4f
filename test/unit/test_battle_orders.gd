@@ -62,7 +62,7 @@ func test_boundary_pair_big_mode() -> void:
 	tp_a.orders_mode = "big"
 	tp_a.ctx.orders_mode = "big"
 
-	while tp_a.step_index <= 1 and tp_a.status == TurnProcessor.Status.RUNNING:
+	while tp_a.step_index <= TurnProcessor.STEP_ORDER.find(&"combat") and tp_a.status == TurnProcessor.Status.RUNNING:
 		tp_a.run_next_substep()
 
 	assert_eq(tp_a.requests.size(), 0, "2-vs-2 should raise no request")
@@ -79,7 +79,7 @@ func test_boundary_pair_big_mode() -> void:
 	tp_b.orders_mode = "big"
 	tp_b.ctx.orders_mode = "big"
 
-	while tp_b.step_index <= 1 and tp_b.status == TurnProcessor.Status.RUNNING:
+	while tp_b.step_index <= TurnProcessor.STEP_ORDER.find(&"combat") and tp_b.status == TurnProcessor.Status.RUNNING:
 		tp_b.run_next_substep()
 
 	assert_eq(tp_b.status, TurnProcessor.Status.NEEDS_INPUT, "3-vs-3 status should be NEEDS_INPUT")
@@ -112,7 +112,7 @@ func test_four_qualifying_battles_and_ranking() -> void:
 	tp.orders_mode = "big"
 	tp.ctx.orders_mode = "big"
 
-	while tp.step_index <= 1 and tp.status == TurnProcessor.Status.RUNNING:
+	while tp.step_index <= TurnProcessor.STEP_ORDER.find(&"combat") and tp.status == TurnProcessor.Status.RUNNING:
 		tp.run_next_substep()
 
 	assert_eq(tp.status, TurnProcessor.Status.NEEDS_INPUT, "Should pause on NEEDS_INPUT")
@@ -154,7 +154,7 @@ func test_answer_in_cmd_log_and_replay_hash() -> void:
 	tp1.orders_mode = "big"
 	tp1.ctx.orders_mode = "big"
 
-	while tp1.step_index <= 1 and tp1.status == TurnProcessor.Status.RUNNING:
+	while tp1.step_index <= TurnProcessor.STEP_ORDER.find(&"combat") and tp1.status == TurnProcessor.Status.RUNNING:
 		tp1.run_next_substep()
 
 	assert_eq(tp1.status, TurnProcessor.Status.NEEDS_INPUT)
@@ -195,7 +195,7 @@ func test_answer_in_cmd_log_and_replay_hash() -> void:
 	tp2.orders_mode = "big"
 	tp2.ctx.orders_mode = "big"
 
-	while tp2.step_index <= 1 and tp2.status == TurnProcessor.Status.RUNNING:
+	while tp2.step_index <= TurnProcessor.STEP_ORDER.find(&"combat") and tp2.status == TurnProcessor.Status.RUNNING:
 		tp2.run_next_substep()
 
 	assert_eq(tp2.status, TurnProcessor.Status.NEEDS_INPUT)
@@ -248,7 +248,7 @@ func test_undo_cannot_remove_battle_orders() -> void:
 	tp.orders_mode = "big"
 	tp.ctx.orders_mode = "big"
 
-	while tp.step_index <= 1 and tp.status == TurnProcessor.Status.RUNNING:
+	while tp.step_index <= TurnProcessor.STEP_ORDER.find(&"combat") and tp.status == TurnProcessor.Status.RUNNING:
 		tp.run_next_substep()
 
 	assert_eq(tp.status, TurnProcessor.Status.NEEDS_INPUT)
