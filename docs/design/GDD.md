@@ -1,4 +1,4 @@
-# Foul Fowl 4X — Game Design Document
+# Foul Fowl: Fly, Flock, Forage, Fight — Game Design Document
 
 Revision 4 (red team round 2), 2026-10-06. Status: BUILD (engineering plan: `docs/engineering/PLAN.md`). Companions: `ARCHITECTURE.md` (how it is built), `BRIEF.md` (why), `MEME_BIBLE.md` (voice, roster flavour), `COPY_PLAN.md` (every string), `redteam/` (findings; round 1 disposition in §22, round 2 in §23).
 

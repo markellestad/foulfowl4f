@@ -1,4 +1,4 @@
-# Foul Fowl 4X — Copy Plan
+# Foul Fowl: Fly, Flock, Forage, Fight — Copy Plan
 
 Revision 4 (red team round 2), 2026-10-06. Maps every player-facing string to its source. All strings ship in **`data/copy/en.json`** (flat `{key: string}`); mechanics files hold no display text.
 

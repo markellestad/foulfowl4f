@@ -1,4 +1,4 @@
-# Foul Fowl 4X — Brief (owner, 2026-10-06)
+# Foul Fowl: Fly, Flock, Forage, Fight — Brief (owner, 2026-10-06)
 
 > "Foul Fowl 4X?
 > Ducks.
@@ -38,3 +38,6 @@ No specific reference machine. Target the lowest common denominator so the itch 
 - Minimum window 1280x720, UI scale option; mouse-only playable (keyboard shortcuts optional).
 - Download small: initial web build under ~25 MB, audio streamed/compressed OGG.
 - The local performance check uses the dev machine with the browser's CPU throttled 4x as the stand-in for the low-end target.
+
+## Title (owner, 2026-10-06)
+**Foul Fowl: Fly, Flock, Forage, Fight** — the four F's parody 4X's eXplore/eXpand/eXploit/eXterminate. The original quote ("Foul Fowl 4X?") stays as the epigraph. Main menu: "Foul Fowl" as the title, "Fly, Flock, Forage, Fight" as the subtitle line.
