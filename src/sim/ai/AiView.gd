@@ -2,7 +2,12 @@ class_name AiView
 extends RefCounted
 
 var empire_id: int = -1
-var turn: int = 1
+var turn: int:
+	get:
+		return _gs.turn if _gs != null else _turn
+	set(v):
+		_turn = v
+var _turn: int = 1
 var seed: int = 0
 var db: ContentDB = null
 
@@ -96,6 +101,9 @@ func is_explored(sys_id: int) -> bool:
 func seen_colonies() -> Dictionary:
 	return knowledge().seen_colonies
 
+func seen_colony(cid: int) -> Dictionary:
+	return knowledge().seen_colonies.get(cid, {})
+
 func visible_fleets() -> Dictionary:
 	return knowledge().visible_fleets
 
@@ -146,6 +154,16 @@ func planet(planet_id: int) -> Planet:
 	if planet_id >= 0 and planet_id < _gs.planets.size():
 		return _gs.planets[planet_id]
 	return null
+
+func colony_planet(cid: int) -> Planet:
+	if _gs.colonies.has(cid):
+		var col: Colony = _gs.colonies[cid]
+		return planet(col.planet_id)
+	return null
+
+func colony_system_id(cid: int) -> int:
+	var p: Planet = colony_planet(cid)
+	return p.system_id if p != null else -1
 
 func own_power() -> int:
 	return Power.empire_military_power(db, _gs, empire_id)

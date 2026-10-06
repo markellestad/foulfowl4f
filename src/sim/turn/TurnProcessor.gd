@@ -4,6 +4,7 @@ extends RefCounted
 enum Status { RUNNING, NEEDS_INPUT, DONE }
 
 const STEP_ORDER: Array[StringName] = [
+	&"ai_plan",
 	&"diplomacy",
 	&"movement",
 	&"combat",
@@ -27,6 +28,7 @@ var current_step: TurnStep = null
 var orders_mode: String = "big"
 var requests: Array[Dictionary] = []
 var auto_systems: Array[int] = []
+var ai_held: Dictionary = {}
 
 func _init(p_gs: GameState, p_db: ContentDB) -> void:
 	gs = p_gs
@@ -45,6 +47,8 @@ func _init(p_gs: GameState, p_db: ContentDB) -> void:
 
 func _create_step(step_name: StringName) -> TurnStep:
 	match step_name:
+		&"ai_plan":
+			return StepAiPlan.new()
 		&"diplomacy":
 			return StepDiplomacy.new()
 		&"movement":

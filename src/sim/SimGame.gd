@@ -45,6 +45,16 @@ func submit(cmd: Cmd) -> String:
 
 	return ""
 
+func submit_ai(cmd: Cmd) -> String:
+	if cmd == null:
+		return "refuse.null"
+	var refusal: String = cmd.validate(gs, db)
+	if refusal != "":
+		SimLog.warn("AI_REJECT: %s %s" % [cmd.kind(), refusal])
+		return refusal
+	cmd.apply(gs, db)
+	return ""
+
 func can_undo() -> bool:
 	return turn_cmds.size() > oldest_undoable_index
 
