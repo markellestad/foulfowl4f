@@ -19,6 +19,7 @@ var garrison: int = 0
 var defense_hp: int = 0
 var blockaded: bool = false
 var founded_turn: int = 1
+var is_outpost: bool = false
 
 func pop_units() -> int:
 	return int(IntMath.floor_div(pop_milli, 1000))
@@ -48,7 +49,8 @@ func to_dict() -> Dictionary:
 		"garrison": garrison,
 		"defense_hp": defense_hp,
 		"blockaded": blockaded,
-		"founded_turn": founded_turn
+		"founded_turn": founded_turn,
+		"is_outpost": is_outpost
 	}
 
 static func from_dict(d: Dictionary) -> Colony:
@@ -78,4 +80,5 @@ static func from_dict(d: Dictionary) -> Colony:
 	c.defense_hp = int(d.get("defense_hp", 0))
 	c.blockaded = bool(d.get("blockaded", false))
 	c.founded_turn = int(d.get("founded_turn", 1))
+	c.is_outpost = bool(d.get("is_outpost", false))
 	return c

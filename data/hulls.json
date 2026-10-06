@@ -1,0 +1,64 @@
+{
+  "rows": {
+    "small": {
+      "id": "small",
+      "tech": "start",
+      "space": 24,
+      "hp": 20,
+      "pp": 8,
+      "evasion": 15,
+      "upkeep": 1,
+      "specials": 1,
+      "line_slots": 1,
+      "yard_only": false
+    },
+    "medium": {
+      "id": "medium",
+      "tech": "start",
+      "space": 60,
+      "hp": 60,
+      "pp": 22,
+      "evasion": 5,
+      "upkeep": 1,
+      "specials": 2,
+      "line_slots": 1,
+      "yard_only": false
+    },
+    "large": {
+      "id": "large",
+      "tech": "the_large_keel",
+      "space": 130,
+      "hp": 150,
+      "pp": 55,
+      "evasion": 0,
+      "upkeep": 2,
+      "specials": 3,
+      "line_slots": 1,
+      "yard_only": true
+    },
+    "huge": {
+      "id": "huge",
+      "tech": "the_wide_keel",
+      "space": 280,
+      "hp": 350,
+      "pp": 130,
+      "evasion": -10,
+      "upkeep": 4,
+      "specials": 4,
+      "line_slots": 1,
+      "yard_only": true
+    },
+    "titan": {
+      "id": "titan",
+      "tech": "titan_perch",
+      "space": 600,
+      "hp": 800,
+      "pp": 320,
+      "evasion": -20,
+      "upkeep": 8,
+      "specials": 5,
+      "line_slots": 2,
+      "yard_only": true
+    }
+  }
+}

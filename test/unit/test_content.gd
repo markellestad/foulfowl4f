@@ -16,7 +16,7 @@ func test_content_db_load() -> void:
 	assert_true(db.is_ok(), "ContentDB loaded without errors: %s" % str(db.errors))
 	assert_eq(db.errors.size(), 0)
 	
-	for manifest_file in ["balance", "audio", "credits", "galaxy", "climates", "traits", "races", "difficulty", "buildings", "presets"]:
+	for manifest_file in ["balance", "audio", "credits", "galaxy", "climates", "traits", "races", "difficulty", "buildings", "presets", "hulls", "parts"]:
 		var t: Dictionary = db.table(manifest_file)
 		assert_false(t.is_empty(), "Table %s is not empty" % manifest_file)
 		_assert_no_floats(t, manifest_file)

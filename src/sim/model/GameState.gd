@@ -12,6 +12,10 @@ var monster_spawns: Array[Dictionary] = []
 var gen_min_sep: int = 0
 var empires: Array[Empire] = []
 var colonies: Dictionary = {}
+var designs: Dictionary = {}
+var ships: Dictionary = {}
+var fleets: Dictionary = {}
+var knowledge: Dictionary = {}
 var report: TurnReport = null
 var cmd_log: Array[Dictionary] = []
 
@@ -53,6 +57,22 @@ func to_dict() -> Dictionary:
 	for cid in Ids.sorted_keys(colonies):
 		col_dict[str(cid)] = colonies[cid].to_dict()
 
+	var des_dict: Dictionary = {}
+	for did in Ids.sorted_keys(designs):
+		des_dict[str(did)] = designs[did].to_dict()
+
+	var shp_dict: Dictionary = {}
+	for sid in Ids.sorted_keys(ships):
+		shp_dict[str(sid)] = ships[sid].to_dict()
+
+	var flt_dict: Dictionary = {}
+	for fid in Ids.sorted_keys(fleets):
+		flt_dict[str(fid)] = fleets[fid].to_dict()
+
+	var knw_dict: Dictionary = {}
+	for eid in Ids.sorted_keys(knowledge):
+		knw_dict[str(eid)] = knowledge[eid].to_dict()
+
 	var cmds: Array = []
 	for c in cmd_log:
 		cmds.append(c.duplicate(true))
@@ -69,6 +89,10 @@ func to_dict() -> Dictionary:
 		"gen_min_sep": gen_min_sep,
 		"empires": emp_arr,
 		"colonies": col_dict,
+		"designs": des_dict,
+		"ships": shp_dict,
+		"fleets": flt_dict,
+		"knowledge": knw_dict,
 		"report": report.to_dict() if report != null else null,
 		"cmd_log": cmds
 	}
@@ -123,6 +147,34 @@ static func from_dict(d: Dictionary) -> GameState:
 		var cid: int = int(k)
 		if raw_cols[k] is Dictionary:
 			gs.colonies[cid] = Colony.from_dict(raw_cols[k])
+
+	gs.designs.clear()
+	var raw_des: Dictionary = d.get("designs", {})
+	for k in raw_des.keys():
+		var did: int = int(k)
+		if raw_des[k] is Dictionary:
+			gs.designs[did] = ShipDesign.from_dict(raw_des[k])
+
+	gs.ships.clear()
+	var raw_shp: Dictionary = d.get("ships", {})
+	for k in raw_shp.keys():
+		var sid: int = int(k)
+		if raw_shp[k] is Dictionary:
+			gs.ships[sid] = Ship.from_dict(raw_shp[k])
+
+	gs.fleets.clear()
+	var raw_flt: Dictionary = d.get("fleets", {})
+	for k in raw_flt.keys():
+		var fid: int = int(k)
+		if raw_flt[k] is Dictionary:
+			gs.fleets[fid] = Fleet.from_dict(raw_flt[k])
+
+	gs.knowledge.clear()
+	var raw_knw: Dictionary = d.get("knowledge", {})
+	for k in raw_knw.keys():
+		var eid: int = int(k)
+		if raw_knw[k] is Dictionary:
+			gs.knowledge[eid] = Knowledge.from_dict(raw_knw[k])
 
 	if d.has("report") and d["report"] is Dictionary:
 		gs.report = TurnReport.from_dict(d["report"])

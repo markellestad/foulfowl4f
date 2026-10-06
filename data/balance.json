@@ -24,5 +24,16 @@
   "slice_items": 8,
   "undo_checkpoint_every": 10,
   "undo_max": 50,
-  "autosave_keep": 3
+  "autosave_keep": 3,
+  "base_fuel_range_dpc": 60,
+  "colony_scan_dpc": 30,
+  "capital_scan_add_dpc": 20,
+  "ship_scan_dpc": 10,
+  "glance_pod_scan_dpc": 20,
+  "max_designs": 12,
+  "nest_min_pop_units": 3,
+  "new_colony_pop_milli": 1000,
+  "colony_base_pp": 40,
+  "miniaturize_step_pct": 15,
+  "miniaturize_floor_pct": 50
 }
