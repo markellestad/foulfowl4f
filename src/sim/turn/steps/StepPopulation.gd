@@ -83,7 +83,13 @@ func next(ctx: TurnContext) -> bool:
 	var end_idx: int = min(_cursor + slice_count, _work_colonies.size())
 	for i in range(_cursor, end_idx):
 		var cid: int = int(_work_colonies[i])
+		var col: Colony = ctx.gs.colonies[cid]
+		var old_u: int = col.pop_units()
 		Growth.apply_growth(ctx.db, ctx.gs, cid)
+		var new_u: int = col.pop_units()
+		if new_u > old_u:
+			# When pop units increase from growth, assign new pop to workers
+			col.workers += (new_u - old_u)
 
 	_cursor = end_idx
 	return _cursor >= _work_colonies.size()
