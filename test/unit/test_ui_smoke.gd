@@ -62,3 +62,33 @@ func test_capture_fidelity_invariants() -> void:
 	var col_rect: Rect2 = menu_col.get_global_rect()
 	var col_center_x: float = col_rect.position.x + col_rect.size.x / 2.0
 	assert_true(abs(col_center_x - 640.0) <= 5.0, "Menu column centered at x=%.1f (expected ~640)" % col_center_x)
+
+func test_new_game_screen_builds() -> void:
+	var router: UiRouter = UiRouter.new()
+	add_child_autofree(router)
+	var screen: ScreenBase = router.show_screen(&"new_game")
+	assert_not_null(screen, "NewGameScreen builds")
+	var start_btns: Array[Node] = screen.find_children("*", "Button", true, false)
+	assert_true(start_btns.size() >= 3, "NewGameScreen has buttons")
+
+func test_galaxy_screen_and_system_panel() -> void:
+	var main_node: Main = Main.new()
+	add_child_autofree(main_node)
+	main_node._build_scene_tree()
+
+	var s: GameSettings = (GameSettings as Variant).call(&"new")
+	s.preset = "evening_standard"
+	s.seed_string = "FOWL"
+	s.seed = Rng.seed_from_string("FOWL")
+	s.player_race = "pheasants"
+	s.seat_swans = true
+	Session.start_galaxy(s)
+
+	var screen: GalaxyScreen = main_node.ui_root.show_screen(&"galaxy") as GalaxyScreen
+	assert_not_null(screen, "GalaxyScreen created")
+	assert_not_null(screen.system_panel, "SystemPanel present")
+	assert_not_null(screen.map_view, "GalaxyMapView present")
+
+	# Test selecting system 0
+	screen.map_view.select_system(0)
+	assert_eq(screen.system_panel.current_system_id, 0, "System 0 selected in panel")

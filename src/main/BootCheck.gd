@@ -28,5 +28,18 @@ static func run(main: Node) -> void:
 			main.get_tree().quit(1)
 			return
 
+	var s: GameSettings = (GameSettings as Variant).call(&"new")
+	s.preset = "evening_standard"
+	s.seed_string = "FOWL"
+	s.seed = Rng.seed_from_string("FOWL")
+	s.player_race = "pheasants"
+	s.seat_swans = true
+	var gs: GameState = GalaxyGenerator.generate(s, Session.db)
+	if gs == null or gs.systems.size() != 24:
+		print("BOOT_FAIL Galaxy generation failed or stars != 24: ", gs.systems.size() if gs != null else "null")
+		main.get_tree().quit(1)
+		return
+	print("BOOT_GALAXY_OK stars=%d" % gs.systems.size())
+
 	print("BOOT_OK")
 	main.get_tree().quit(0)

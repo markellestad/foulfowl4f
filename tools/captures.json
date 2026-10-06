@@ -9,6 +9,21 @@
       "id": "credits",
       "phase": "P00",
       "out": "build/captures/P00_credits.png"
+    },
+    {
+      "id": "P01_new_game",
+      "phase": "P01",
+      "out": "build/captures/P01_new_game.png"
+    },
+    {
+      "id": "P01_galaxy",
+      "phase": "P01",
+      "out": "build/captures/P01_galaxy.png"
+    },
+    {
+      "id": "P01_system_panel",
+      "phase": "P01",
+      "out": "build/captures/P01_system_panel.png"
     }
   ]
 }

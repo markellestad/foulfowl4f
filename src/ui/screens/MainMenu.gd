@@ -44,8 +44,7 @@ func build() -> void:
 	btn_col.alignment = BoxContainer.ALIGNMENT_CENTER
 	col.add_child(btn_col)
 
-	var btn_new := Ui.button(Copy.t("ui.label.new_game"), _on_new_game, "Coming in P01")
-	btn_new.disabled = true
+	var btn_new := Ui.button(Copy.t("ui.label.new_game"), _on_new_game)
 	btn_new.custom_minimum_size = Vector2(240, 36)
 	btn_col.add_child(btn_new)
 
@@ -76,6 +75,8 @@ func _start_music_if_needed() -> void:
 
 func _on_new_game() -> void:
 	_start_music_if_needed()
+	if router != null:
+		router.show_screen(&"new_game")
 
 func _on_continue() -> void:
 	_start_music_if_needed()

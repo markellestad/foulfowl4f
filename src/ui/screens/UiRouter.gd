@@ -3,7 +3,9 @@ extends Control
 
 const SCREENS: Dictionary = {
 	&"main_menu": preload("res://src/ui/screens/MainMenu.gd"),
-	&"credits": preload("res://src/ui/screens/CreditsScreen.gd")
+	&"credits": preload("res://src/ui/screens/CreditsScreen.gd"),
+	&"new_game": preload("res://src/ui/screens/NewGameScreen.gd"),
+	&"galaxy": preload("res://src/ui/screens/GalaxyScreen.gd")
 }
 
 var _stack: Array[ScreenBase] = []
