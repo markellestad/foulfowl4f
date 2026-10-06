@@ -26,7 +26,16 @@ def main():
         manifest = json.load(f)
 
     source_root_env = manifest.get("source_root_env", "FOULFOWL_SOUND_ASSETS")
-    source_root = os.environ.get(source_root_env, manifest.get("source_root_default", ""))
+    source_root = os.environ.get(source_root_env, "")
+    if not source_root:
+        local_cfg = root / "tools" / "audio" / "sound_root.local"
+        if local_cfg.exists():
+            source_root = local_cfg.read_text(encoding="utf-8").strip()
+    if not source_root:
+        source_root = manifest.get("source_root_default", "")
+    if not source_root:
+        print(f"No sound source folder: set {source_root_env} or write the path into tools/audio/sound_root.local (gitignored). Skipping.")
+        return 0
     source_root_path = pathlib.Path(source_root)
 
     total_sfx_size = 0

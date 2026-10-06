@@ -5,3 +5,6 @@ export_credentials.cfg
 assets/audio/licensed/
 /tools/__pycache__/
 *.pyc
+
+# Local path to the owner sound library (never committed)
+tools/audio/sound_root.local
