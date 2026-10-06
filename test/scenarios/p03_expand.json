@@ -1,0 +1,49 @@
+{
+  "name": "p03_expand",
+  "settings": {
+    "preset": "tiny",
+    "seed_string": "FOWL",
+    "player_race": "pheasants",
+    "difficulty": "flighted",
+    "seat_swans": true
+  },
+  "turns": 60,
+  "player_auto": true,
+  "actions": [
+    { "turn": 1, "action": "auto_explore_all", "empire": 0 },
+    { "turn": 1, "action": "colonize_best", "empire": 0 },
+    { "turn": 2, "action": "queue_role", "empire": 0, "role": "nest_ship" },
+    { "turn": 12, "action": "colonize_best", "empire": 0 },
+    { "turn": 14, "action": "queue_role", "empire": 0, "role": "stake_ship" },
+    { "turn": 25, "action": "outpost_best", "empire": 0 }
+  ],
+  "checks_every_turn": [
+    "invariants_clean",
+    "simlog_clean"
+  ],
+  "expect": [
+    {
+      "turn": 35,
+      "check": "colonies_min",
+      "empire": 0,
+      "value": 3
+    },
+    {
+      "turn": 40,
+      "check": "nest_drain_observed",
+      "empire": 0
+    },
+    {
+      "turn": 45,
+      "check": "outposts_min",
+      "empire": 0,
+      "value": 1
+    },
+    {
+      "turn": 60,
+      "check": "explored_in_range_pct",
+      "empire": 0,
+      "value": 100
+    }
+  ]
+}

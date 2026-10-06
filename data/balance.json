@@ -25,7 +25,7 @@
   "undo_checkpoint_every": 10,
   "undo_max": 50,
   "autosave_keep": 3,
-  "base_fuel_range_dpc": 60,
+  "base_fuel_range_dpc": 75,
   "colony_scan_dpc": 30,
   "capital_scan_add_dpc": 20,
   "ship_scan_dpc": 10,

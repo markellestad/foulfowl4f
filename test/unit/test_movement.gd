@@ -52,26 +52,29 @@ func _setup_movement_state() -> Dictionary:
 	gs.planets.append(p1)
 	s1.planet_ids.append(1)
 
-	# System 2: (60, 0) - exactly at 60 dpc
+	var base_r: int = _db.bal("base_fuel_range_dpc")
+
+	# System 2: exactly at base range
 	var s2: StarSystem = StarSystem.new()
 	s2.id = 2
-	s2.x = 60
+	s2.x = base_r
 	s2.y = 0
 	gs.systems.append(s2)
 
-	# System 3: (61, 0) - 1 dpc outside 60 dpc
+	# System 3: 1 dpc outside base range
 	var s3: StarSystem = StarSystem.new()
 	s3.id = 3
-	s3.x = 61
+	s3.x = base_r + 1
 	s3.y = 0
 	gs.systems.append(s3)
 
-	# System 4: (110, 0) - reachable from outpost at system 1
+	# System 4: reachable from outpost at system 1
 	var s4: StarSystem = StarSystem.new()
 	s4.id = 4
-	s4.x = 110
+	s4.x = 50 + base_r
 	s4.y = 0
 	gs.systems.append(s4)
+
 
 	# System 5 & 6: Wormhole pair
 	var s5: StarSystem = StarSystem.new()
@@ -125,6 +128,7 @@ func test_eta_turns_formula_and_wormhole() -> void:
 	var ctx: Dictionary = _setup_movement_state()
 	var gs: GameState = ctx["gs"]
 	var flt: Fleet = ctx["fleet"]
+	var base_r: int = _db.bal("base_fuel_range_dpc")
 
 	# Fleet speed is 2 pc/turn = 20 dpc/turn
 	assert_eq(Movement.fleet_map_speed(_db, gs, flt.id), 2)
@@ -132,8 +136,9 @@ func test_eta_turns_formula_and_wormhole() -> void:
 	# To System 1 (dist 50 dpc): ceil_div(50, 20) = 3 turns
 	assert_eq(Movement.eta_turns(_db, gs, flt.id, 1), 3)
 
-	# To System 2 (dist 60 dpc): ceil_div(60, 20) = 3 turns
-	assert_eq(Movement.eta_turns(_db, gs, flt.id, 2), 3)
+	# To System 2 (dist base_r dpc): ceil_div(base_r, 20)
+	var exp_eta2: int = IntMath.ceil_div(base_r, 20)
+	assert_eq(Movement.eta_turns(_db, gs, flt.id, 2), exp_eta2)
 
 	# Move fleet to System 5 with wormhole to System 6
 	flt.system_id = 5
@@ -183,18 +188,19 @@ func test_advance_and_position_lerp() -> void:
 func test_range_boundary_and_outpost_extension() -> void:
 	var ctx: Dictionary = _setup_movement_state()
 	var gs: GameState = ctx["gs"]
+	var base_r: int = _db.bal("base_fuel_range_dpc")
 
-	# Base range is 60 dpc
-	assert_eq(FuelRange.fuel_range_dpc(_db, gs, 0), 60)
+	# Base range check
+	assert_eq(FuelRange.fuel_range_dpc(_db, gs, 0), base_r)
 
-	# System 2 at (60, 0) is exactly at range (dist 60) -> ALLOW
-	assert_true(FuelRange.in_range(_db, gs, 0, 60, 0), "Exactly at range 60 dpc is in range")
+	# System 2 at (base_r, 0) is exactly at range -> ALLOW
+	assert_true(FuelRange.in_range(_db, gs, 0, base_r, 0), "Exactly at range is in range")
 
-	# System 3 at (61, 0) is 1 dpc outside range (dist 61) -> REFUSE
-	assert_false(FuelRange.in_range(_db, gs, 0, 61, 0), "1 dpc outside range 60 is out of range")
+	# System 3 at (base_r + 1, 0) is 1 dpc outside range -> REFUSE
+	assert_false(FuelRange.in_range(_db, gs, 0, base_r + 1, 0), "1 dpc outside range is out of range")
 
-	# System 4 at (110, 0) is out of range from capital (dist 110)
-	assert_false(FuelRange.in_range(_db, gs, 0, 110, 0), "System 4 is out of range before outpost")
+	# System 4 at (50 + base_r, 0) is out of range from capital
+	assert_false(FuelRange.in_range(_db, gs, 0, 50 + base_r, 0), "System 4 is out of range before outpost")
 
 	# Plant an outpost at System 1 (50, 0)
 	var outpost: Colony = Colony.new()
@@ -205,13 +211,14 @@ func test_range_boundary_and_outpost_extension() -> void:
 	outpost.pop_milli = 0
 	gs.colonies[1] = outpost
 
-	# Now System 4 (110, 0) is dist 60 from outpost at (50, 0) -> ALLOW
-	assert_true(FuelRange.in_range(_db, gs, 0, 110, 0), "Outpost extends range: System 4 now in range")
+	# Now System 4 (50 + base_r, 0) is dist base_r from outpost at (50, 0) -> ALLOW
+	assert_true(FuelRange.in_range(_db, gs, 0, 50 + base_r, 0), "Outpost extends range: System 4 now in range")
 
 func test_redirect_mid_flight_continues_from_current_position() -> void:
 	var ctx: Dictionary = _setup_movement_state()
 	var gs: GameState = ctx["gs"]
 	var flt: Fleet = ctx["fleet"]
+	var base_r: int = _db.bal("base_fuel_range_dpc")
 
 	# Flying to System 1 (50, 0)
 	flt.system_id = -1
@@ -226,10 +233,11 @@ func test_redirect_mid_flight_continues_from_current_position() -> void:
 	Movement.advance(gs, flt)
 	assert_eq(flt.x, 16)
 
-	# Redirect to System 2 (60, 0) mid-flight
-	# Remaining dist from (16, 0) to (60, 0) = 44 dpc. Speed 20 dpc/t -> ceil_div(44, 20) = 3 turns
+	# Redirect to System 2 (base_r, 0) mid-flight
+	# Remaining dist from (16, 0) to (base_r, 0) = base_r - 16. Speed 20 dpc/t
+	var rem_dist: int = base_r - 16
 	var eta: int = Movement.eta_turns(_db, gs, flt.id, 2)
-	assert_eq(eta, 3)
+	assert_eq(eta, IntMath.ceil_div(rem_dist, 20))
 
 	flt.from_x = flt.x
 	flt.from_y = flt.y
@@ -240,7 +248,8 @@ func test_redirect_mid_flight_continues_from_current_position() -> void:
 	assert_eq(flt.from_x, 16, "Redirect continues from current position (16, 0)")
 	assert_eq(flt.dest_system_id, 2)
 
-	# Advance 1 turn to turn 3: lerp_i(16, 60, 1, 3) = 16 + 44/3 = 16 + 14 = 30
+	# Advance 1 turn to turn 3: lerp_i(16, base_r, 1, eta)
 	gs.turn = 3
 	Movement.advance(gs, flt)
-	assert_eq(flt.x, 30)
+	assert_eq(flt.x, IntMath.lerp_i(16, base_r, 1, eta))
+

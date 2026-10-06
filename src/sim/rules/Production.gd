@@ -99,6 +99,10 @@ static func _try_complete_head(db: ContentDB, gs: GameState, col: Colony, head: 
 					})
 					return false
 				_drain_nest_pop(col)
+				notices.append({
+					"key": "notify.nest_drained",
+					"args": {"colony_id": col.id}
+				})
 			var s: Ship = Ship.new()
 			s.id = gs.alloc_id("ship")
 			s.design_id = did
@@ -175,8 +179,12 @@ static func process_colony(db: ContentDB, gs: GameState, colony_id: int) -> Dict
 			var pop_add: int = pp_available * h_rate
 			var max_milli: int = Economy.max_pop_milli(db, gs, colony_id)
 			var old_pop: int = col.pop_milli
+			var old_units: int = col.pop_units()
 			col.pop_milli = min(col.pop_milli + pop_add, max_milli)
 			housing_milli_added += (col.pop_milli - old_pop)
+			var new_units: int = col.pop_units()
+			if new_units > old_units:
+				col.workers += (new_units - old_units)
 			pp_available = 0
 			break
 		elif head.kind == "building" or head.kind == "ship" or head.kind == "colony_base":

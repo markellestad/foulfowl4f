@@ -491,6 +491,7 @@
 
   "notify.colony_founded": "Colony founded at {place}. It is already hungry.",
   "notify.nest_waiting": "Nest Ship at {colony} is waiting for colony population to reach {min_pop}.",
+  "notify.nest_drained": "Colony drained 1 pop to launch a nest ship.",
 
   "ui.fleet.doomstack": "DOOMSTACK",
   "ui.fleet.doomstack_tip": "You may rename it back. Brenda will not respect the rename.",

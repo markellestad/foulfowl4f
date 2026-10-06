@@ -20,7 +20,7 @@ static func can_colonize(db: ContentDB, gs: GameState, empire_id: int, planet_id
 		return "refuse.not_habitable"
 
 	if fleet != null:
-		if fleet.system_id != planet.system_id:
+		if fleet.system_id != planet.system_id and fleet.dest_system_id != planet.system_id:
 			return "refuse.not_here"
 		var has_pod: bool = false
 		for sid in fleet.ship_ids:
@@ -50,7 +50,7 @@ static func can_outpost(_db: ContentDB, gs: GameState, empire_id: int, planet_id
 		return "refuse.unknown"
 
 	if fleet != null:
-		if fleet.system_id != planet.system_id:
+		if fleet.system_id != planet.system_id and fleet.dest_system_id != planet.system_id:
 			return "refuse.not_here"
 		var has_pod: bool = false
 		for sid in fleet.ship_ids:

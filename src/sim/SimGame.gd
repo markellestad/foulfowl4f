@@ -7,6 +7,8 @@ var turn_cmds: Array[Cmd] = []
 var redo_cmds: Array[Cmd] = []
 var checkpoints: Dictionary = {} # index -> GameState.to_dict()
 var oldest_undoable_index: int = 0
+var last_report: TurnReport = null
+var metadata: Dictionary = {}
 
 static func create(settings: GameSettings, db: ContentDB) -> SimGame:
 	var game: SimGame = SimGame.new()
@@ -115,6 +117,7 @@ func begin_end_turn() -> TurnProcessor:
 func end_turn_headless() -> void:
 	var tp: TurnProcessor = begin_end_turn()
 	tp.run_all()
+	last_report = tp.report
 	checkpoints[0] = gs.to_dict()
 
 func state_hash() -> int:
