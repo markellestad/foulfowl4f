@@ -1,0 +1,14 @@
+{
+  "captures": [
+    {
+      "id": "main_menu",
+      "phase": "P00",
+      "out": "build/captures/P00_main_menu.png"
+    },
+    {
+      "id": "credits",
+      "phase": "P00",
+      "out": "build/captures/P00_credits.png"
+    }
+  ]
+}

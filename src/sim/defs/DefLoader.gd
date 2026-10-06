@@ -4,9 +4,8 @@ extends RefCounted
 static func ints_only(v: Variant, path: String, errors: Array[String]) -> Variant:
 	match typeof(v):
 		TYPE_FLOAT:
-			var i: int = int(v)
-			if float(i) == v:
-				return i
+			if v == int(v):
+				return int(v)
 			else:
 				var p: String = path if path != "" else "root"
 				errors.append("non-integer number at %s" % p)
