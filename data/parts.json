@@ -120,6 +120,21 @@
       "salvos": -1,
       "every_other_round": false
     },
+    "leviathan_beak": {
+      "id": "leviathan_beak",
+      "category": "weapon",
+      "tech": "monster_only",
+      "field": "weapons",
+      "band": "beak",
+      "space": 0,
+      "pp": 0,
+      "dmg_min": 8,
+      "dmg_max": 14,
+      "acc": 0,
+      "falloff_pct": 0,
+      "salvos": -1,
+      "every_other_round": false
+    },
     "hatch_dart": {
       "id": "hatch_dart",
       "category": "weapon",

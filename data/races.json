@@ -21,7 +21,8 @@
       "best_climate": "terran",
       "personality": "unbothered",
       "color": "swans",
-      "glyph": "crown"
+      "glyph": "crown",
+      "line_slots": 8
     },
     "pheasants": {
       "playable": true,
@@ -41,7 +42,8 @@
       "best_climate": "terran",
       "personality": "sportsman",
       "color": "pheasants",
-      "glyph": "triangle"
+      "glyph": "triangle",
+      "line_slots": 8
     },
     "ducks": {
       "playable": true,
@@ -62,7 +64,8 @@
       "best_climate": "ocean",
       "personality": "dealmaker",
       "color": "ducks",
-      "glyph": "circle"
+      "glyph": "circle",
+      "line_slots": 8
     },
     "owls": {
       "playable": false,
@@ -82,7 +85,8 @@
       "best_climate": "terran",
       "personality": "librarian",
       "color": "owls",
-      "glyph": "diamond"
+      "glyph": "diamond",
+      "line_slots": 8
     },
     "penguins": {
       "playable": false,
@@ -105,7 +109,8 @@
       "best_climate": "tundra",
       "personality": "patient_rock",
       "color": "penguins",
-      "glyph": "square"
+      "glyph": "square",
+      "line_slots": 8
     },
     "crows": {
       "playable": false,
@@ -127,7 +132,8 @@
       "best_climate": "arid",
       "personality": "borrower",
       "color": "crows",
-      "glyph": "cross"
+      "glyph": "cross",
+      "line_slots": 8
     },
     "geese": {
       "playable": true,
@@ -148,7 +154,8 @@
       "best_climate": "terran",
       "personality": "neighbor",
       "color": "geese",
-      "glyph": "chevron"
+      "glyph": "chevron",
+      "line_slots": 10
     },
     "chickens": {
       "playable": false,
@@ -168,7 +175,8 @@
       "best_climate": "terran",
       "personality": "floor",
       "color": "chickens",
-      "glyph": "comb"
+      "glyph": "comb",
+      "line_slots": 8
     }
   }
 }
