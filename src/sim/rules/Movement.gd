@@ -43,3 +43,13 @@ static func advance(gs: GameState, fleet: Fleet) -> void:
 	else:
 		fleet.x = IntMath.lerp_i(fleet.from_x, dest_sys.x, elapsed_turns, total_turns)
 		fleet.y = IntMath.lerp_i(fleet.from_y, dest_sys.y, elapsed_turns, total_turns)
+
+static func start_move(db: ContentDB, gs: GameState, fleet: Fleet, dest_system_id: int) -> void:
+	var eta: int = eta_turns(db, gs, fleet.id, dest_system_id)
+	fleet.dest_system_id = dest_system_id
+	fleet.from_x = fleet.x
+	fleet.from_y = fleet.y
+	fleet.depart_turn = gs.turn
+	fleet.arrive_turn = gs.turn + eta
+	fleet.system_id = -1
+

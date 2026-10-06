@@ -9,6 +9,7 @@ const STEP_ORDER: Array[StringName] = [
 	&"production",
 	&"population",
 	&"finance",
+	&"visibility",
 	&"governor",
 	&"finalize"
 ]
@@ -46,6 +47,8 @@ func _create_step(step_name: StringName) -> TurnStep:
 			return StepPopulation.new()
 		&"finance":
 			return StepFinance.new()
+		&"visibility":
+			return StepVisibility.new()
 		&"governor":
 			return StepGovernor.new()
 		&"finalize":

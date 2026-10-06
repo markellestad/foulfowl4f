@@ -18,3 +18,8 @@ static func in_range(db: ContentDB, gs: GameState, empire_id: int, x: int, y: in
 			if d <= r:
 				return true
 	return false
+
+static func in_range_system(db: ContentDB, gs: GameState, empire_id: int, system_id: int) -> bool:
+	var sys: StarSystem = gs.systems[system_id]
+	return in_range(db, gs, empire_id, sys.x, sys.y)
+

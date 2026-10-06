@@ -23,6 +23,7 @@ func test_pipeline_order() -> void:
 		&"production",
 		&"population",
 		&"finance",
+		&"visibility",
 		&"governor",
 		&"finalize"
 	]
