@@ -11,6 +11,7 @@ const STEP_ORDER: Array[StringName] = [
 	&"production",
 	&"population",
 	&"finance",
+	&"victory",
 	&"visibility",
 	&"governor",
 	&"finalize"
@@ -58,6 +59,8 @@ func _create_step(step_name: StringName) -> TurnStep:
 			return StepPopulation.new()
 		&"finance":
 			return StepFinance.new()
+		&"victory":
+			return StepVictory.new()
 		&"visibility":
 			return StepVisibility.new()
 		&"governor":
@@ -82,6 +85,9 @@ func _advance_to_step(idx: int) -> void:
 
 func run_next_substep() -> int:
 	if status == Status.DONE or status == Status.NEEDS_INPUT:
+		return status
+	if gs.game_over:
+		status = Status.DONE
 		return status
 
 	if current_step != null:

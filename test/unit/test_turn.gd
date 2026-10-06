@@ -25,6 +25,7 @@ func test_pipeline_order() -> void:
 		&"production",
 		&"population",
 		&"finance",
+		&"victory",
 		&"visibility",
 		&"governor",
 		&"finalize"
