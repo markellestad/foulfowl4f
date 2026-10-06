@@ -22,6 +22,9 @@ var ctx: TurnContext
 var status: Status = Status.RUNNING
 var step_index: int = 0
 var current_step: TurnStep = null
+var orders_mode: String = "big"
+var requests: Array[Dictionary] = []
+var auto_systems: Array[int] = []
 
 func _init(p_gs: GameState, p_db: ContentDB) -> void:
 	gs = p_gs
@@ -32,6 +35,8 @@ func _init(p_gs: GameState, p_db: ContentDB) -> void:
 	ctx.gs = gs
 	ctx.db = db
 	ctx.report = report
+	ctx.orders_mode = orders_mode
+	ctx.tp = self
 	status = Status.RUNNING
 	step_index = 0
 	_advance_to_step(0)
@@ -73,11 +78,13 @@ func _advance_to_step(idx: int) -> void:
 		_advance_to_step(idx + 1)
 
 func run_next_substep() -> int:
-	if status == Status.DONE:
-		return Status.DONE
+	if status == Status.DONE or status == Status.NEEDS_INPUT:
+		return status
 
 	if current_step != null:
 		var step_done: bool = current_step.next(ctx)
+		if status == Status.NEEDS_INPUT:
+			return status
 		if step_done:
 			var errs: Array[String] = Invariants.check(gs, db)
 			for err in errs:
@@ -86,7 +93,29 @@ func run_next_substep() -> int:
 
 	return status
 
+func answer_battle_orders(cmds: Array) -> String:
+	for c in cmds:
+		var cmd: CmdBattleOrders = c as CmdBattleOrders
+		if cmd == null:
+			return "refuse.unknown"
+		var err: String = cmd.validate(gs, db)
+		if err != "":
+			return err
+	for c in cmds:
+		var cmd: CmdBattleOrders = c as CmdBattleOrders
+		ctx.pending_orders[cmd.system_id] = cmd.to_orders_dict()
+	requests.clear()
+	ctx.requests.clear()
+	auto_systems.clear()
+	ctx.auto_systems.clear()
+	status = Status.RUNNING
+	return ""
+
 func run_all() -> void:
+	orders_mode = "never"
+	if ctx != null:
+		ctx.orders_mode = "never"
+		ctx.is_headless = true
 	while status != Status.DONE:
 		run_next_substep()
 

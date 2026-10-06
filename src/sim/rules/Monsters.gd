@@ -46,7 +46,7 @@ static func build_monster_party(db: ContentDB, kind: String, party_id: int = 100
 		for w in raw_w:
 			var part_id: String = str(w.get("part", ""))
 			var count: int = int(w.get("count", 1))
-			var part_row: Dictionary = db.row("parts", part_id) if db != null else {}
+			var part_row: Dictionary = db.def("parts", part_id) if db != null else {}
 			var band: String = str(part_row.get("band", "talon"))
 			for _c in range(count):
 				u.weapons.append({

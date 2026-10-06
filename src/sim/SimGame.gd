@@ -9,6 +9,7 @@ var checkpoints: Dictionary = {} # index -> GameState.to_dict()
 var oldest_undoable_index: int = 0
 var last_report: TurnReport = null
 var metadata: Dictionary = {}
+var current_tp: TurnProcessor = null
 
 static func create(settings: GameSettings, db: ContentDB) -> SimGame:
 	var game: SimGame = SimGame.new()
@@ -112,13 +113,37 @@ func begin_end_turn() -> TurnProcessor:
 	redo_cmds.clear()
 	checkpoints.clear()
 	oldest_undoable_index = 0
-	return TurnProcessor.new(gs, db)
+	current_tp = TurnProcessor.new(gs, db)
+	return current_tp
+
+func finish_end_turn() -> void:
+	current_tp = null
+	checkpoints[0] = gs.to_dict()
 
 func end_turn_headless() -> void:
 	var tp: TurnProcessor = begin_end_turn()
 	tp.run_all()
 	last_report = tp.report
-	checkpoints[0] = gs.to_dict()
+	finish_end_turn()
+
+func answer_battle_orders(cmds: Array) -> String:
+	for c in cmds:
+		var cmd: CmdBattleOrders = c as CmdBattleOrders
+		if cmd == null:
+			return "refuse.unknown"
+		var err: String = cmd.validate(gs, db)
+		if err != "":
+			return err
+	for c in cmds:
+		var cmd: CmdBattleOrders = c as CmdBattleOrders
+		gs.cmd_log.append({
+			"turn": gs.turn,
+			"source": "battle",
+			"cmd": cmd.to_dict()
+		})
+	if current_tp != null:
+		return current_tp.answer_battle_orders(cmds)
+	return ""
 
 func state_hash() -> int:
 	return StateHash.of_value(gs.to_dict())

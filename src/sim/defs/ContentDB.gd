@@ -40,6 +40,9 @@ func def(kind: String, id: String) -> Dictionary:
 			return rows[id]
 	return {}
 
+func row(kind: String, id: String) -> Dictionary:
+	return def(kind, id)
+
 func ids(kind: String) -> Array[String]:
 	var t: Dictionary = table(kind)
 	var res: Array[String] = []

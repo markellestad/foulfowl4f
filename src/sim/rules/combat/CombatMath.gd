@@ -13,7 +13,7 @@ static func expected_damage(db: ContentDB, gs: GameState, design: Variant, d: in
 
 	var computer_acc: int = 0
 	if db != null and computer_id != "":
-		var comp_row: Dictionary = db.row("parts", computer_id)
+		var comp_row: Dictionary = db.def("parts", computer_id)
 		computer_acc = int(comp_row.get("acc", 0))
 
 	var total: int = 0
@@ -23,8 +23,8 @@ static func expected_damage(db: ContentDB, gs: GameState, design: Variant, d: in
 		var count: int = int(w.get("count", 1))
 		if part_id == "" or count <= 0:
 			continue
-		var part_row: Dictionary = db.row("parts", part_id) if db != null else {}
-		var mount_row: Dictionary = db.row("parts", mount_id) if (db != null and mount_id != "") else {}
+		var part_row: Dictionary = db.def("parts", part_id) if db != null else {}
+		var mount_row: Dictionary = db.def("parts", mount_id) if (db != null and mount_id != "") else {}
 
 		var band: String = str(part_row.get("band", ""))
 		var dmg_min: int = int(part_row.get("dmg_min", 0))

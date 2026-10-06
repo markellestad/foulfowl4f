@@ -32,6 +32,11 @@ func _process(_delta: float) -> void:
 		var st: int = tp.run_next_substep()
 		Session.turn_processing.emit(tp.progress_pct())
 
+		if st == TurnProcessor.Status.NEEDS_INPUT:
+			set_process(false)
+			Session.battle_orders_needed.emit(tp.requests, tp.auto_systems)
+			break
+
 		if st == TurnProcessor.Status.DONE:
 			running = false
 			set_process(false)
@@ -53,3 +58,7 @@ func _process(_delta: float) -> void:
 		worst_turn_frame_ms = frame_ms
 		if PerfOverlay.instance != null:
 			PerfOverlay.instance.end_turn_worst_ms = worst_turn_frame_ms
+
+func resume_after_battle_orders() -> void:
+	if running and tp != null:
+		set_process(true)

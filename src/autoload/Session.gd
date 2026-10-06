@@ -3,6 +3,7 @@ extends Node
 signal state_changed(scope: String, ids: Array)
 signal turn_processing(pct: int)
 signal turn_started(report: TurnReport)
+signal battle_orders_needed(requests: Array, auto_systems: Array)
 
 var db: ContentDB = null
 var game: SimGame = null
@@ -75,6 +76,14 @@ func end_turn() -> void:
 	if is_turn_running() or game == null:
 		return
 	turn_runner.start_turn()
+
+func answer_battle_orders(cmds: Array) -> String:
+	if game == null:
+		return "no_game"
+	var err: String = game.answer_battle_orders(cmds)
+	if err == "" and turn_runner != null and turn_runner.is_running():
+		turn_runner.resume_after_battle_orders()
+	return err
 
 func end_turn_sync() -> void:
 	if game == null:

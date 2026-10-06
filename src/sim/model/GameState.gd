@@ -24,6 +24,7 @@ var stalemates: Dictionary = {}
 var monsters_empire: int = 100
 var guardian_marked: Dictionary = {}
 var loot: Dictionary = {}
+var pending_battle_requests: Array[int] = []
 
 func alloc_id(kind: String) -> int:
 	var cur: int = int(next_ids.get(kind, 0))
@@ -110,7 +111,8 @@ func to_dict() -> Dictionary:
 		"stalemates": stalemates.duplicate(true),
 		"monsters_empire": monsters_empire,
 		"guardian_marked": guardian_marked.duplicate(),
-		"loot": loot.duplicate()
+		"loot": loot.duplicate(),
+		"pending_battle_requests": pending_battle_requests.duplicate()
 	}
 
 static func from_dict(d: Dictionary) -> GameState:
@@ -215,5 +217,8 @@ static func from_dict(d: Dictionary) -> GameState:
 	gs.monsters_empire = int(d.get("monsters_empire", 100))
 	gs.guardian_marked = (d.get("guardian_marked", {}) as Dictionary).duplicate()
 	gs.loot = (d.get("loot", {}) as Dictionary).duplicate()
+	gs.pending_battle_requests.clear()
+	for pbr in d.get("pending_battle_requests", []):
+		gs.pending_battle_requests.append(int(pbr))
 
 	return gs

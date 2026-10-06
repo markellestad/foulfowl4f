@@ -11,6 +11,12 @@ var wormhole_to: int = -1
 var is_orn: bool = false
 var home_of: int = -1
 
+var name: String:
+	get:
+		if is_orn:
+			return "Orn"
+		return "System %d" % id
+
 func to_dict() -> Dictionary:
 	return {
 		"id": id,

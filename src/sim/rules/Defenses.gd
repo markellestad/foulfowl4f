@@ -128,7 +128,7 @@ static func build_defense_party(gs: GameState, db: ContentDB, colony: Colony) ->
 		if def_blk.has("launchers"):
 			var l_count: int = int(def_blk.get("launchers", 3))
 			var w_id: String = get_best_horizon_weapon(gs, db, colony.owner)
-			var w_row: Dictionary = db.row("parts", w_id) if db != null else {}
+			var w_row: Dictionary = db.def("parts", w_id) if db != null else {}
 			for i in range(l_count):
 				u.weapons.append({
 					"part_id": w_id,
@@ -147,7 +147,7 @@ static func build_defense_party(gs: GameState, db: ContentDB, colony: Colony) ->
 		if def_blk.has("talons"):
 			var t_count: int = int(def_blk.get("talons", 4))
 			var w_id: String = get_best_talon_weapon(gs, db, colony.owner)
-			var w_row: Dictionary = db.row("parts", w_id) if db != null else {}
+			var w_row: Dictionary = db.def("parts", w_id) if db != null else {}
 			var is_primary: bool = (str(def_blk.get("mount", "")) == "primary_mount")
 			var falloff: int = 2 if is_primary else int(w_row.get("falloff_pct", 4))
 			var dmg_pct: int = 150 if is_primary else 100

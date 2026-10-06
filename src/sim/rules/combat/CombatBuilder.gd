@@ -20,6 +20,20 @@ static func ai_orders(fleet: Fleet) -> Dictionary:
 		"line_order": fleet.line_order.duplicate()
 	}
 
+static func fleet_armed_pp(gs: GameState, db: ContentDB, f: Fleet) -> int:
+	if gs == null or f == null:
+		return 0
+	var total_pp: int = 0
+	for sid in f.ship_ids:
+		if gs.ships.has(sid):
+			var s: Ship = gs.ships[sid]
+			if s.hp > 0 and s.design_id >= 0 and gs.designs.has(s.design_id):
+				var des: ShipDesign = gs.designs[s.design_id]
+				var st: Dictionary = DesignRules.stats(db, gs, des)
+				if bool(st.get("is_armed", false)):
+					total_pp += int(st.get("cost_pp", 0))
+	return total_pp
+
 static func build(gs: GameState, db: ContentDB, system_id: int, custom_orders: Dictionary = {}) -> CombatInput:
 	var input := CombatInput.new()
 	input.system_id = system_id
@@ -101,8 +115,8 @@ static func build(gs: GameState, db: ContentDB, system_id: int, custom_orders: D
 						var p_id: String = str(w.get("part", ""))
 						var m_id: String = str(w.get("mount", ""))
 						var cnt: int = int(w.get("count", 1))
-						var p_row: Dictionary = db.row("parts", p_id) if db != null else {}
-						var m_row: Dictionary = db.row("parts", m_id) if (db != null and m_id != "") else {}
+						var p_row: Dictionary = db.def("parts", p_id) if db != null else {}
+						var m_row: Dictionary = db.def("parts", m_id) if (db != null and m_id != "") else {}
 						var is_swat: bool = bool(m_row.get("swat", false))
 						if is_swat: u.is_swat = true
 
@@ -147,18 +161,25 @@ static func build(gs: GameState, db: ContentDB, system_id: int, custom_orders: D
 			var lo_raw: Array = co.get("line_order", [])
 			for x in lo_raw: party.line_order.append(int(x))
 		else:
-			# Standing plan from largest armed PP fleet
-			var best_fleet: Fleet = null
-			for f in flist:
-				if best_fleet == null or f.id < best_fleet.id:
-					best_fleet = f
+			# Standing plan from largest armed PP fleet (ties lowest fleet id)
+			var ranked_fleets: Array = flist.duplicate()
+			ranked_fleets.sort_custom(func(a: Fleet, b: Fleet) -> bool:
+				var pp_a: int = fleet_armed_pp(gs, db, a)
+				var pp_b: int = fleet_armed_pp(gs, db, b)
+				if pp_a != pp_b:
+					return pp_a > pp_b
+				return a.id < b.id
+			)
+			var best_fleet: Fleet = ranked_fleets[0] if not ranked_fleets.is_empty() else null
 			var ords: Dictionary = ai_orders(best_fleet)
 			party.posture = str(ords.get("posture", "auto"))
 			party.target_priority = str(ords.get("target_priority", "auto"))
 			party.swat_mode = str(ords.get("swat_mode", "missiles_first"))
 			party.retreat_threshold = str(ords.get("retreat_threshold", "never"))
-			var lo_raw: Array = ords.get("line_order", [])
-			for x in lo_raw: party.line_order.append(int(x))
+			for rf in ranked_fleets:
+				for x in rf.line_order:
+					if not party.line_order.has(int(x)):
+						party.line_order.append(int(x))
 
 		input.parties.append(party)
 
