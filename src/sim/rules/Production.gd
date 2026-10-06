@@ -75,6 +75,7 @@ static func _add_ship_to_system_fleet(gs: GameState, ship: Ship, colony_id: int)
 		new_flt.x = sys.x
 		new_flt.y = sys.y
 		new_flt.ship_ids = [ship.id]
+		new_flt.name = Fleet.format_flock_name(new_flt.id + 1)
 		ship.fleet_id = new_flt.id
 		gs.fleets[new_flt.id] = new_flt
 

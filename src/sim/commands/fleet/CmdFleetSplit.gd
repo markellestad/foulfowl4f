@@ -33,6 +33,7 @@ func apply(gs: GameState, _db: ContentDB) -> void:
 	nf.x = flt.x
 	nf.y = flt.y
 	nf.ship_ids = ship_ids.duplicate()
+	nf.name = Fleet.format_flock_name(nf.id + 1)
 	gs.fleets[nf.id] = nf
 
 func to_dict() -> Dictionary:

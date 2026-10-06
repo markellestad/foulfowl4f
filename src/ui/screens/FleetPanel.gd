@@ -163,10 +163,13 @@ func _build_ui() -> void:
 	_opt_target.item_selected.connect(_on_battle_plan_changed)
 	bp_grid.add_child(_opt_target)
 
-	bp_grid.add_child(Ui.label("SWAT:", "Muted"))
+	var swat_lbl := Ui.label("Swat:", "Muted")
+	swat_lbl.tooltip_text = "Swat Priority: Determines whether Swat mounts intercept incoming missiles or fire at enemy ships."
+	bp_grid.add_child(swat_lbl)
 	_opt_swat = OptionButton.new()
 	_opt_swat.add_item("Missiles", 0)
 	_opt_swat.add_item("Ships", 1)
+	_opt_swat.tooltip_text = "Missiles: Intercept incoming missiles before they hit.\nShips: Fire only at enemy ships."
 	_opt_swat.item_selected.connect(_on_battle_plan_changed)
 	bp_grid.add_child(_opt_swat)
 
@@ -190,7 +193,7 @@ func refresh() -> void:
 
 	visible = true
 	var flt: Fleet = state.fleets[current_fleet_id]
-	_title_lbl.text = "Fleet %d (%d ships)" % [flt.id, flt.ship_ids.size()]
+	_title_lbl.text = "%s (%d ships)" % [flt.get_display_name(), flt.ship_ids.size()]
 
 	# Location text
 	if flt.system_id >= 0 and flt.system_id < state.systems.size():

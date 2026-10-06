@@ -108,7 +108,7 @@ func _refresh_data() -> void:
 
 		rows.append({
 			"_fleet_id": flt.id,
-			"name": "Fleet %d" % flt.id,
+			"name": flt.get_display_name(),
 			"location": loc_str,
 			"ships": ships_str,
 			"speed": "%d pc/t" % spd,

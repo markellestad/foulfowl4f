@@ -90,6 +90,7 @@ static func apply(gs: GameState, db: ContentDB) -> void:
 			var f1: Fleet = Fleet.new()
 			f1.id = gs.alloc_id("fleet")
 			f1.owner = i
+			f1.name = "1st Flock"
 			f1.system_id = hw_sys.id
 			f1.x = hw_sys.x
 			f1.y = hw_sys.y
@@ -122,6 +123,7 @@ static func apply(gs: GameState, db: ContentDB) -> void:
 			var f2: Fleet = Fleet.new()
 			f2.id = gs.alloc_id("fleet")
 			f2.owner = i
+			f2.name = "2nd Flock"
 			f2.system_id = hw_sys.id
 			f2.x = hw_sys.x
 			f2.y = hw_sys.y

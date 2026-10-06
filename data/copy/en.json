@@ -523,5 +523,12 @@
   "refuse.not_habitable": "Planet is not habitable for this species.",
   "refuse.owned": "Planet is already colonized.",
   "refuse.no_pod": "Fleet does not contain a colonization or outpost pod.",
-  "refuse.not_here": "Fleet is not in orbit of the target planet's star system."
+  "refuse.not_here": "Fleet is not in orbit of the target planet's star system.",
+
+  "battle.plan.swat": "Swat:",
+  "battle.plan.swat.tip": "Swat Priority: Determines whether Swat mounts intercept incoming missiles or fire at enemy ships.",
+  "battle.orders.swat.missiles": "Missiles",
+  "battle.orders.swat.ships": "Ships",
+  "role.horizon_line.name": "Horizon Line",
+  "role.horizon_line.tip": "Missiles. They want the far end of the strip."
 }

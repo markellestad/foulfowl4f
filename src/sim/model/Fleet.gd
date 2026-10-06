@@ -16,9 +16,25 @@ var auto_explore: bool = false
 var order: Dictionary = {}                   # {"type": "colonize"|"outpost"|"bombard"|"invade", "planet_id": int}
 var plan: BattlePlan = null
 var line_order: Array[int] = []              # ship ids; empty = default order (P04)
+var name: String = ""
 
 func _init() -> void:
 	plan = BattlePlan.new()
+
+func get_display_name() -> String:
+	if name != "":
+		return name
+	return format_flock_name(id + 1)
+
+static func format_flock_name(n: int) -> String:
+	var mod100 := n % 100
+	if mod100 >= 11 and mod100 <= 13:
+		return "%dth Flock" % n
+	match n % 10:
+		1: return "%dst Flock" % n
+		2: return "%dnd Flock" % n
+		3: return "%drd Flock" % n
+		_: return "%dth Flock" % n
 
 func to_dict() -> Dictionary:
 	var s_arr: Array = []
@@ -30,6 +46,7 @@ func to_dict() -> Dictionary:
 	return {
 		"id": id,
 		"owner": owner,
+		"name": name,
 		"system_id": system_id,
 		"x": x,
 		"y": y,
@@ -49,6 +66,7 @@ static func from_dict(d: Dictionary) -> Fleet:
 	var f: Fleet = Fleet.new()
 	f.id = int(d.get("id", -1))
 	f.owner = int(d.get("owner", -1))
+	f.name = str(d.get("name", ""))
 	f.system_id = int(d.get("system_id", -1))
 	f.x = int(d.get("x", 0))
 	f.y = int(d.get("y", 0))
