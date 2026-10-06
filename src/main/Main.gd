@@ -1,3 +1,4 @@
+class_name Main
 extends Node
 
 var world: Node2D = null
@@ -6,6 +7,10 @@ var ui_layer: CanvasLayer = null
 var ui_root: UiRouter = null
 var perf_overlay: PerfOverlay = null
 
+static func apply_theme_and_environment(tree: SceneTree) -> void:
+	RenderingServer.set_default_clear_color(Palette.BG)
+	tree.root.theme = ThemeFactory.build(Settings.ui_scale_pct)
+
 func _ready() -> void:
 	var user_args: PackedStringArray = OS.get_cmdline_user_args()
 	for arg in user_args:
@@ -13,6 +18,7 @@ func _ready() -> void:
 			BootCheck.run(self)
 			return
 
+	apply_theme_and_environment(get_tree())
 	_build_scene_tree()
 
 	var capture_id: String = ""
@@ -30,8 +36,6 @@ func _ready() -> void:
 	ui_root.show_screen(&"main_menu")
 
 func _build_scene_tree() -> void:
-	get_tree().root.theme = ThemeFactory.build(Settings.ui_scale_pct)
-
 	world = Node2D.new()
 	world.name = "World"
 	add_child(world)
