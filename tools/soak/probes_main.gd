@@ -75,17 +75,6 @@ func _grant_t1_t3_techs(db: ContentDB, gs: GameState, eid: int) -> void:
 	var emp: Empire = gs.empires[eid]
 	if emp.tech == null:
 		emp.tech = TechState.new()
-	var t1_t3_techs: Array[String] = [
-		"pecking_logs", "research_roost", "the_shared_glance", "everyone_can_miss", "security_nest", "drill_roost", "predictive_peck", "loud_abacus", "loadout_glance",
-		"second_shift", "reinforced_roost", "drydock_of_regret", "the_large_keel", "proper_joinery", "rock_picking", "automated_incubators", "standards_and_talons", "kit_nests",
-		"dust_cover", "personal_down", "scatter_molt", "colony_mantle", "early_mantle", "null_glide", "half_mantle", "tractor_etiquette", "hard_down",
-		"better_feed", "richer_dirt", "old_green", "dome_perches", "molt_management", "the_dose", "more_perch", "dome_perches_2", "toxic_preening",
-		"downrange_charts", "lean_in", "soft_bones", "warm_current", "crop_tanks", "courier_wings", "tailwinds", "trade_winds", "the_upkeep_diet",
-		"peck_driver", "hatch_dart", "horizon_perch", "second_sun", "ink_dart", "primary_mount", "clatter_bill", "talon_batteries", "rude_sun"
-	]
-	for tid in t1_t3_techs:
-		if not emp.tech.knows(tid):
-			emp.tech.known.append(tid)
 	for tid in db.ids("techs"):
 		var tdef: Dictionary = db.def("techs", tid)
 		var tier: int = int(tdef.get("tier", 1))
