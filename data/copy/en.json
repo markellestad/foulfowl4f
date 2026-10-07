@@ -646,7 +646,7 @@
   "summary.news.title": "News",
   "ui.fleet.swat_options.tip": "Missiles: shoot down incoming missiles before they hit.\nShips: fire at enemy ships only.",
   "ui.fleet.location": "Location: %s",
-  "ui.fleet.in_transit": "In transit to Star %d, %d turns out",
+  "ui.fleet.in_transit": "In transit to %s, %d turns out",
   "ui.fleet.deep_space": "Location: Deep space",
   "ui.fleet.speed": "Speed: %d pc/turn",
   "ui.label.cancel_move": "Cancel Move",

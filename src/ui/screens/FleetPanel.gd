@@ -227,7 +227,7 @@ func refresh() -> void:
 	elif flt.dest_system_id >= 0 and flt.dest_system_id < state.systems.size():
 		var d_sys: StarSystem = state.systems[flt.dest_system_id]
 		var eta: int = max(1, flt.arrive_turn - state.turn)
-		_loc_lbl.text = Copy.t("ui.fleet.in_transit") % [d_sys.id, eta]
+		_loc_lbl.text = Copy.t("ui.fleet.in_transit") % [Copy.system_name(d_sys), eta]
 	else:
 		_loc_lbl.text = Copy.t("ui.fleet.deep_space")
 
