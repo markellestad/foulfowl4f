@@ -11,7 +11,9 @@ const SCREENS: Dictionary = {
 	&"ship_designer": preload("res://src/ui/screens/ShipDesignerScreen.gd"),
 	&"turn_summary": preload("res://src/ui/screens/TurnSummaryScreen.gd"),
 	&"battle_screen": preload("res://src/ui/screens/BattleScreen.gd"),
-	&"battle_orders": preload("res://src/ui/screens/BattleOrdersCard.gd")
+	&"battle_orders": preload("res://src/ui/screens/BattleOrdersCard.gd"),
+	&"diplomacy": preload("res://src/ui/screens/DiplomacyScreen.gd"),
+	&"victory": preload("res://src/ui/screens/VictoryScreen.gd")
 }
 
 var _stack: Array[ScreenBase] = []

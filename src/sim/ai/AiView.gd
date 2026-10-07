@@ -182,5 +182,13 @@ func estimated_enemy_power(other_id: int) -> int:
 		total = 50
 	return total
 
+func has_proposed_peace(target_id: int) -> bool:
+	if _gs == null:
+		return false
+	for prop in _gs.proposals:
+		if str(prop.get("kind", "")) == "peace" and int(prop.get("from_empire", -1)) == empire_id and int(prop.get("to_empire", -1)) == target_id:
+			return true
+	return false
+
 func raw_game_state_DO_NOT_USE_EXCEPT_SIM() -> GameState:
 	return _gs

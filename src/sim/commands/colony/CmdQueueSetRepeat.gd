@@ -5,6 +5,13 @@ var colony_id: int = -1
 var index: int = -1
 var count: int = 1
 
+var repeat: bool:
+	get:
+		return count == -1
+	set(v):
+		count = -1 if v else 1
+
+
 func kind() -> StringName:
 	return &"queue_set_repeat"
 

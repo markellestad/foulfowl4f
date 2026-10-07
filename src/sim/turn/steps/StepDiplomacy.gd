@@ -27,7 +27,8 @@ func next(ctx: TurnContext) -> bool:
 			continue
 
 		var emp: Empire = gs.empires[to_emp]
-		if emp.is_ai:
+		var is_ai_emp: bool = emp.is_ai or (gs.settings != null and gs.settings.all_ai)
+		if is_ai_emp:
 			if str(prop.get("kind", "")) == "peace":
 				var from_emp: int = int(prop.get("from_empire", -1))
 				var view: AiView = AiView.build(gs, db, to_emp)

@@ -4,10 +4,16 @@ extends RefCounted
 var kind: String = "" # "building" | "ship" | "trade_goods" | "housing"
 var ref_id: String = "" # building id or design id ("" for fillers)
 var count: int = 1 # -1 = repeat forever
+var repeat: bool:
+	get:
+		return count == -1
+	set(v):
+		count = -1 if v else 1
 var added_by: String = "player" # "player" | "governor"
 var why_key: String = ""
 var why_args: Dictionary = {}
 var buy_requested: bool = false
+
 
 func to_dict() -> Dictionary:
 	return {

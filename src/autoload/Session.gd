@@ -27,6 +27,12 @@ var state: GameState:
 	set(v):
 		_state = v
 
+var player_empire_id: int:
+	get:
+		return 0
+
+
+
 func _ready() -> void:
 	db = ContentDB.load_from("res://data")
 	turn_runner = TurnRunner.new()

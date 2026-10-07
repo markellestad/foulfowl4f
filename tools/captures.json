@@ -74,6 +74,26 @@
       "id": "P04_autopsy",
       "phase": "P04",
       "out": "build/captures/P04_autopsy.png"
+    },
+    {
+      "id": "P05_diplomacy",
+      "phase": "P05",
+      "out": "build/captures/P05_diplomacy.png"
+    },
+    {
+      "id": "P05_capitulation_card",
+      "phase": "P05",
+      "out": "build/captures/P05_capitulation_card.png"
+    },
+    {
+      "id": "P05_victory",
+      "phase": "P05",
+      "out": "build/captures/P05_victory.png"
+    },
+    {
+      "id": "P05_galaxy_midgame",
+      "phase": "P05",
+      "out": "build/captures/P05_galaxy_midgame.png"
     }
   ]
 }

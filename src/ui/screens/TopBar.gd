@@ -4,6 +4,7 @@ extends PanelContainer
 signal colonies_requested
 signal fleets_requested
 signal designer_requested
+signal diplomacy_requested
 signal overlay_toggle_requested
 signal menu_requested
 
@@ -14,6 +15,7 @@ var _lbl_research: Label = null
 var _btn_overlay: Button = null
 var _btn_fleets: Button = null
 var _btn_designer: Button = null
+var _btn_diplo: Button = null
 var _btn_colonies: Button = null
 var _btn_undo: Button = null
 var _btn_redo: Button = null
@@ -64,6 +66,9 @@ func _build_ui() -> void:
 
 	_btn_designer = Ui.button("Designer (D)", _on_designer, "Ship Designer (D)")
 	hbox.add_child(_btn_designer)
+
+	_btn_diplo = Ui.button("Diplomacy", _on_diplo, "Diplomacy")
+	hbox.add_child(_btn_diplo)
 
 	_btn_colonies = Ui.button(Copy.t("ui.label.colonies") + " (Tab)", _on_colonies)
 	hbox.add_child(_btn_colonies)
@@ -148,6 +153,9 @@ func _on_fleets() -> void:
 
 func _on_designer() -> void:
 	designer_requested.emit()
+
+func _on_diplo() -> void:
+	diplomacy_requested.emit()
 
 func _on_overlay() -> void:
 	overlay_toggle_requested.emit()

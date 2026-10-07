@@ -19,7 +19,57 @@ static func plan(view: AiView, _memory: AiMemory = null) -> Array[Cmd]:
 	var colony_ships_in_flight: int = 0
 	var my_fleets: Array[Fleet] = view.own_fleets()
 
+	# 0. Split colony ships from scout ships if mixed
+	var split_fleet_ids: Dictionary = {}
 	for f in my_fleets:
+		if f.dest_system_id >= 0 or f.system_id < 0:
+			continue
+		var scout_sids: Array[int] = []
+		var colony_sids: Array[int] = []
+		for sid in f.ship_ids:
+			var s: Ship = view.own_ship(sid)
+			if s != null:
+				var des: ShipDesign = view.raw_game_state_DO_NOT_USE_EXCEPT_SIM().designs.get(s.design_id)
+				if des != null:
+					if des.specials.has("glance_pod") or des.role == "glance":
+						scout_sids.append(sid)
+					elif des.specials.has("nest_pod") or des.specials.has("perch_pod"):
+						colony_sids.append(sid)
+		if not scout_sids.is_empty() and not colony_sids.is_empty():
+			var cmd_sp: CmdFleetSplit = CmdFleetSplit.new()
+			cmd_sp.empire_id = view.empire_id
+			cmd_sp.fleet_id = f.id
+			cmd_sp.ship_ids = colony_sids
+			cmds.append(cmd_sp)
+			split_fleet_ids[f.id] = true
+
+	# 0b. Auto-explore for scout fleets
+	for f in my_fleets:
+		if split_fleet_ids.has(f.id):
+			continue
+		if f.auto_explore or f.dest_system_id >= 0:
+			continue
+		var is_scout: bool = false
+		var has_other: bool = false
+		for sid in f.ship_ids:
+			var s: Ship = view.own_ship(sid)
+			if s != null:
+				var des: ShipDesign = view.raw_game_state_DO_NOT_USE_EXCEPT_SIM().designs.get(s.design_id)
+				if des != null:
+					if des.specials.has("glance_pod") or des.role == "glance":
+						is_scout = true
+					elif des.specials.has("nest_pod") or des.specials.has("perch_pod") or not des.weapons.is_empty():
+						has_other = true
+		if is_scout and not has_other:
+			var cmd_ae: CmdFleetAutoExplore = CmdFleetAutoExplore.new()
+			cmd_ae.empire_id = view.empire_id
+			cmd_ae.fleet_id = f.id
+			cmd_ae.on = true
+			cmds.append(cmd_ae)
+
+	for f in my_fleets:
+		if split_fleet_ids.has(f.id):
+			continue
 		var has_nest: bool = false
 		var has_stake: bool = false
 		var has_warship: bool = false

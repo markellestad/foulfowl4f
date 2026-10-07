@@ -44,6 +44,7 @@ func _init() -> void:
 	settings.player_race = str(s_dict.get("player_race", "pheasants"))
 	settings.difficulty = str(s_dict.get("difficulty", "flighted"))
 	settings.seat_swans = bool(s_dict.get("seat_swans", true))
+	settings.all_ai = bool(s_dict.get("all_ai", false))
 
 	var game: SimGame = SimGame.create(settings, db)
 
@@ -126,6 +127,18 @@ func _init() -> void:
 					print("SCENARIO FAIL %s turn=%d: %s" % [name, t, exp_err])
 					quit(1)
 					return
+
+		if game.gs.game_over:
+			var all_earlier_done: bool = true
+			for exp in expect_list:
+				var exp_t: int = int(exp.get("turn", 0))
+				if exp_t > t and str(exp.get("check", "")) != "game_over":
+					all_earlier_done = false
+					break
+			if all_earlier_done:
+				print("SCENARIO PASS %s turns=%d hash=%d" % [name, t, game.state_hash()])
+				quit(0)
+				return
 
 	print("SCENARIO PASS %s turns=%d hash=%d" % [name, turns_total, game.state_hash()])
 	quit(0)

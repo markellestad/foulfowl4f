@@ -43,6 +43,14 @@ static func clear_truce(gs: GameState, a: int, b: int) -> void:
 	var key := _pair_key(a, b)
 	gs.truces.erase(key)
 
+static func truce_remaining(gs: GameState, a: int, b: int) -> int:
+	if gs == null or a == b:
+		return 0
+	var key := _pair_key(a, b)
+	if not gs.truces.has(key):
+		return 0
+	return maxi(0, int(gs.truces[key]) - gs.turn)
+
 static func record_battle(gs: GameState, a: int, b: int) -> void:
 	if gs == null or a == b:
 		return

@@ -128,5 +128,25 @@ static func run(main: Node) -> void:
 	var blog_hash: int = StateHash.hash_dict(blog.to_dict())
 	print("BOOT_COMBAT_OK hash=%d" % blog_hash)
 
+	# All-AI 10 turns for BOOT_AI_OK
+	var s_ai: GameSettings = (GameSettings as Variant).call(&"new")
+	s_ai.preset = "evening_standard"
+	s_ai.seed_string = "BOOT"
+	s_ai.seed = Rng.seed_from_string("BOOT")
+	s_ai.player_race = "pheasants"
+	s_ai.seat_swans = true
+	s_ai.all_ai = true
+
+	var game_ai: SimGame = SimGame.create(s_ai, Session.db)
+	SimLog.clear()
+	for i in range(10):
+		game_ai.end_turn_headless()
+	var invs: Array[String] = Invariants.check(game_ai.gs, Session.db)
+	if not invs.is_empty():
+		print("BOOT_FAIL BOOT_AI_OK invariants: %s" % str(invs))
+		main.get_tree().quit(1)
+		return
+	print("BOOT_AI_OK turns=%d hash=%d" % [game_ai.gs.turn, game_ai.state_hash()])
+
 	print("BOOT_OK")
 	main.get_tree().quit(0)

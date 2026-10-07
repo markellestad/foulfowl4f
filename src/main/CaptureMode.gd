@@ -39,6 +39,14 @@ static func run(main: Node, id: String, out_path: String) -> void:
 			_cap_p04_battle_viewer(router)
 		"P04_autopsy":
 			_cap_p04_autopsy(router)
+		"P05_diplomacy":
+			_cap_p05_diplomacy(router)
+		"P05_capitulation_card":
+			_cap_p05_capitulation_card(router)
+		"P05_victory":
+			_cap_p05_victory(router)
+		"P05_galaxy_midgame":
+			_cap_p05_galaxy_midgame(router)
 		_:
 			print("CAPTURE_FAIL unknown id: ", id)
 			main.get_tree().quit(1)
@@ -500,6 +508,71 @@ static func _cap_p04_autopsy(router: UiRouter) -> void:
 	var screen = router.show_screen(&"battle_screen", {"log": blog})
 	if screen != null:
 		screen._show_autopsy()
+
+static func _cap_p05_diplomacy(router: UiRouter) -> void:
+	var s: GameSettings = (GameSettings as Variant).call(&"new")
+	s.preset = "evening_standard"
+	s.seed_string = "FOWL"
+	s.seed = Rng.seed_from_string("FOWL")
+	s.player_race = "pheasants"
+	s.seat_swans = true
+	Session.new_game(s)
+	for e in range(1, Session.state.empires.size()):
+		Session.state.knowledge[0].met[e] = 1
+	router.show_screen(&"diplomacy")
+
+static func _cap_p05_capitulation_card(router: UiRouter) -> void:
+	var s: GameSettings = (GameSettings as Variant).call(&"new")
+	s.preset = "evening_standard"
+	s.seed_string = "FOWL"
+	s.seed = Rng.seed_from_string("FOWL")
+	s.player_race = "pheasants"
+	s.seat_swans = true
+	Session.new_game(s)
+	router.show_screen(&"galaxy")
+	var card_script = preload("res://src/ui/screens/CapitulationCard.gd")
+	var card = card_script.new()
+	card.setup(1, "Arch-Swan Vane")
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	center.add_child(card)
+	router.add_child(center)
+
+static func _cap_p05_victory(router: UiRouter) -> void:
+	var s: GameSettings = (GameSettings as Variant).call(&"new")
+	s.preset = "evening_standard"
+	s.seed_string = "FOWL"
+	s.seed = Rng.seed_from_string("FOWL")
+	s.player_race = "pheasants"
+	s.seat_swans = true
+	Session.new_game(s)
+	router.show_screen(&"victory", {
+		"victory_type": "conquest",
+		"winner_race": "pheasants",
+		"is_player_winner": true
+	})
+
+static func _cap_p05_galaxy_midgame(router: UiRouter) -> void:
+	var s: GameSettings = (GameSettings as Variant).call(&"new")
+	s.preset = "evening_standard"
+	s.seed_string = "FOWL"
+	s.seed = Rng.seed_from_string("FOWL")
+	s.player_race = "pheasants"
+	s.seat_swans = true
+	s.all_ai = true
+	Session.new_game(s)
+	for i in range(80):
+		Session.game.end_turn_headless()
+	for sys in Session.state.systems:
+		Session.state.knowledge[0].explored[sys.id] = 80
+	for e in range(1, Session.state.empires.size()):
+		Session.state.knowledge[0].met[e] = 80
+	var screen: GalaxyScreen = router.show_screen(&"galaxy") as GalaxyScreen
+	if screen != null and screen.map_view != null and screen.map_view.camera != null:
+		var cam: MapCamera = screen.map_view.camera
+		cam.position = Vector2(880, 600)
+		cam.zoom = Vector2(0.50, 0.50)
+		cam.zoom_changed.emit(0.50)
 
 static func _capture_and_save(main: Node, out_path: String) -> void:
 	var tree: SceneTree = main.get_tree()

@@ -17,7 +17,8 @@ func validate(gs: GameState, db: ContentDB) -> String:
 		return "refuse.unknown"
 	if flt.system_id == system_id:
 		return "refuse.same_system"
-	if not FuelRange.in_range_system(db, gs, empire_id, system_id):
+	var is_wormhole: bool = flt.system_id >= 0 and gs.systems[flt.system_id].wormhole_to == system_id
+	if not is_wormhole and not FuelRange.in_range_system(db, gs, empire_id, system_id):
 		return "refuse.out_of_range"
 	return ""
 

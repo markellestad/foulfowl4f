@@ -160,5 +160,32 @@ static func run(check_name: String, game: SimGame, params: Dictionary) -> String
 						return "viewer_equals_resolver mismatch unit %d: expected hp %d, got %d" % [uid, expected_hp, actual_hp]
 			return ""
 
+		"wars_declared_min":
+			var min_val: int = int(params.get("value", 1))
+			var war_count: int = game.gs.war_started_turn.size()
+			for k in game.gs.wars.keys():
+				if bool(game.gs.wars[k]) and not game.gs.war_started_turn.has(k):
+					war_count += 1
+			if war_count < min_val:
+				return "wars_declared_min: %d < min %d" % [war_count, min_val]
+			return ""
+
+		"colony_captured_min":
+			var min_val: int = int(params.get("value", 1))
+			var captured_count: int = 0
+			for c in game.gs.colonies.values():
+				if c.owner >= 0 and c.owner < game.gs.empires.size():
+					var emp: Empire = game.gs.empires[c.owner]
+					if c.species != emp.race or c.occupied_until > 0:
+						captured_count += 1
+			if captured_count < min_val:
+				return "colony_captured_min: %d < min %d" % [captured_count, min_val]
+			return ""
+
+		"game_over":
+			if not game.gs.game_over:
+				return "game_over is false at turn %d" % game.gs.turn
+			return ""
+
 		_:
 			return "unknown check: %s" % check_name

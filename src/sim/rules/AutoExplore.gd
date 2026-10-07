@@ -41,16 +41,39 @@ static func process_empire(db: ContentDB, gs: GameState, empire_id: int) -> void
 				continue
 			if targeted_systems.has(s.id):
 				continue
-			if not FuelRange.in_range_system(db, gs, empire_id, s.id):
+			var is_wormhole: bool = cur_sys.wormhole_to == s.id
+			if not is_wormhole and not FuelRange.in_range_system(db, gs, empire_id, s.id):
 				continue
 
-			var d: int = IntMath.dist(cur_sys.x, cur_sys.y, s.x, s.y)
+			var d: int = 10 if is_wormhole else IntMath.dist(cur_sys.x, cur_sys.y, s.x, s.y)
 			if d < best_dist:
 				best_dist = d
 				best_sys_id = s.id
 			elif d == best_dist:
 				if best_sys_id == -1 or s.id < best_sys_id:
 					best_sys_id = s.id
+
+		if best_sys_id == -1 and cur_sys.wormhole_to >= 0:
+			var wh_dest: int = cur_sys.wormhole_to
+			if not targeted_systems.has(wh_dest):
+				best_sys_id = wh_dest
+
+		if best_sys_id == -1:
+			for s in gs.systems:
+				if s.id == f.system_id or s.wormhole_to < 0:
+					continue
+				if targeted_systems.has(s.id):
+					continue
+				if not FuelRange.in_range_system(db, gs, empire_id, s.id):
+					continue
+				if not knw.explored.has(s.wormhole_to):
+					var d: int = IntMath.dist(cur_sys.x, cur_sys.y, s.x, s.y)
+					if d < best_dist:
+						best_dist = d
+						best_sys_id = s.id
+					elif d == best_dist:
+						if best_sys_id == -1 or s.id < best_sys_id:
+							best_sys_id = s.id
 
 		if best_sys_id >= 0:
 			targeted_systems[best_sys_id] = true

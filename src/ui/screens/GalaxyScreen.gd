@@ -5,11 +5,13 @@ const TopBarScript = preload("res://src/ui/screens/TopBar.gd")
 const ColonyPanelScript = preload("res://src/ui/screens/ColonyPanel.gd")
 const SystemPanelScript = preload("res://src/ui/screens/SystemPanel.gd")
 const FleetPanelScript = preload("res://src/ui/screens/FleetPanel.gd")
+const NewsTickerScript = preload("res://src/ui/screens/NewsTicker.gd")
 
 var map_view: GalaxyMapView = null
 var system_panel: PanelContainer = null
 var colony_panel: PanelContainer = null
 var fleet_panel: PanelContainer = null
+var news_ticker: PanelContainer = null
 var top_bar: PanelContainer = null
 var current_system_id: int = -1
 
@@ -44,9 +46,18 @@ func build() -> void:
 	top_bar.colonies_requested.connect(_on_colonies_requested)
 	top_bar.fleets_requested.connect(_on_fleets_requested)
 	top_bar.designer_requested.connect(_on_designer_requested)
+	top_bar.diplomacy_requested.connect(_on_diplomacy_requested)
 	top_bar.overlay_toggle_requested.connect(_on_overlay_toggle)
 	top_bar.menu_requested.connect(_on_menu)
 	add_child(top_bar)
+
+	# NewsTicker at bottom
+	news_ticker = NewsTickerScript.new()
+	news_ticker.name = "NewsTicker"
+	news_ticker.set_anchors_preset(PRESET_BOTTOM_WIDE)
+	news_ticker.offset_top = -28.0
+	news_ticker.offset_bottom = 0.0
+	add_child(news_ticker)
 
 	# 2. Right-side SystemPanel (340px)
 	system_panel = SystemPanelScript.new()
@@ -269,6 +280,10 @@ func _on_fleets_requested() -> void:
 func _on_designer_requested() -> void:
 	if router != null:
 		router.show_screen(&"ship_designer")
+
+func _on_diplomacy_requested() -> void:
+	if router != null:
+		router.show_screen(&"diplomacy")
 
 func _on_overlay_toggle() -> void:
 	if map_view != null and map_view.overlay_layer != null:

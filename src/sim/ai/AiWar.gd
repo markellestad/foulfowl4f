@@ -12,8 +12,10 @@ static func plan(view: AiView, _memory: AiMemory = null) -> Array[Cmd]:
 		var eid: int = int(other_id)
 		if eid == view.empire_id:
 			continue
+		if eid < 0 or eid >= view.raw_game_state_DO_NOT_USE_EXCEPT_SIM().empires.size():
+			continue
 		if view.is_at_war(eid):
-			if wants_peace(view, eid):
+			if wants_peace(view, eid) and not view.has_proposed_peace(eid):
 				var peace_cmd: CmdProposePeace = CmdProposePeace.new()
 				peace_cmd.empire_id = view.empire_id
 				peace_cmd.target_empire = eid
@@ -45,6 +47,8 @@ static func plan(view: AiView, _memory: AiMemory = null) -> Array[Cmd]:
 	for eid in candidates:
 		if eid == view.empire_id:
 			continue
+		if eid < 0 or eid >= view.raw_game_state_DO_NOT_USE_EXCEPT_SIM().empires.size():
+			continue
 		if view.is_at_war(eid) or view.is_in_truce(eid):
 			continue
 
@@ -61,7 +65,7 @@ static func plan(view: AiView, _memory: AiMemory = null) -> Array[Cmd]:
 				continue
 
 		var rel: int = view.relations_value(eid).value
-		if not (rel < rel_thresh or aggr >= aggr_thresh):
+		if not (rel <= rel_thresh or aggr >= aggr_thresh):
 			continue
 
 		# Power ratio check

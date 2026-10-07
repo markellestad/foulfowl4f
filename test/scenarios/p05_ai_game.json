@@ -1,0 +1,32 @@
+{
+  "name": "p05_ai_game",
+  "settings": {
+    "preset": "evening_standard",
+    "seed_string": "FOWL",
+    "player_race": "pheasants",
+    "difficulty": "flighted",
+    "seat_swans": true,
+    "all_ai": true
+  },
+  "turns": 200,
+  "checks_every_turn": [
+    "invariants_clean",
+    "simlog_clean"
+  ],
+  "expect": [
+    {
+      "turn": 80,
+      "check": "wars_declared_min",
+      "value": 1
+    },
+    {
+      "turn": 150,
+      "check": "colony_captured_min",
+      "value": 1
+    },
+    {
+      "turn": 200,
+      "check": "game_over"
+    }
+  ]
+}

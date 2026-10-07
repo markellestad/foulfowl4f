@@ -12,6 +12,10 @@ $testsLine = "not run"
 $testsStatus = "FAIL"
 $scenariosLine = "none"
 $scenariosStatus = "PASS"
+$soakLine = "not run"
+$soakStatus = "FAIL"
+$probesLine = "not run"
+$probesStatus = "FAIL"
 $exportLine = "not run"
 $capturesLine = "0/0"
 
@@ -62,6 +66,47 @@ if ($gatePass) {
     }
 }
 
+# Step 2b: Soak (smoke20)
+if ($gatePass) {
+    Write-Host "Running soak (smoke20)..."
+    $soakOutput = python tools/soak/run_soak.py --design smoke20 --procs 4 2>&1 | ForEach-Object { "$_" }
+    $soakCode = $LASTEXITCODE
+    foreach ($line in $soakOutput) {
+        Write-Host $line
+        if ($line -match "SOAK (PASS|FAIL)") {
+            $soakLine = $line.Trim()
+        }
+    }
+    if ($soakCode -eq 0) {
+        $soakStatus = "PASS"
+    } else {
+        $soakStatus = "FAIL"
+        $gatePass = $false
+    }
+}
+
+# Step 2c: Probes
+if ($gatePass) {
+    Write-Host "Running probes..."
+    $probeOutput = python tools/soak/run_soak.py --probes --only p1a,p2,p3,p4,p5,p10 2>&1 | ForEach-Object { "$_" }
+    $probeCode = $LASTEXITCODE
+    $probePassCount = 0
+    foreach ($line in $probeOutput) {
+        Write-Host $line
+        if ($line -match "PROBE PASS") {
+            $probePassCount++
+        }
+    }
+    if ($probeCode -eq 0) {
+        $probesLine = "$probePassCount passed"
+        $probesStatus = "PASS"
+    } else {
+        $probesLine = "$probePassCount passed (exit $probeCode)"
+        $probesStatus = "FAIL"
+        $gatePass = $false
+    }
+}
+
 # Step 3: Web export
 if ($gatePass) {
     Write-Host "Running web export..."
@@ -71,10 +116,14 @@ if ($gatePass) {
     $pckSizeStr = ""
     $wasmSizeStr = ""
     $bootOkFound = $false
+    $bootAiOkFound = $false
     foreach ($line in $exportOutput) {
         Write-Host $line
         if ($line.Trim() -eq "BOOT_OK") {
             $bootOkFound = $true
+        }
+        if ($line -match "BOOT_AI_OK") {
+            $bootAiOkFound = $true
         }
         if ($line -match "pck size:\s+([^\(]+)") {
             $pckSizeStr = $matches[1].Trim()
@@ -84,8 +133,8 @@ if ($gatePass) {
         }
     }
 
-    if ($exportCode -eq 0 -and $bootOkFound) {
-        $exportLine = "BOOT_OK ; pck $pckSizeStr wasm $wasmSizeStr"
+    if ($exportCode -eq 0 -and $bootOkFound -and $bootAiOkFound) {
+        $exportLine = "BOOT_OK + BOOT_AI_OK ; pck $pckSizeStr wasm $wasmSizeStr"
     } else {
         $exportLine = "BOOT_FAIL export exit $exportCode ; pck $pckSizeStr wasm $wasmSizeStr"
         $gatePass = $false
@@ -141,6 +190,8 @@ Write-Host ""
 Write-Host "=== GATE $branch $commit"
 Write-Host "tests:     $testsLine  -> $testsStatus"
 Write-Host "scenarios: $scenariosLine                -> $scenariosStatus"
+Write-Host "soak:      $soakLine                     -> $soakStatus"
+Write-Host "probes:    $probesLine                   -> $probesStatus"
 Write-Host "export:    $exportLine"
 Write-Host "captures:  $capturesLine"
 if ($gatePass) {
@@ -150,3 +201,4 @@ if ($gatePass) {
     Write-Host "=== GATE FAIL"
     exit 1
 }
+

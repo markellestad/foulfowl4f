@@ -173,7 +173,8 @@ func test_no_raw_ids_in_all_capture_screens() -> void:
 		"main_menu", "credits", "P01_new_game", "P01_galaxy", "P01_system_panel",
 		"P02_galaxy_topbar", "P02_colony_panel", "P02_colonies_list", "P02_turn_summary",
 		"P03_fleet_panel", "P03_designer", "P03_range_overlay",
-		"P04_battle_orders", "P04_battle_viewer", "P04_autopsy"
+		"P04_battle_orders", "P04_battle_viewer", "P04_autopsy",
+		"P05_diplomacy", "P05_capitulation_card", "P05_victory", "P05_galaxy_midgame"
 	]
 
 	var main_node: Main = Main.new()
@@ -199,6 +200,10 @@ func test_no_raw_ids_in_all_capture_screens() -> void:
 			"P04_battle_orders": CaptureMode._cap_p04_battle_orders(router)
 			"P04_battle_viewer": CaptureMode._cap_p04_battle_viewer(router)
 			"P04_autopsy": CaptureMode._cap_p04_autopsy(router)
+			"P05_diplomacy": CaptureMode._cap_p05_diplomacy(router)
+			"P05_capitulation_card": CaptureMode._cap_p05_capitulation_card(router)
+			"P05_victory": CaptureMode._cap_p05_victory(router)
+			"P05_galaxy_midgame": CaptureMode._cap_p05_galaxy_midgame(router)
 
 		await get_tree().process_frame
 		await get_tree().process_frame
