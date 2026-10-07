@@ -76,3 +76,76 @@ func test_autopsy_card_copy_wire() -> void:
 	assert_false(card.flavor_label.text.contains("}"), "Flavor text must have no raw placeholders: " + card.flavor_label.text)
 	assert_gt(card.flavor_label.text.length(), 0)
 	card.free()
+
+func test_autopsy_two_named_empires_no_third_empire() -> void:
+	Copy.load_file("res://data/copy/en.json")
+	var blog := BattleLog.new()
+	blog.system_id = 10
+	blog.turn = 12
+	blog.winner_empire_id = 4
+	blog.deciding_band = "talon"
+	blog.initial_units.append({
+		"uid": 401,
+		"empire_id": 4,
+		"name_key": "Owl Cruiser"
+	})
+	blog.initial_units.append({
+		"uid": 601,
+		"empire_id": 6,
+		"name_key": "Crow Raider"
+	})
+	blog.final_units.append({
+		"uid": 401,
+		"name_key": "Owl Cruiser",
+		"damage_dealt": 50
+	})
+	var auto_data: Dictionary = Autopsy.analyze(blog)
+	var card := AutopsyCard.new()
+
+	var victor_name := Copy.empire_name(4)
+	var loser_name := Copy.empire_name(6)
+
+	assert_ne(victor_name, loser_name)
+	assert_ne(victor_name, "")
+	assert_ne(loser_name, "")
+
+	var third_party_names: Array[String] = [
+		Copy.empire_name(0),
+		Copy.empire_name(1),
+		Copy.empire_name(2),
+		Copy.empire_name(3),
+		Copy.empire_name(5),
+		Copy.empire_name(7),
+	]
+
+	# Test across turns 0..11 to cover all 12 flavor keys
+	for t in range(12):
+		blog.turn = t
+		card.setup(auto_data, victor_name, false, blog)
+		var text := card.flavor_label.text
+
+		# Must not contain unreplaced placeholders
+		assert_false(text.contains("{"), "Flavor text must have no unreplaced { token: %s" % text)
+		assert_false(text.contains("}"), "Flavor text must have no unreplaced } token: %s" % text)
+
+		# Must never contain a third empire's name
+		for third in third_party_names:
+			assert_false(text.contains(third), "Flavor text '%s' must not contain third party '%s'" % [text, third])
+
+	# Assert that a flavor using {loser} actually contains the loser's real name
+	var loser_flavor_tested := false
+	for t in range(24):
+		blog.turn = t
+		var seed_val: int = abs(blog.system_id * 31 + blog.turn * 17 + blog.winner_empire_id * 7 + blog.standout_ship_uid + blog.rounds.size())
+		var idx: int = (seed_val % 12) + 1
+		var key: String = AutopsyCard.AUTOPSY_FLAVOR_KEYS[idx - 1]
+		var template: String = Copy.t(key)
+		if template.contains("{loser}"):
+			card.setup(auto_data, victor_name, false, blog)
+			assert_true(card.flavor_label.text.contains(loser_name), "Flavor text must contain loser's real name '%s': %s" % [loser_name, card.flavor_label.text])
+			loser_flavor_tested = true
+			break
+	assert_true(loser_flavor_tested, "A flavor containing {loser} was exercised")
+
+	card.free()
+

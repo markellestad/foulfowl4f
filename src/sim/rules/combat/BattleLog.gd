@@ -53,3 +53,49 @@ static func from_dict(d: Dictionary) -> BattleLog:
 		bl.final_units.append((u as Dictionary).duplicate(true))
 	bl.losses = (d.get("losses", {}) as Dictionary).duplicate(true)
 	return bl
+
+func get_party_empire_ids() -> Array[int]:
+	var p0: int = -1
+	var p1: int = -1
+	for u in initial_units:
+		var eid: int = int(u.get("empire_id", -1))
+		if eid < 0:
+			continue
+		if p0 == -1:
+			p0 = eid
+		elif p1 == -1 and eid != p0:
+			p1 = eid
+			break
+	if p0 == -1 or p1 == -1:
+		for u in final_units:
+			var eid: int = int(u.get("empire_id", -1))
+			if eid < 0:
+				continue
+			if p0 == -1:
+				p0 = eid
+			elif p1 == -1 and eid != p0:
+				p1 = eid
+				break
+	if p0 == -1 or p1 == -1:
+		for k in losses.keys():
+			var eid: int = int(k)
+			if eid < 0:
+				continue
+			if p0 == -1:
+				p0 = eid
+			elif p1 == -1 and eid != p0:
+				p1 = eid
+				break
+	if winner_empire_id >= 0:
+		if p0 == -1:
+			p0 = winner_empire_id
+		elif p1 == -1 and winner_empire_id != p0:
+			p1 = winner_empire_id
+		elif winner_empire_id != p0 and winner_empire_id != p1:
+			p1 = winner_empire_id
+	if p0 == -1:
+		p0 = 0
+	if p1 == -1 or p1 == p0:
+		p1 = 1 if p0 == 0 else 0
+	return [p0, p1]
+

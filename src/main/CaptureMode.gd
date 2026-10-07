@@ -487,6 +487,24 @@ static func _cap_p04_autopsy(router: UiRouter) -> void:
 	blog.winner_empire_id = 0
 	blog.deciding_band = "talon"
 	blog.standout_ship_uid = 101
+	blog.initial_units.append({
+		"uid": 101,
+		"empire_id": 0,
+		"name_key": "Peregrine Flag",
+		"hull_id": "medium",
+		"hp": 40,
+		"hp_max": 40,
+		"shield": 5
+	})
+	blog.initial_units.append({
+		"uid": 201,
+		"empire_id": 1,
+		"name_key": "Sparrow",
+		"hull_id": "small",
+		"hp": 15,
+		"hp_max": 15,
+		"shield": 0
+	})
 	for r_i in range(1, 9):
 		blog.rounds.append({
 			"round_num": r_i,

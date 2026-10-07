@@ -171,22 +171,16 @@ func _init_battle() -> void:
 	# Separate initial units into left (party 0 / player) and right (enemy)
 	var left_units: Array = []
 	var right_units: Array = []
-	var first_emp_id: int = -1
-	var second_emp_id: int = -1
+	var parties: Array[int] = battle_log.get_party_empire_ids()
+	var first_emp_id: int = parties[0]
+	var second_emp_id: int = parties[1]
 
 	for u in battle_log.initial_units:
 		var eid: int = int(u.get("empire_id", 0))
-		if first_emp_id == -1:
-			first_emp_id = eid
-		elif second_emp_id == -1 and eid != first_emp_id:
-			second_emp_id = eid
 		if eid == first_emp_id:
 			left_units.append(u)
 		else:
 			right_units.append(u)
-
-	if second_emp_id == -1:
-		second_emp_id = 1 if first_emp_id == 0 else 0
 
 	var col_l: Color = Color(0.4, 0.7, 1.0)
 	var col_r: Color = Color(0.95, 0.45, 0.45)

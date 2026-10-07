@@ -75,10 +75,11 @@ func setup(autopsy_data: Dictionary, winner_name: String = "", is_stalemate: boo
 	if b_log == null and autopsy_data.has("battle_log"):
 		b_log = autopsy_data["battle_log"] as BattleLog
 
-	var win_eid: int = b_log.winner_empire_id if b_log != null else -1
+	var parties: Array[int] = b_log.get_party_empire_ids() if b_log != null else [0, 1]
+	var win_eid: int = b_log.winner_empire_id if (b_log != null and b_log.winner_empire_id >= 0) else parties[0]
 	var victor_name: String = winner_name
 	if victor_name == "" or victor_name == "None":
-		victor_name = Copy.empire_name(win_eid) if win_eid >= 0 else Copy.empire_name(0)
+		victor_name = Copy.empire_name(win_eid)
 
 	if is_stalemate:
 		winner_label.text = "Result: Stalemate (both sides withdrew)"
@@ -106,25 +107,36 @@ func setup(autopsy_data: Dictionary, winner_name: String = "", is_stalemate: boo
 		receipt_label.text = Copy.t("autopsy.receipt.none")
 	receipt_label.tooltip_text = Copy.t("ui.battle.sacrificed_label")
 
-	# Opponent (loser) determination
-	var opponent_eid: int = -1
-	if b_log != null:
-		for u in b_log.initial_units:
-			var ueid: int = int(u.get("empire_id", -1))
-			if ueid >= 0 and ueid != win_eid:
-				opponent_eid = ueid
-				break
-		if opponent_eid == -1:
-			for le in b_log.losses.keys():
-				var leid: int = int(le)
-				if leid >= 0 and leid != win_eid:
-					opponent_eid = leid
-					break
-	if opponent_eid == -1:
-		opponent_eid = 1 if win_eid == 0 else 0
-	var loser_name: String = Copy.empire_name(opponent_eid)
+	# Opponent (loser) determination from same parties as viewer headers
+	var loser_eid: int = parties[1] if win_eid == parties[0] else parties[0]
+	var loser_name: String = Copy.empire_name(loser_eid)
 
-	var ship_display: String = s_name if (s_name != "" and s_name != "None") else "Flagship"
+	var ship_display: String = s_name
+	if (ship_display == "" or ship_display == "None") and b_log != null:
+		if b_log.standout_ship_uid >= 0:
+			for u in b_log.final_units:
+				if int(u.get("uid", -1)) == b_log.standout_ship_uid:
+					ship_display = str(u.get("name_key", ""))
+					break
+			if ship_display == "" or ship_display == "None":
+				for u in b_log.initial_units:
+					if int(u.get("uid", -1)) == b_log.standout_ship_uid:
+						ship_display = str(u.get("name_key", ""))
+						break
+		if ship_display == "" or ship_display == "None":
+			for u in b_log.final_units:
+				var nk: String = str(u.get("name_key", ""))
+				if nk != "" and nk != "None":
+					ship_display = nk
+					break
+		if ship_display == "" or ship_display == "None":
+			for u in b_log.initial_units:
+				var nk: String = str(u.get("name_key", ""))
+				if nk != "" and nk != "None":
+					ship_display = nk
+					break
+	if ship_display == "" or ship_display == "None":
+		ship_display = Copy.t("role.talon_line.name", "Ship")
 
 	# Deterministic flavor selection from battle data
 	var seed_val: int = 0
