@@ -7,6 +7,7 @@ var party_b_name: String = "Right"
 
 func _init() -> void:
 	custom_minimum_size = Vector2(800, 48)
+	tooltip_text = Copy.t("ui.battle.range_strip.tip")
 
 func set_distance(d: int) -> void:
 	distance = clampi(d, 0, 12)

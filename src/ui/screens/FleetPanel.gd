@@ -193,7 +193,7 @@ func _build_ui() -> void:
 	_opt_swat = OptionButton.new()
 	_opt_swat.add_item("Missiles", 0)
 	_opt_swat.add_item("Ships", 1)
-	_opt_swat.tooltip_text = "Missiles: Intercept incoming missiles before they hit.\nShips: Fire only at enemy ships."
+	_opt_swat.tooltip_text = Copy.t("ui.fleet.swat_options.tip")
 	_opt_swat.item_selected.connect(_on_battle_plan_changed)
 	bp_grid.add_child(_opt_swat)
 
@@ -223,29 +223,28 @@ func refresh() -> void:
 	if flt.system_id >= 0 and flt.system_id < state.systems.size():
 		var sys: StarSystem = state.systems[flt.system_id]
 		var s_name: String = Copy.system_name(sys)
-		_loc_lbl.text = "Location: %s" % s_name
+		_loc_lbl.text = Copy.t("ui.fleet.location") % s_name
 	elif flt.dest_system_id >= 0 and flt.dest_system_id < state.systems.size():
 		var d_sys: StarSystem = state.systems[flt.dest_system_id]
-		var d_name: String = Copy.system_name(d_sys)
 		var eta: int = max(1, flt.arrive_turn - state.turn)
-		_loc_lbl.text = "In transit to %s (ETA: %d turns)" % [d_name, eta]
+		_loc_lbl.text = Copy.t("ui.fleet.in_transit") % [d_sys.id, eta]
 	else:
-		_loc_lbl.text = "Location: Deep Space"
+		_loc_lbl.text = Copy.t("ui.fleet.deep_space")
 
 	var spd: int = Movement.fleet_map_speed(db, state, flt.id)
-	_speed_lbl.text = "Speed: %d pc/turn" % spd
+	_speed_lbl.text = Copy.t("ui.fleet.speed") % spd
 
 	# Move button state
 	if is_move_mode:
-		_btn_move.text = "Cancel Move"
+		_btn_move.text = Copy.t("ui.label.cancel_move")
 	else:
 		_btn_move.text = "Move"
 
 	# Auto-explore button state
 	if flt.auto_explore:
-		_btn_auto_explore.text = "Auto-Explore: ON"
+		_btn_auto_explore.text = Copy.t("ui.fleet.auto_explore_on")
 	else:
-		_btn_auto_explore.text = "Auto-Explore: OFF"
+		_btn_auto_explore.text = Copy.t("ui.fleet.auto_explore_off")
 
 	# Colonize and Outpost target discovery
 	var target_sys_id: int = flt.system_id if flt.system_id >= 0 else flt.dest_system_id
@@ -261,8 +260,8 @@ func refresh() -> void:
 
 	_btn_colonize.disabled = (can_col_pid == -1)
 	_btn_outpost.disabled = (can_out_pid == -1)
-	_btn_colonize.tooltip_text = "Found colony" if can_col_pid != -1 else "No valid colony target"
-	_btn_outpost.tooltip_text = "Plant outpost" if can_out_pid != -1 else "No valid outpost target"
+	_btn_colonize.tooltip_text = Copy.t("ui.fleet.colonize.tip") if can_col_pid != -1 else Copy.t("ui.fleet.colonize.none_tip")
+	_btn_outpost.tooltip_text = Copy.t("ui.fleet.outpost.tip") if can_out_pid != -1 else Copy.t("ui.fleet.outpost.none_tip")
 
 	# Split & Merge buttons
 	_btn_split.disabled = (selected_ship_ids.is_empty() or selected_ship_ids.size() >= flt.ship_ids.size() or flt.system_id == -1)
@@ -327,7 +326,7 @@ func refresh() -> void:
 
 func set_move_mode(active: bool) -> void:
 	is_move_mode = active
-	_btn_move.text = "Cancel Move" if is_move_mode else "Move"
+	_btn_move.text = Copy.t("ui.label.cancel_move") if is_move_mode else "Move"
 	move_mode_toggled.emit(is_move_mode)
 
 func _on_move_clicked() -> void:

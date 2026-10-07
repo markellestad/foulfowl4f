@@ -29,7 +29,7 @@ func build() -> void:
 	add_child(main_vbox)
 
 	var title := Label.new()
-	title.text = "BATTLE ORDERS"
+	title.text = Copy.t("battle.orders.title")
 	title.add_theme_font_size_override("font_size", 24)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	main_vbox.add_child(title)
@@ -63,7 +63,7 @@ func build() -> void:
 	main_vbox.add_child(bottom_bar)
 
 	var accept_all_btn := Button.new()
-	accept_all_btn.text = "Accept All Orders (Enter)"
+	accept_all_btn.text = Copy.t("battle.orders.accept_all")
 	accept_all_btn.custom_minimum_size = Vector2(240, 42)
 	accept_all_btn.pressed.connect(_on_accept_all)
 	bottom_bar.add_child(accept_all_btn)
@@ -85,14 +85,14 @@ func _create_card(req: Dictionary) -> Dictionary:
 
 	# Enemy intel
 	var enemy_vis: Dictionary = req.get("enemy_visible", {})
-	var intel_text: String = "Enemy force: None"
+	var intel_text: String = Copy.f("battle.orders.enemy", {"ships": "None"})
 	if not enemy_vis.is_empty():
 		var hulls_str: Array[String] = []
 		for h_key in enemy_vis.keys():
 			var count: int = int(enemy_vis[h_key])
 			var size_name: String = Copy.t("ui.size." + str(h_key).to_lower(), str(h_key)).to_lower()
 			hulls_str.append("%d %s" % [count, size_name])
-		intel_text = "Enemy: " + ", ".join(hulls_str)
+		intel_text = Copy.f("battle.orders.enemy", {"ships": ", ".join(hulls_str)})
 	var intel_lbl := Label.new()
 	intel_lbl.text = intel_text
 	vbox.add_child(intel_lbl)
@@ -100,7 +100,7 @@ func _create_card(req: Dictionary) -> Dictionary:
 	# Odds
 	var odds_pct: int = int(req.get("odds_pct", 50))
 	var odds_lbl := Label.new()
-	odds_lbl.text = "Estimated Odds: %d%%" % odds_pct
+	odds_lbl.text = Copy.f("battle.orders.odds", {"odds": odds_pct})
 	vbox.add_child(odds_lbl)
 
 	# Projection line
@@ -108,7 +108,7 @@ func _create_card(req: Dictionary) -> Dictionary:
 	var talon_r: int = int(proj.get("talon_round", 1))
 	var beak_r: int = int(proj.get("beak_round", 1))
 	var proj_lbl := Label.new()
-	proj_lbl.text = "Projection: Talon by round %d, Beak by %d" % [talon_r, beak_r]
+	proj_lbl.text = Copy.f("battle.orders.projection", {"talon_round": talon_r, "beak_round": beak_r})
 	vbox.add_child(proj_lbl)
 
 	vbox.add_child(HSeparator.new())
@@ -117,7 +117,7 @@ func _create_card(req: Dictionary) -> Dictionary:
 	var plan: Dictionary = req.get("plan", {})
 
 	# 1. Posture
-	vbox.add_child(Ui.label("Battle Posture:"))
+	vbox.add_child(Ui.label(Copy.t("battle.orders.posture")))
 	var posture_opt := OptionButton.new()
 	var postures := ["auto", "close", "talon", "standoff", "retreat"]
 	var posture_tips := {
@@ -138,7 +138,7 @@ func _create_card(req: Dictionary) -> Dictionary:
 	vbox.add_child(posture_opt)
 
 	# 2. Target priority
-	vbox.add_child(Ui.label("Target Priority:"))
+	vbox.add_child(Ui.label(Copy.t("battle.orders.priority")))
 	var prio_opt := OptionButton.new()
 	var priorities := ["auto", "biggest", "swat", "band_talon", "band_beak", "band_horizon", "defenses", "transports"]
 	for pr in priorities:
@@ -150,22 +150,23 @@ func _create_card(req: Dictionary) -> Dictionary:
 	vbox.add_child(prio_opt)
 
 	# 3. Swat mode
-	vbox.add_child(Ui.label("Swat Escort Mode:"))
+	vbox.add_child(Ui.label(Copy.t("battle.orders.swat")))
 	var swat_opt := OptionButton.new()
 	var swat_modes := ["missiles_first", "ships_first"]
-	for sw in swat_modes:
-		swat_opt.add_item(Copy.t("battle.orders.swat." + sw))
+	swat_opt.add_item(Copy.t("battle.orders.swat.missiles_first"))
+	swat_opt.add_item(Copy.t("battle.orders.swat.ships_first"))
 	var cur_swat: String = str(plan.get("swat_mode", "missiles_first")).to_lower()
 	var swat_idx: int = swat_modes.find(cur_swat)
 	if swat_idx >= 0: swat_opt.selected = swat_idx
 	vbox.add_child(swat_opt)
 
 	# 4. Retreat threshold
-	vbox.add_child(Ui.label("Retreat Threshold:"))
+	vbox.add_child(Ui.label(Copy.t("battle.orders.retreat")))
 	var ret_opt := OptionButton.new()
 	var ret_thresh := ["never", "half", "even"]
-	for rt in ret_thresh:
-		ret_opt.add_item(Copy.t("battle.orders.retreat." + rt))
+	ret_opt.add_item(Copy.t("battle.orders.retreat.never"))
+	ret_opt.add_item(Copy.t("battle.orders.retreat.half"))
+	ret_opt.add_item(Copy.t("battle.orders.retreat.even"))
 	var cur_ret: String = str(plan.get("retreat_threshold", "never")).to_lower()
 	var ret_idx: int = ret_thresh.find(cur_ret)
 	if ret_idx >= 0: ret_opt.selected = ret_idx
@@ -173,7 +174,7 @@ func _create_card(req: Dictionary) -> Dictionary:
 
 	# Accept button per card
 	var accept_card_btn := Button.new()
-	accept_card_btn.text = "Accept This Card"
+	accept_card_btn.text = Copy.t("battle.orders.accept")
 	vbox.add_child(accept_card_btn)
 
 	var card_dict := {
@@ -205,12 +206,12 @@ func _create_auto_panel(autos: Array) -> PanelContainer:
 	panel.add_child(vbox)
 
 	var title := Label.new()
-	title.text = "AUTOMATED BATTLES"
+	title.text = Copy.t("battle.orders.automated.title")
 	title.add_theme_font_size_override("font_size", 16)
 	vbox.add_child(title)
 
 	var desc := Label.new()
-	desc.text = "These skirmishes use standing battle plans:"
+	desc.text = Copy.t("battle.orders.automated.body")
 	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(desc)
 

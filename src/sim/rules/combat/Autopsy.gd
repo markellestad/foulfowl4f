@@ -27,5 +27,6 @@ static func analyze(log: BattleLog) -> Dictionary:
 		"deciding_band": log.deciding_band,
 		"standout_name": standout_name,
 		"standout_damage": standout_dmg,
-		"receipt_text": receipt_text
+		"receipt_text": receipt_text,
+		"battle_log": log
 	}

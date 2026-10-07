@@ -51,3 +51,28 @@ func test_no_do_not_ship_terms() -> void:
 			var val: String = json.data[k]
 			var m: RegExMatch = regex.search(val)
 			assert_null(m, "Value of %s contains forbidden term %s" % [k, term])
+
+func test_autopsy_card_copy_wire() -> void:
+	Copy.load_file("res://data/copy/en.json")
+	var card: AutopsyCard = AutopsyCard.new()
+	var blog := BattleLog.new()
+	blog.system_id = 1
+	blog.turn = 4
+	blog.winner_empire_id = 0
+	blog.deciding_band = "talon"
+	blog.standout_ship_uid = 101
+	blog.receipt_lines.append({"name_key": "Sparrow", "hull_id": "small"})
+	blog.final_units.append({"uid": 101, "name_key": "Peregrine Flag", "damage_dealt": 84})
+	var auto_data: Dictionary = Autopsy.analyze(blog)
+	card.setup(auto_data, "Pheasants", false, blog)
+
+	assert_eq(card.title_label.text, "Battle Autopsy")
+	assert_true(card.winner_label.text.begins_with("Victor: "))
+	assert_true(card.band_label.text.begins_with("Deciding band: "))
+	assert_true(card.standout_label.text.contains("Peregrine Flag"))
+	assert_true(card.standout_label.text.contains("84 damage"))
+	assert_true(card.receipt_label.text.begins_with("Lost on retreat: "))
+	assert_false(card.flavor_label.text.contains("{"), "Flavor text must have no raw placeholders: " + card.flavor_label.text)
+	assert_false(card.flavor_label.text.contains("}"), "Flavor text must have no raw placeholders: " + card.flavor_label.text)
+	assert_gt(card.flavor_label.text.length(), 0)
+	card.free()

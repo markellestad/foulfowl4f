@@ -116,7 +116,7 @@ func refresh() -> void:
 	var treasury: int = gs.empires[0].treasury if not gs.empires.is_empty() else 0
 	var net_cr: int = int(totals.get("net_credits", 0))
 	_lbl_credits.text = "%s: %d (%+d)" % [Copy.t("ui.label.credits"), treasury, net_cr]
-	_lbl_credits.tooltip_text = "Income: +%d (Taxes: %d, Flat: %d, Food Sale: %d)\nExpenses: -%d (Upkeep: %d, Admin: %d)\nNet: %+d" % [
+	_lbl_credits.tooltip_text = Copy.t("ui.topbar.credits.tip") % [
 		int(totals.get("income", 0)),
 		int(totals.get("taxes", 0)),
 		int(totals.get("credits_flat", 0)),
@@ -130,7 +130,7 @@ func refresh() -> void:
 	var food_tot: int = int(totals.get("food", 0))
 	var food_bal: int = int(totals.get("food_balance", 0))
 	_lbl_food.text = "%s: %d (%+d)" % [Copy.t("ui.label.food"), food_tot, food_bal]
-	_lbl_food.tooltip_text = "Produced: %d\nEaten: %d\nBalance: %+d" % [
+	_lbl_food.tooltip_text = Copy.t("ui.topbar.food.tip") % [
 		food_tot,
 		int(totals.get("food_need", 0)),
 		food_bal

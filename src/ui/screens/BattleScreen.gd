@@ -46,6 +46,7 @@ func build() -> void:
 
 	# Range strip at top
 	range_strip = RangeStripClass.new()
+	range_strip.tooltip_text = Copy.t("ui.battle.range_strip.tip")
 	range_strip.anchor_left = 0.0
 	range_strip.anchor_right = 1.0
 	range_strip.offset_top = 10
@@ -137,10 +138,10 @@ func build() -> void:
 	autopsy_card.anchor_top = 0.5
 	autopsy_card.anchor_right = 0.5
 	autopsy_card.anchor_bottom = 0.5
-	autopsy_card.offset_left = -210
-	autopsy_card.offset_top = -100
-	autopsy_card.offset_right = 210
-	autopsy_card.offset_bottom = 100
+	autopsy_card.offset_left = -220
+	autopsy_card.offset_top = -140
+	autopsy_card.offset_right = 220
+	autopsy_card.offset_bottom = 140
 	autopsy_card.visible = false
 	autopsy_card.closed.connect(func(): on_back())
 	add_child(autopsy_card)
@@ -297,7 +298,7 @@ func _show_autopsy() -> void:
 	var winner_name: String = ""
 	if battle_log.winner_empire_id >= 0:
 		winner_name = Copy.empire_name(battle_log.winner_empire_id)
-	autopsy_card.setup(auto_data, winner_name, battle_log.is_stalemate)
+	autopsy_card.setup(auto_data, winner_name, battle_log.is_stalemate, battle_log)
 	autopsy_card.visible = true
 
 func _restart() -> void:

@@ -266,7 +266,7 @@ func build() -> void:
 	editor_v.add_child(footer)
 
 	_chk_obsolete = CheckBox.new()
-	_chk_obsolete.text = "Mark Obsolete"
+	_chk_obsolete.text = Copy.t("ui.label.mark_obsolete")
 	footer.add_child(_chk_obsolete)
 
 	var f_spacer := Control.new()

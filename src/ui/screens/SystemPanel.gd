@@ -76,7 +76,7 @@ func show_system(sys_id: int) -> void:
 	if sys.home_of != -1:
 		var race_id: String = Session.settings.seats[sys.home_of] if Session.settings != null and sys.home_of < Session.settings.seats.size() else ""
 		var r_name: String = Copy.t("race.%s.name" % race_id)
-		_owner_lbl.text = "Homeworld: %s" % r_name
+		_owner_lbl.text = Copy.t("ui.system.homeworld") % r_name
 		_owner_lbl.visible = true
 	else:
 		_owner_lbl.visible = false
