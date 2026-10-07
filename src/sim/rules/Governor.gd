@@ -196,7 +196,7 @@ static func fill_queues(db: ContentDB, gs: GameState, empire_id: int, report: Tu
 	for cid in Ids.sorted_keys(gs.colonies):
 		var col: Colony = gs.colonies[cid]
 		if col.owner == empire_id and not col.is_outpost:
-			if _colony_has_yard(db, col) and _queue_head_is_warship(db, gs, col):
+			if _colony_has_yard(db, col) and (_queue_head_is_warship(db, gs, col) or _colony_has_warship(db, gs, col)):
 				var out: Dictionary = Economy.colony_output(db, gs, cid)
 				current += (out["industry"] as ModResult).value
 
@@ -243,7 +243,7 @@ static func fill_queues(db: ContentDB, gs: GameState, empire_id: int, report: Tu
 						continue
 					if not _colony_has_yard(db, col):
 						continue
-					if _queue_head_is_warship(db, gs, col):
+					if _queue_head_is_warship(db, gs, col) or _colony_has_warship(db, gs, col):
 						continue
 					if is_yard_only and col.id != emp.capital_colony_id:
 						continue
@@ -274,13 +274,23 @@ static func fill_queues(db: ContentDB, gs: GameState, empire_id: int, report: Tu
 					"current": current_pct
 				}
 
+				var insert_pos: int = 0
+				for idx in range(best_col.queue.size()):
+					if best_col.queue[idx].added_by == "player":
+						insert_pos = idx + 1
+
 				if best_col.queue.size() >= max_q and best_col.queue[-1].count == -1:
 					best_col.queue.pop_back()
 				if not best_col.queue.is_empty() and best_col.queue[0].count == -1:
 					best_col.queue.remove_at(0)
+					insert_pos = maxi(0, insert_pos - 1)
 
-				best_col.queue.insert(0, qi)
+				if insert_pos >= best_col.queue.size():
+					best_col.queue.append(qi)
+				else:
+					best_col.queue.insert(insert_pos, qi)
 				current += best_ind
+
 
 				if report != null and empire_id == 0:
 					var planet: Planet = gs.planets[best_col.planet_id]
@@ -333,6 +343,18 @@ static func _queue_head_is_warship(db: ContentDB, gs: GameState, col: Colony) ->
 	var des: ShipDesign = gs.designs[did]
 	var st: Dictionary = DesignRules.stats(db, gs, des)
 	return bool(st.get("armed", false))
+
+static func _colony_has_warship(db: ContentDB, gs: GameState, col: Colony) -> bool:
+	for qi in col.queue:
+		if qi.kind == "ship":
+			var did: int = int(qi.ref_id)
+			if gs.designs.has(did):
+				var des: ShipDesign = gs.designs[did]
+				var st: Dictionary = DesignRules.stats(db, gs, des)
+				if bool(st.get("armed", false)):
+					return true
+	return false
+
 
 static func _designs_equal(a: ShipDesign, b: ShipDesign) -> bool:
 	return a.hull == b.hull and a.drive == b.drive and a.plate == b.plate and \
