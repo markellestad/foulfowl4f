@@ -1,0 +1,6 @@
+{
+  "id": "p4",
+  "name": "P4 Invasion logistics",
+  "rule": "boot_ships_land_within_1_turn_of_orbit",
+  "pass": "invasion_within_1_turn"
+}

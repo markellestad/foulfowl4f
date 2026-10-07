@@ -37,6 +37,7 @@ var game_over: bool = false
 var one_more_turn: bool = false
 var news: Array[Dictionary] = []
 var ai_memory: Dictionary = {} # empire_id (int) -> AiMemory
+var ai_disabled: Array[int] = []
 
 func alloc_id(kind: String) -> int:
 	var cur: int = int(next_ids.get(kind, 0))
@@ -136,7 +137,8 @@ func to_dict() -> Dictionary:
 		"game_over": game_over,
 		"one_more_turn": one_more_turn,
 		"news": news.duplicate(true),
-		"ai_memory": _serialize_ai_memory()
+		"ai_memory": _serialize_ai_memory(),
+		"ai_disabled": ai_disabled.duplicate()
 	}
 
 func _serialize_ai_memory() -> Dictionary:
@@ -278,5 +280,9 @@ static func from_dict(d: Dictionary) -> GameState:
 	var raw_aim: Dictionary = d.get("ai_memory", {})
 	for k_str in raw_aim.keys():
 		gs.ai_memory[int(k_str)] = AiMemory.from_dict(raw_aim[k_str])
+
+	gs.ai_disabled.clear()
+	for aid in d.get("ai_disabled", []):
+		gs.ai_disabled.append(int(aid))
 
 	return gs

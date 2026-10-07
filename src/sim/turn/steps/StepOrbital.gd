@@ -61,14 +61,33 @@ func next(ctx: TurnContext) -> bool:
 						Bombardment.apply_bombardment(ctx.gs, ctx.db, f, target_col, ctx.report)
 				f.order.clear()
 
-		# 4. Invasion: fleets with order invade controlling orbit, defenses suppressed or absent
+		# 4. Invasion: fleets with order invade (or boot ships controlling orbit) when defenses suppressed
 		for f in ctx.gs.fleets.values():
-			if f.system_id == sys_id and str(f.order.get("type", "")) == "invade":
+			if f.system_id == sys_id:
 				var col_id: int = int(f.order.get("colony_id", -1))
-				if ctrl == f.owner and ctx.gs.colonies.has(col_id):
-					var col: Colony = ctx.gs.colonies[col_id]
-					if col.defense_hp <= 0:
-						GroundCombat.resolve_invasion(ctx.gs, ctx.db, f, col, ctx.report)
+				var is_invade: bool = (str(f.order.get("type", "")) == "invade")
+				if not is_invade and ctrl == f.owner:
+					for sid in f.ship_ids:
+						var s: Ship = ctx.gs.ships.get(sid)
+						if s != null and ctx.gs.designs.has(s.design_id):
+							var des: ShipDesign = ctx.gs.designs[s.design_id]
+							if des.specials.has("boot_pod"):
+								is_invade = true
+								break
+
+				if is_invade and ctrl == f.owner:
+					var target_col: Colony = null
+					if col_id >= 0 and ctx.gs.colonies.has(col_id):
+						target_col = ctx.gs.colonies[col_id]
+					else:
+						for col in ctx.gs.colonies.values():
+							var c_sys: StarSystem = ctx.gs.system_of_planet(col.planet_id)
+							if c_sys != null and c_sys.id == sys_id and not col.is_outpost and Wars.is_at_war(ctx.gs, f.owner, col.owner):
+								target_col = col
+								break
+					if target_col != null and target_col.defense_hp <= 0:
+						GroundCombat.resolve_invasion(ctx.gs, ctx.db, f, target_col, ctx.report)
+						f.order.clear()
 
 		# 5. Colonisation: claimants resolve with the orbit controller winning conflicts first
 		var orders_by_pid: Dictionary = {}

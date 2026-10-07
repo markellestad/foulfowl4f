@@ -13,6 +13,8 @@ func begin(ctx: TurnContext) -> void:
 	for eid in range(ctx.gs.empires.size()):
 		if eid == 0 and not all_ai:
 			continue
+		if ctx.gs.ai_disabled.has(eid):
+			continue
 		if ctx.gs.empires[eid].eliminated_turn >= 0:
 			continue
 

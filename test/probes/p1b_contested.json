@@ -1,0 +1,20 @@
+{
+  "id": "p1b",
+  "name": "P1b Contested war",
+  "settings": {
+    "preset": "tiny",
+    "seed_string": "P1B_0",
+    "player_race": "pheasants",
+    "seats": ["pheasants", "swans"],
+    "seat_swans": true,
+    "difficulty": "flighted",
+    "all_ai": true
+  },
+  "seeds": [
+    "P1B_0", "P1B_1", "P1B_2", "P1B_3", "P1B_4",
+    "P1B_5", "P1B_6", "P1B_7", "P1B_8", "P1B_9"
+  ],
+  "turns": 40,
+  "war_turn": 1,
+  "pass": "report_only"
+}

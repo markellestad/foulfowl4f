@@ -1,0 +1,7 @@
+{
+  "id": "p10",
+  "name": "P10 AI precompute is a cache",
+  "seeds_count": 20,
+  "turns": 30,
+  "pass": "precompute_equals_end_turn_20_of_20"
+}

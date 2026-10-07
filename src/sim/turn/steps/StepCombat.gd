@@ -253,7 +253,53 @@ func next(ctx: TurnContext) -> bool:
 							combined_lo.append(int(x))
 				ords["line_order"] = combined_lo
 
-				if emp_id == 0:
+				var is_ai_emp: bool = (emp_id != 0 or (ctx.gs.settings != null and ctx.gs.settings.all_ai)) and emp_id >= 0 and emp_id < ctx.gs.empires.size()
+				if is_ai_emp:
+					var view: AiView = AiView.build(ctx.gs, ctx.db, emp_id)
+					var enemy_horizon: bool = false
+					var enemy_shield: bool = false
+					var own_swat: bool = false
+					var faster_beak: bool = false
+					var slower_talon: bool = false
+
+					for other_fl in ctx.gs.fleets.values():
+						if other_fl.system_id == sys_id and Wars.is_at_war(ctx.gs, emp_id, other_fl.owner):
+							for sid in other_fl.ship_ids:
+								var s: Ship = ctx.gs.ships.get(sid)
+								if s != null and s.hp > 0 and ctx.gs.designs.has(s.design_id):
+									var des: ShipDesign = ctx.gs.designs[s.design_id]
+									for w in des.weapons:
+										var pdef: Dictionary = ctx.db.def("parts", str(w.get("part", "")))
+										if str(pdef.get("band", "")) == "horizon":
+											enemy_horizon = true
+										if str(pdef.get("band", "")) == "beak":
+											slower_talon = true
+
+					for col in ctx.gs.colonies.values():
+						var cs: StarSystem = ctx.gs.system_of_planet(col.planet_id)
+						if cs != null and cs.id == sys_id and Wars.is_at_war(ctx.gs, emp_id, col.owner):
+							if col.defense_hp > 0:
+								for b in col.buildings:
+									var bdef: Dictionary = ctx.db.def("buildings", str(b))
+									var dblk: Dictionary = bdef.get("defense", {})
+									if dblk.has("launchers"):
+										enemy_horizon = true
+									if dblk.has("planet_shield"):
+										enemy_shield = true
+
+					var req: Dictionary = {
+						"standing_plan": ords,
+						"odds": 50,
+						"enemy_horizon_heavy": enemy_horizon,
+						"enemy_high_shield": enemy_shield,
+						"own_swat_mounts": own_swat,
+						"faster_beak": faster_beak,
+						"slower_talon_vs_beak": slower_talon and not enemy_shield,
+						"own_horizon_heavy": false
+					}
+					ords = AiBattle.choose_orders(view, req)
+
+				if emp_id == 0 and not is_ai_emp:
 					_player_standing_by_sys[sys_id] = ords
 				else:
 					_ai_orders_by_sys[sys_id][emp_id] = ords
@@ -323,7 +369,9 @@ func next(ctx: TurnContext) -> bool:
 		for emp_id in _ai_orders_by_sys[sys_id].keys():
 			custom_orders[emp_id] = _ai_orders_by_sys[sys_id][emp_id]
 
-	if ctx.pending_orders.has(sys_id):
+	if _ai_orders_by_sys.has(sys_id) and _ai_orders_by_sys[sys_id].has(0):
+		custom_orders[0] = _ai_orders_by_sys[sys_id][0]
+	elif ctx.pending_orders.has(sys_id):
 		custom_orders[0] = ctx.pending_orders[sys_id]
 	elif _player_standing_by_sys.has(sys_id):
 		custom_orders[0] = _player_standing_by_sys[sys_id]

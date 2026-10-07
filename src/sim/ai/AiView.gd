@@ -22,13 +22,14 @@ static func build(gs: GameState, p_db: ContentDB, p_empire_id: int) -> AiView:
 	view.turn = gs.turn
 	view.seed = gs.settings.seed if gs.settings != null else 0
 
-	var emp: Empire = gs.empires[p_empire_id]
-	var p_id: String = ""
-	if p_db != null:
-		var rdef: Dictionary = p_db.def("races", emp.race)
-		p_id = str(rdef.get("personality", ""))
-	if p_id != "" and p_db != null:
-		view._personality = p_db.def("personalities", p_id)
+	if p_empire_id >= 0 and p_empire_id < gs.empires.size():
+		var emp: Empire = gs.empires[p_empire_id]
+		var p_id: String = ""
+		if p_db != null:
+			var rdef: Dictionary = p_db.def("races", emp.race)
+			p_id = str(rdef.get("personality", ""))
+		if p_id != "" and p_db != null:
+			view._personality = p_db.def("personalities", p_id)
 	return view
 
 func rng(salt: int) -> Rng:

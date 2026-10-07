@@ -1,0 +1,6 @@
+{
+  "id": "p2",
+  "name": "P2 Surprise defenses",
+  "rule": "strike_retry_ratio_and_max_failures",
+  "pass": "retry_ratio_and_failure_cap"
+}

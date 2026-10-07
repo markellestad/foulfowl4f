@@ -25,10 +25,11 @@ static func choose_orders(_view: AiView, request: Dictionary) -> Dictionary:
 		standing["posture"] = "retreat"
 		return standing
 
-	# 2. Enemy Horizon-heavy and own Swat mounts -> Missiles first + Close
+	# 2. Enemy Horizon-heavy -> Missiles first + Close
 	var enemy_horizon_heavy: bool = bool(request.get("enemy_horizon_heavy", false))
 	var own_swat_mounts: bool = bool(request.get("own_swat_mounts", false))
-	if enemy_horizon_heavy and own_swat_mounts:
+	var enemy_high_shield: bool = bool(request.get("enemy_high_shield", false))
+	if enemy_high_shield or (enemy_horizon_heavy and own_swat_mounts) or enemy_horizon_heavy:
 		standing["posture"] = "close"
 		standing["swat_mode"] = "missiles"
 		return standing

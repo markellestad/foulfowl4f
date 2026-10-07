@@ -155,6 +155,9 @@ static func resolve(input: CombatInput) -> BattleLog:
 				var u: CombatUnit = all_units[uid]
 				if not u.is_alive():
 					continue
+				if not u.is_armed and not u.is_planet and (used_slots > 0 or p.has_live_armed()):
+					new_reserves.append(uid)
+					continue
 				var needed_slots: int = 0 if u.is_planet else u.line_slots
 				if used_slots + needed_slots <= p.max_line_slots:
 					line.append(uid)

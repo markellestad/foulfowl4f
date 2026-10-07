@@ -6,6 +6,15 @@ static func apply(gs: GameState, db: ContentDB, log: BattleLog) -> void:
 		return
 
 	# 1. Apply HP and losses to ships and colony defenses
+	var emp_ids: Array[int] = []
+	for u in log.initial_units:
+		var eid: int = int(u.get("empire_id", -1))
+		if eid >= 0 and not emp_ids.has(eid):
+			emp_ids.append(eid)
+	for i in range(emp_ids.size()):
+		for j in range(i + 1, emp_ids.size()):
+			Wars.record_battle(gs, emp_ids[i], emp_ids[j])
+
 	for u_dict in log.final_units:
 		var uid: int = int(u_dict.get("uid", -1))
 		var is_planet: bool = bool(u_dict.get("is_planet", false))

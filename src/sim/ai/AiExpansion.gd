@@ -22,6 +22,7 @@ static func plan(view: AiView, _memory: AiMemory = null) -> Array[Cmd]:
 	for f in my_fleets:
 		var has_nest: bool = false
 		var has_stake: bool = false
+		var has_warship: bool = false
 		for sid in f.ship_ids:
 			var s: Ship = view.own_ship(sid)
 			if s != null:
@@ -31,11 +32,13 @@ static func plan(view: AiView, _memory: AiMemory = null) -> Array[Cmd]:
 						has_nest = true
 					if des.specials.has("perch_pod"):
 						has_stake = true
+					if not des.weapons.is_empty():
+						has_warship = true
 
 		if has_nest or has_stake:
 			colony_ships_in_flight += 1
 			# If fleet has no orders and is at a system
-			if f.system_id >= 0 and f.dest_system_id == -1 and f.order.is_empty():
+			if f.system_id >= 0 and f.dest_system_id == -1 and f.order.is_empty() and not (view.active_wars_count() > 0 and has_warship):
 				var sys: StarSystem = view.system(f.system_id)
 				if sys != null:
 					var target_planet_id: int = -1
@@ -88,7 +91,7 @@ static func plan(view: AiView, _memory: AiMemory = null) -> Array[Cmd]:
 
 	# Find candidate targets in fuel range
 	var valid_targets: Array[Dictionary] = _find_all_targets(view, traits, is_patient_rock)
-	var max_allowed: int = mini(valid_targets.size(), 2 + IntMath.floor_div(own_cols.size(), 3))
+	var max_allowed: int = 0 if view.active_wars_count() > 0 else mini(valid_targets.size(), 2 + IntMath.floor_div(own_cols.size(), 3))
 
 	if colony_ships_in_flight + queued_colony_ships < max_allowed and not valid_targets.is_empty():
 		# Find best yard colony

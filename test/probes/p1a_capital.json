@@ -1,0 +1,27 @@
+{
+  "id": "p1a",
+  "name": "P1a Capital assault (smoke)",
+  "settings": {
+    "preset": "tiny",
+    "seed_string": "P1A_0",
+    "player_race": "pheasants",
+    "seats": ["pheasants", "swans"],
+    "seat_swans": true,
+    "difficulty": "flighted",
+    "all_ai": true
+  },
+  "seeds": [
+    "P1A_0", "P1A_1", "P1A_2", "P1A_3", "P1A_4",
+    "P1A_5", "P1A_6", "P1A_7", "P1A_8", "P1A_9"
+  ],
+  "turns": 25,
+  "attacker": 0,
+  "defender": 1,
+  "ai_disabled": [1],
+  "add_mod": [
+    {"empire": 0, "stat": "industry", "op": "pct", "value": 100}
+  ],
+  "defender_buildings": ["horizon_perch", "talon_batteries", "colony_mantle"],
+  "defender_guard_ships": 4,
+  "pass": "capital_captured_in_10_of_10"
+}

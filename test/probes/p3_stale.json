@@ -1,0 +1,6 @@
+{
+  "id": "p3",
+  "name": "P3 Stale intel",
+  "rule": "rescout_before_strike_over_10_turns",
+  "pass": "rescout_before_strike"
+}

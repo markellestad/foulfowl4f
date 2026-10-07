@@ -1,0 +1,6 @@
+{
+  "id": "p5",
+  "name": "P5 Defense response",
+  "rule": "visible_threat_within_3_turns_triggers_response",
+  "pass": "reinforcement_or_defense_within_2_turns"
+}
