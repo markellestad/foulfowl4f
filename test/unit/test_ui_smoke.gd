@@ -157,7 +157,16 @@ func test_battle_viewer_round_counter_and_conclusion() -> void:
 	assert_eq(screen.round_lbl.text, "Round: 8 / 8")
 	assert_true(screen.pause_btn.disabled, "Pause disabled after battle conclusion")
 
+func _is_in_scroll_container(node: Node) -> bool:
+	var p := node.get_parent()
+	while p != null:
+		if p is ScrollContainer:
+			return true
+		p = p.get_parent()
+	return false
+
 func test_no_raw_ids_in_all_capture_screens() -> void:
+	get_tree().root.size = Vector2i(1280, 720)
 	var re_emp := RegEx.new()
 	re_emp.compile("\\bEmpire \\d+\\b")
 	var re_sys := RegEx.new()
@@ -181,6 +190,8 @@ func test_no_raw_ids_in_all_capture_screens() -> void:
 	add_child_autofree(main_node)
 	main_node._build_scene_tree()
 	var router: UiRouter = main_node.ui_root
+	router.size = Vector2(1280, 720)
+	router.custom_minimum_size = Vector2(1280, 720)
 
 	for cap_id in capture_ids:
 		# Run capture setup
@@ -245,5 +256,14 @@ func test_no_raw_ids_in_all_capture_screens() -> void:
 
 				var m_hull = re_hull.search(t)
 				assert_null(m_hull, "[%s] '%s' matched raw hull:count pattern: '%s' in node %s" % [cap_id, t, m_hull.get_string() if m_hull else "", node.name])
+
+			var c := node as Control
+			if c.size.x > 0 and c.size.y > 0:
+				var gr: Rect2 = c.get_global_rect()
+				assert_true(gr.end.x <= 1280.0 + 2.0, "[%s] Control %s (%s) right edge <= 1280 (got %.1f)" % [cap_id, c.name, c.get_class(), gr.end.x])
+				assert_true(gr.position.x >= -2.0, "[%s] Control %s (%s) left edge >= 0 (got %.1f)" % [cap_id, c.name, c.get_class(), gr.position.x])
+				if not _is_in_scroll_container(c):
+					assert_true(gr.end.y <= 720.0 + 2.0, "[%s] Control %s (%s) bottom edge <= 720 (got %.1f)" % [cap_id, c.name, c.get_class(), gr.end.y])
+					assert_true(gr.position.y >= -2.0, "[%s] Control %s (%s) top edge >= 0 (got %.1f)" % [cap_id, c.name, c.get_class(), gr.position.y])
 
 

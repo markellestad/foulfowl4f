@@ -50,7 +50,10 @@ func _build_ui() -> void:
 	style.bg_color = Palette.PANEL
 	style.border_color = Palette.LINE
 	style.border_width_left = 1
-	style.set_content_margin_all(12)
+	style.content_margin_left = 8
+	style.content_margin_right = 8
+	style.content_margin_top = 10
+	style.content_margin_bottom = 10
 	add_theme_stylebox_override("panel", style)
 
 	var root_col := Ui.vbox(8)

@@ -36,7 +36,7 @@ func _build_ui() -> void:
 	style.set_content_margin_all(6)
 	add_theme_stylebox_override("panel", style)
 
-	var hbox := Ui.hbox(12)
+	var hbox := Ui.hbox(8)
 	hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	add_child(hbox)
 
@@ -58,19 +58,19 @@ func _build_ui() -> void:
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.add_child(spacer)
 
-	_btn_overlay = Ui.button(Copy.t("ui.label.range_overlay") + " (1)", _on_overlay, "Toggle Range Overlay (1)")
+	_btn_overlay = Ui.button(Copy.t("ui.label.range_overlay"), _on_overlay, "Toggle Range Overlay (1)")
 	hbox.add_child(_btn_overlay)
 
-	_btn_fleets = Ui.button("Fleets (F)", _on_fleets, "Fleets List (F)")
+	_btn_fleets = Ui.button("Fleets", _on_fleets, "Fleets List (F)")
 	hbox.add_child(_btn_fleets)
 
-	_btn_designer = Ui.button("Designer (D)", _on_designer, "Ship Designer (D)")
+	_btn_designer = Ui.button("Designer", _on_designer, "Ship Designer (D)")
 	hbox.add_child(_btn_designer)
 
 	_btn_diplo = Ui.button("Diplomacy", _on_diplo, "Diplomacy")
 	hbox.add_child(_btn_diplo)
 
-	_btn_colonies = Ui.button(Copy.t("ui.label.colonies") + " (Tab)", _on_colonies)
+	_btn_colonies = Ui.button(Copy.t("ui.label.colonies"), _on_colonies, "Colonies (Tab)")
 	hbox.add_child(_btn_colonies)
 
 	_btn_undo = Ui.button(Copy.t("ui.label.undo"), _on_undo, "Undo (Ctrl+Z)")
@@ -82,8 +82,8 @@ func _build_ui() -> void:
 	_btn_menu = Ui.button(Copy.t("ui.label.menu"), _on_menu, "Menu (Esc)")
 	hbox.add_child(_btn_menu)
 
-	_btn_end_turn = Ui.button(Copy.t("ui.label.next_turn") + " (Space)", _on_end_turn)
-	_btn_end_turn.custom_minimum_size.x = 120
+	_btn_end_turn = Ui.button(Copy.t("ui.label.next_turn"), _on_end_turn, "End Turn (Space)")
+	_btn_end_turn.custom_minimum_size.x = 90
 	hbox.add_child(_btn_end_turn)
 
 func _connect_session() -> void:
@@ -140,7 +140,8 @@ func refresh() -> void:
 
 	var is_running: bool = Session.is_turn_running()
 	_btn_end_turn.disabled = is_running
-	_btn_end_turn.text = Copy.t("ui.label.next_turn") + " (Space)"
+	_btn_end_turn.text = Copy.t("ui.label.next_turn")
+	_btn_end_turn.tooltip_text = Copy.t("ui.label.next_turn") + " (Space)"
 	_btn_undo.disabled = is_running or not Session.can_undo()
 	_btn_redo.disabled = is_running or not Session.can_redo()
 	_btn_colonies.disabled = is_running

@@ -55,7 +55,7 @@ func build() -> void:
 	news_ticker = NewsTickerScript.new()
 	news_ticker.name = "NewsTicker"
 	news_ticker.set_anchors_preset(PRESET_BOTTOM_WIDE)
-	news_ticker.offset_top = -28.0
+	news_ticker.offset_top = -30.0
 	news_ticker.offset_bottom = 0.0
 	add_child(news_ticker)
 

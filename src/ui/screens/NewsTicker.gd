@@ -9,7 +9,10 @@ func _init() -> void:
 	style.bg_color = Color(0.08, 0.09, 0.12, 0.9)
 	style.border_color = Palette.LINE
 	style.border_width_top = 1
-	style.set_content_margin_all(4)
+	style.content_margin_left = 4
+	style.content_margin_right = 4
+	style.content_margin_top = 2
+	style.content_margin_bottom = 2
 	add_theme_stylebox_override("panel", style)
 
 	_lbl = Label.new()
