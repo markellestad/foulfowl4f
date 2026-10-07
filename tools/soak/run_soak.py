@@ -95,7 +95,7 @@ def main():
             line_str = line.strip()
             if line_str.startswith("SOAK GAME") or "hard_failures" in line_str or "FAIL" in line_str:
                 with output_lock:
-                    print(f"[Worker {worker_idx}] {line_str}")
+                    print(f"[Worker {worker_idx}] {line_str}", flush=True)
 
     threads = []
     for proc, idx in workers:

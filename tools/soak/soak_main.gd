@@ -110,7 +110,9 @@ func _init() -> void:
 				var i_eid: int = int(eid)
 				if i_eid >= 0 and i_eid < game.gs.empires.size():
 					var sp: String = game.gs.empires[i_eid].race
-					total_losses_per_species[sp] = int(total_losses_per_species.get(sp, 0)) + int(blog.losses[eid])
+					var l_val: Variant = blog.losses[eid]
+					var l_count: int = (l_val as Array).size() if l_val is Array else int(l_val)
+					total_losses_per_species[sp] = int(total_losses_per_species.get(sp, 0)) + l_count
 
 		turn_times_ms.sort()
 		var max_turn_ms: float = turn_times_ms[-1] if not turn_times_ms.is_empty() else 0.0
