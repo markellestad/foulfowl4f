@@ -149,7 +149,8 @@ func begin_end_turn() -> TurnProcessor:
 
 func finish_end_turn() -> void:
 	current_tp = null
-	checkpoints[0] = gs.to_dict()
+	if gs.settings == null or not gs.settings.all_ai:
+		checkpoints[0] = gs.to_dict()
 
 func end_turn_headless() -> void:
 	var tp: TurnProcessor = begin_end_turn()

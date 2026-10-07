@@ -93,13 +93,8 @@ func to_dict() -> Dictionary:
 	for eid in Ids.sorted_keys(knowledge):
 		knw_dict[str(eid)] = knowledge[eid].to_dict()
 
-	var cmds: Array = []
-	for c in cmd_log:
-		cmds.append(c.duplicate(true))
-
-	var blog_arr: Array = []
-	for bl in battle_logs:
-		blog_arr.append((bl as Dictionary).duplicate(true))
+	var cmds: Array = cmd_log.duplicate()
+	var blog_arr: Array = battle_logs.duplicate()
 
 	return {
 		"version": version,
