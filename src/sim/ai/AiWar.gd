@@ -119,7 +119,7 @@ static func wants_peace(view: AiView, other_empire_id: int, custom_ratio: int = 
 		var own_p: int = view.own_power()
 		var enemy_p: int = view.estimated_enemy_power(other_empire_id)
 		if enemy_p > 0:
-			ratio = IntMath.pct(own_p, enemy_p)
+			ratio = IntMath.floor_div(own_p * 100, enemy_p)
 		elif own_p > 0:
 			ratio = 100
 

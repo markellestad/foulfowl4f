@@ -75,6 +75,17 @@ func _grant_t1_t3_techs(db: ContentDB, gs: GameState, eid: int) -> void:
 	var emp: Empire = gs.empires[eid]
 	if emp.tech == null:
 		emp.tech = TechState.new()
+	var t1_t3_techs: Array[String] = [
+		"pecking_logs", "research_roost", "the_shared_glance", "everyone_can_miss", "security_nest", "drill_roost", "predictive_peck", "loud_abacus", "loadout_glance",
+		"second_shift", "reinforced_roost", "drydock_of_regret", "the_large_keel", "proper_joinery", "rock_picking", "automated_incubators", "standards_and_talons", "kit_nests",
+		"dust_cover", "personal_down", "scatter_molt", "colony_mantle", "early_mantle", "null_glide", "half_mantle", "tractor_etiquette", "hard_down",
+		"better_feed", "richer_dirt", "old_green", "dome_perches", "molt_management", "the_dose", "more_perch", "dome_perches_2", "toxic_preening",
+		"downrange_charts", "lean_in", "soft_bones", "warm_current", "crop_tanks", "courier_wings", "tailwinds", "trade_winds", "the_upkeep_diet",
+		"peck_driver", "hatch_dart", "horizon_perch", "second_sun", "ink_dart", "primary_mount", "clatter_bill", "talon_batteries", "rude_sun"
+	]
+	for tid in t1_t3_techs:
+		if not emp.tech.knows(tid):
+			emp.tech.known.append(tid)
 	for tid in db.ids("techs"):
 		var tdef: Dictionary = db.def("techs", tid)
 		var tier: int = int(tdef.get("tier", 1))
@@ -120,17 +131,19 @@ func _run_p1a(db: ContentDB, data: Dictionary) -> bool:
 		_grant_t1_t3_techs(db, gs, 1)
 
 		# Defender capital setup
-		var def_cap: Colony = null
-		for c in gs.colonies.values():
-			if c.owner == 1:
-				def_cap = c
-				break
+		var def_cap: Colony = gs.colonies.get(gs.empires[1].capital_colony_id)
+		if def_cap == null:
+			for c in gs.colonies.values():
+				if c.owner == 1:
+					def_cap = c
+					break
 
-		var att_cap: Colony = null
-		for c in gs.colonies.values():
-			if c.owner == 0:
-				att_cap = c
-				break
+		var att_cap: Colony = gs.colonies.get(gs.empires[0].capital_colony_id)
+		if att_cap == null:
+			for c in gs.colonies.values():
+				if c.owner == 0:
+					att_cap = c
+					break
 
 		if def_cap != null and att_cap != null:
 			for b in ["horizon_perch", "talon_batteries", "colony_mantle"]:
@@ -153,6 +166,8 @@ func _run_p1a(db: ContentDB, data: Dictionary) -> bool:
 			g_des.empire_id = 1
 			g_des.name = "Guard"
 			g_des.hull = "medium"
+			g_des.drive = "walk_drive"
+			g_des.plate = "pinfeather_plate"
 			g_des.weapons = [{"part": "peck_driver", "mount": "", "count": 2}]
 			gs.designs[g_des.id] = g_des
 
@@ -168,6 +183,7 @@ func _run_p1a(db: ContentDB, data: Dictionary) -> bool:
 				shp.owner = 1
 				shp.design_id = g_des.id
 				shp.hp = 30
+				shp.fleet_id = flt.id
 				gs.ships[shp.id] = shp
 				flt.ship_ids.append(shp.id)
 			gs.fleets[flt.id] = flt
@@ -198,7 +214,6 @@ func _run_p1a(db: ContentDB, data: Dictionary) -> bool:
 		gs.war_declarer[Wars._pair_key(0, 1)] = 0
 		gs.war_started_turn[Wars._pair_key(0, 1)] = 1
 
-		# Run game
 		var captured: bool = false
 		for t in range(turns_cap):
 			game.end_turn_headless()

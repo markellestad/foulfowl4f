@@ -58,31 +58,35 @@ static func _add_ship_to_system_fleet(gs: GameState, ship: Ship, colony_id: int)
 	var col: Colony = gs.colonies[colony_id]
 	var sys_id: int = gs.planets[col.planet_id].system_id
 	var target_fleet: Fleet = null
-	var is_transport: bool = false
-	if gs.designs.has(ship.design_id):
-		var des: ShipDesign = gs.designs[ship.design_id]
-		for sp in des.specials:
-			if sp.ends_with("_pod"):
-				is_transport = true
-				break
 
-	for fid in Ids.sorted_keys(gs.fleets):
-		var flt: Fleet = gs.fleets[fid]
-		if flt.owner == col.owner and flt.system_id == sys_id and flt.order.is_empty():
-			var flt_is_transport: bool = false
-			for sid in flt.ship_ids:
-				var s: Ship = gs.ships.get(sid)
-				if s != null and gs.designs.has(s.design_id):
-					var s_des: ShipDesign = gs.designs[s.design_id]
-					for sp in s_des.specials:
-						if sp.ends_with("_pod"):
-							flt_is_transport = true
-							break
-				if flt_is_transport:
+	var ship_des: ShipDesign = gs.designs.get(ship.design_id)
+	var has_boot: bool = ship_des != null and ship_des.specials.has("boot_pod")
+	var is_armed: bool = ship_des != null and not ship_des.weapons.is_empty()
+
+	if has_boot or is_armed:
+		for fid in Ids.sorted_keys(gs.fleets):
+			var flt: Fleet = gs.fleets[fid]
+			if flt.owner == col.owner and flt.system_id == sys_id and flt.order.is_empty() and not flt.auto_explore:
+				var flt_has_boot: bool = false
+				var flt_is_armed: bool = false
+				var flt_has_other_pod: bool = false
+				for sid in flt.ship_ids:
+					var s: Ship = gs.ships.get(sid)
+					if s != null and gs.designs.has(s.design_id):
+						var s_des: ShipDesign = gs.designs[s.design_id]
+						if s_des.specials.has("boot_pod"):
+							flt_has_boot = true
+						elif s_des.specials.has("glance_pod") or s_des.specials.has("nest_pod") or s_des.specials.has("perch_pod"):
+							flt_has_other_pod = true
+						if not s_des.weapons.is_empty():
+							flt_is_armed = true
+				if has_boot and flt_has_boot and not flt_has_other_pod:
+					target_fleet = flt
 					break
-			if flt_is_transport == is_transport:
-				target_fleet = flt
-				break
+				elif is_armed and flt_is_armed and not flt_has_boot and not flt_has_other_pod:
+					target_fleet = flt
+					break
+
 	if target_fleet != null:
 		target_fleet.ship_ids.append(ship.id)
 		ship.fleet_id = target_fleet.id

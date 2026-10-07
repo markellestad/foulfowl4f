@@ -21,6 +21,8 @@ func next(ctx: TurnContext) -> bool:
 	var end_idx: int = min(_cursor + slice_count, _work_empires.size())
 	for i in range(_cursor, end_idx):
 		var eid: int = int(_work_empires[i])
+		if ctx.gs.ai_disabled.has(eid):
+			continue
 		AutoExplore.process_empire(ctx.db, ctx.gs, eid)
 		Governor.assign_jobs(ctx.db, ctx.gs, eid)
 		Governor.fill_queues(ctx.db, ctx.gs, eid, ctx.report)

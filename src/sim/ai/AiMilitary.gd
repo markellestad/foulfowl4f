@@ -63,6 +63,52 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 		elif is_scout:
 			idle_scouts.append(f)
 
+	# Merge idle armed fleets in the same system
+	var armed_by_sys: Dictionary = {}
+	for f in idle_armed_fleets:
+		if f.system_id >= 0:
+			if not armed_by_sys.has(f.system_id):
+				armed_by_sys[f.system_id] = []
+			armed_by_sys[f.system_id].append(f)
+
+	for sys_id in armed_by_sys.keys():
+		var flist: Array = armed_by_sys[sys_id]
+		if flist.size() > 1:
+			var base_f: Fleet = flist[0]
+			for i in range(1, flist.size()):
+				var other_f: Fleet = flist[i]
+				var mrg: CmdFleetMerge = CmdFleetMerge.new()
+				mrg.empire_id = view.empire_id
+				mrg.fleet_id = base_f.id
+				mrg.other_id = other_f.id
+				cmds.append(mrg)
+				for sid in other_f.ship_ids:
+					base_f.ship_ids.append(sid)
+				idle_armed_fleets.erase(other_f)
+
+	# Merge idle boot fleets in the same system
+	var boot_by_sys: Dictionary = {}
+	for f in idle_boot_ships:
+		if f.system_id >= 0:
+			if not boot_by_sys.has(f.system_id):
+				boot_by_sys[f.system_id] = []
+			boot_by_sys[f.system_id].append(f)
+
+	for sys_id in boot_by_sys.keys():
+		var b_flist: Array = boot_by_sys[sys_id]
+		if b_flist.size() > 1:
+			var base_bf: Fleet = b_flist[0]
+			for i in range(1, b_flist.size()):
+				var other_bf: Fleet = b_flist[i]
+				var mrg: CmdFleetMerge = CmdFleetMerge.new()
+				mrg.empire_id = view.empire_id
+				mrg.fleet_id = base_bf.id
+				mrg.other_id = other_bf.id
+				cmds.append(mrg)
+				for sid in other_bf.ship_ids:
+					base_bf.ship_ids.append(sid)
+				idle_boot_ships.erase(other_bf)
+
 	# 1. Check invasion for colonies where orbit is already secured
 	var invading_boot_ships: Array[Fleet] = []
 	for f in idle_boot_ships:
@@ -86,11 +132,29 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 		idle_boot_ships.erase(f)
 
 	# 2. Check strike opportunities
+	# Sort candidate enemy colonies: capitals first, then by cid
+	var target_cids: Array = []
 	for cid in seen_cols.keys():
 		var col_info: Dictionary = seen_cols[cid]
 		var c_owner: int = int(col_info.get("owner", -1))
-		if not enemy_ids.has(c_owner):
-			continue
+		if enemy_ids.has(c_owner):
+			target_cids.append(cid)
+	target_cids.sort_custom(func(a, b) -> bool:
+		var out_a: bool = bool(seen_cols[a].get("is_outpost", false))
+		var out_b: bool = bool(seen_cols[b].get("is_outpost", false))
+		if out_a != out_b:
+			return not out_a
+		var pop_a: int = int(seen_cols[a].get("pop_units", 0))
+		var pop_b: int = int(seen_cols[b].get("pop_units", 0))
+		if pop_a != pop_b:
+			return pop_a > pop_b
+		return int(a) < int(b)
+	)
+
+	var struck_systems: Array[int] = []
+	for cid in target_cids:
+		var col_info: Dictionary = seen_cols[cid]
+		var c_owner: int = int(col_info.get("owner", -1))
 
 		# Check failure memory: max_failures in failure_window
 		if memory != null and memory.failures_in_window(cid, view.turn, failure_window) >= max_failures:
@@ -106,14 +170,24 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 		var target_sys: int = view.colony_system_id(cid)
 		if target_sys < 0:
 			continue
-		if not FuelRange.in_range_system(view.db, view.raw_game_state_DO_NOT_USE_EXCEPT_SIM(), view.empire_id, target_sys):
+		var in_range: bool = FuelRange.in_range_system(view.db, view.raw_game_state_DO_NOT_USE_EXCEPT_SIM(), view.empire_id, target_sys)
+		if not in_range:
 			continue
 
 		# Check intel freshness
-
 		var age: int = view.turn - int(col_info.get("turn_seen", view.turn))
 		if age > intel_max_age:
-			# Stale intel! Must re-scout before striking
+			var scout_en_route: bool = false
+			for f in own_fleets:
+				if f.dest_system_id == target_sys and f.ship_ids.size() == 1:
+					var s: Ship = view.own_ship(f.ship_ids[0])
+					if s != null and view.raw_game_state_DO_NOT_USE_EXCEPT_SIM().designs.has(s.design_id):
+						var des: ShipDesign = view.raw_game_state_DO_NOT_USE_EXCEPT_SIM().designs[s.design_id]
+						if des != null and des.weapons.is_empty():
+							scout_en_route = true
+							break
+			if scout_en_route:
+				continue
 			if not idle_scouts.is_empty():
 				var scout_f: Fleet = idle_scouts.pop_back()
 				if scout_f.system_id != target_sys:
@@ -124,8 +198,7 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 					cmds.append(mv)
 					if memory != null:
 						memory.re_scout_sent[cid] = view.turn
-			# Do not strike with stale intel
-			continue
+				continue
 
 		# Fresh intel: check strike sizing
 		if idle_armed_fleets.is_empty():
@@ -143,8 +216,7 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 					if not des.weapons.is_empty() and des.hull != "small":
 						medium_warships_count += 1
 
-		var min_warships: int = 6 if (bool(col_info.get("is_capital", true)) and estimated_defense >= 2000) else 1
-		if medium_warships_count >= min_warships and total_idle_power * 100 >= strike_ratio * estimated_defense:
+		if medium_warships_count >= 1 and total_idle_power * 100 >= strike_ratio * estimated_defense:
 			for f in idle_armed_fleets:
 				if f.system_id != target_sys and f.dest_system_id != target_sys:
 					var mv: CmdFleetMove = CmdFleetMove.new()
@@ -152,12 +224,13 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 					mv.fleet_id = f.id
 					mv.system_id = target_sys
 					cmds.append(mv)
+			struck_systems.append(target_sys)
 			idle_armed_fleets.clear()
 			break
 
 	# 2b. Dispatch idle boot ships to follow friendly forces to enemy systems
 	if not idle_boot_ships.is_empty():
-		for cid in seen_cols.keys():
+		for cid in target_cids:
 			var col_info: Dictionary = seen_cols[cid]
 			var c_owner: int = int(col_info.get("owner", -1))
 			if not enemy_ids.has(c_owner):
@@ -168,33 +241,49 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 			if not FuelRange.in_range_system(view.db, view.raw_game_state_DO_NOT_USE_EXCEPT_SIM(), view.empire_id, target_sys):
 				continue
 
-			var has_friendly_force: bool = false
-
-			for f in own_fleets:
-				if f.system_id == target_sys or f.dest_system_id == target_sys:
-					for sid in f.ship_ids:
-						var s: Ship = view.own_ship(sid)
-						if s != null:
-							var des: ShipDesign = view.raw_game_state_DO_NOT_USE_EXCEPT_SIM().designs.get(s.design_id)
-							if des != null and not des.weapons.is_empty():
-								has_friendly_force = true
-								break
-				if has_friendly_force:
-					break
+			var has_friendly_force: bool = struck_systems.has(target_sys)
+			if not has_friendly_force:
+				for f in own_fleets:
+					if f.system_id == target_sys or (f.dest_system_id == target_sys and f.depart_turn < view.turn):
+						for sid in f.ship_ids:
+							var s: Ship = view.own_ship(sid)
+							if s != null:
+								var des: ShipDesign = view.raw_game_state_DO_NOT_USE_EXCEPT_SIM().designs.get(s.design_id)
+								if des != null and not des.weapons.is_empty():
+									has_friendly_force = true
+									break
+					if has_friendly_force:
+						break
 
 			if has_friendly_force:
-				var def_count: int = int(col_info.get("garrison", 0)) + IntMath.ceil_div(int(col_info.get("pop_units", 1)), 2)
+				var est_gar: int = int(col_info.get("garrison", 0))
+				if est_gar == 0 and col_info.get("buildings") is Array:
+					for b in col_info.get("buildings"):
+						var bdef: Dictionary = view.db.def("buildings", str(b))
+						var dblk: Dictionary = bdef.get("defense", {})
+						est_gar += int(dblk.get("garrison", 0))
+				if est_gar == 0 and bool(col_info.get("is_capital", true)):
+					est_gar = 4
+				var def_count: int = est_gar + IntMath.ceil_div(int(col_info.get("pop_units", 1)), 2)
 				var req_marines: int = IntMath.ceil_div(def_count * view.db.bal("invade_ratio_pct"), 100)
-				var req_boot_ships: int = maxi(4, IntMath.ceil_div(req_marines, 4))
+				var req_boot_ships: int = maxi(1, IntMath.ceil_div(req_marines, 4))
 
 				var staging_boot_ships: Array[Fleet] = []
 				var total_staging_ships: int = 0
 				for bf in idle_boot_ships:
 					if bf.system_id != target_sys and bf.dest_system_id != target_sys:
-						staging_boot_ships.append(bf)
-						total_staging_ships += bf.ship_ids.size()
+						var b_count: int = 0
+						for sid in bf.ship_ids:
+							var s: Ship = view.own_ship(sid)
+							if s != null:
+								var des: ShipDesign = view.raw_game_state_DO_NOT_USE_EXCEPT_SIM().designs.get(s.design_id)
+								if des != null and des.specials.has("boot_pod"):
+									b_count += 1
+						if b_count > 0:
+							staging_boot_ships.append(bf)
+							total_staging_ships += b_count
 
-				if total_staging_ships >= req_boot_ships:
+				if total_staging_ships >= mini(2, req_boot_ships) or total_staging_ships >= req_boot_ships or (struck_systems.has(target_sys) and total_staging_ships > 0):
 					var base_bf: Fleet = staging_boot_ships[0]
 					for i in range(1, staging_boot_ships.size()):
 						var other_bf: Fleet = staging_boot_ships[i]
@@ -204,6 +293,12 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 							mrg.fleet_id = base_bf.id
 							mrg.other_id = other_bf.id
 							cmds.append(mrg)
+						else:
+							var other_mv: CmdFleetMove = CmdFleetMove.new()
+							other_mv.empire_id = view.empire_id
+							other_mv.fleet_id = other_bf.id
+							other_mv.system_id = target_sys
+							cmds.append(other_mv)
 
 					var b_mv: CmdFleetMove = CmdFleetMove.new()
 					b_mv.empire_id = view.empire_id
@@ -218,12 +313,20 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 	for cid in seen_cols.keys():
 		var col_info: Dictionary = seen_cols[cid]
 		if enemy_ids.has(int(col_info.get("owner", -1))):
-			var d_cnt: int = int(col_info.get("garrison", 0)) + IntMath.ceil_div(int(col_info.get("pop_units", 1)), 2)
+			var est_gar: int = int(col_info.get("garrison", 0))
+			if est_gar == 0 and col_info.get("buildings") is Array:
+				for b in col_info.get("buildings"):
+					var bdef: Dictionary = view.db.def("buildings", str(b))
+					var dblk: Dictionary = bdef.get("defense", {})
+					est_gar += int(dblk.get("garrison", 0))
+			if est_gar == 0 and bool(col_info.get("is_capital", true)):
+				est_gar = 4
+			var d_cnt: int = est_gar + IntMath.ceil_div(int(col_info.get("pop_units", 1)), 2)
 			if d_cnt > target_def_count:
 				target_def_count = d_cnt
 
 	var needed_marines: int = IntMath.ceil_div(target_def_count * view.db.bal("invade_ratio_pct"), 100)
-	var needed_boot_ships: int = maxi(4, IntMath.ceil_div(needed_marines, 4))
+	var needed_boot_ships: int = maxi(1, IntMath.ceil_div(needed_marines, 4))
 
 	var total_boot_ships: int = 0
 	for f in own_fleets:
@@ -241,7 +344,7 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 				var did: int = int(qi.ref_id)
 				var des: ShipDesign = view.raw_game_state_DO_NOT_USE_EXCEPT_SIM().designs.get(did)
 				if des != null and des.specials.has("boot_pod"):
-					queued_boot_ships += 1
+					queued_boot_ships += qi.count
 
 	if total_boot_ships + queued_boot_ships < needed_boot_ships:
 		var best_yard: Colony = null
@@ -295,7 +398,15 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 					q_cmd.colony_id = best_yard.id
 					q_cmd.kind_item = "ship"
 					q_cmd.ref_id = str(boot_des.id)
-					q_cmd.count = 1
+					q_cmd.count = maxi(1, needed_boot_ships - (total_boot_ships + queued_boot_ships))
+					var insert_idx: int = -1
+					for idx in range(best_yard.queue.size()):
+						var qi: QueueItem = best_yard.queue[idx]
+						if str(qi.kind) == "trade_goods" or str(qi.added_by) == "governor":
+							insert_idx = idx
+							break
+					if insert_idx >= 0:
+						q_cmd.index = insert_idx
 					cmds.append(q_cmd)
 					queued_by_colony[best_yard.id] = int(queued_by_colony.get(best_yard.id, 0)) + 1
 
@@ -314,7 +425,7 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 	if min_strike_needed < 999999999:
 		var current_idle_power: int = 0
 		var current_warships: int = 0
-		for f in idle_armed_fleets:
+		for f in own_fleets:
 			current_idle_power += Power.fleet_obj_power(view.db, view.raw_game_state_DO_NOT_USE_EXCEPT_SIM(), f)
 			for sid in f.ship_ids:
 				var s: Ship = view.own_ship(sid)
@@ -323,15 +434,15 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 					if not des.weapons.is_empty() and des.hull != "small":
 						current_warships += 1
 
-		if current_idle_power < min_strike_needed or current_warships < 5:
+		if (current_idle_power < min_strike_needed or current_warships < 2) and (total_boot_ships + queued_boot_ships >= needed_boot_ships or current_warships < 2):
 			var queued_warships: int = 0
 			for col in view.own_colonies():
 				for qi in col.queue:
 					if qi.kind == "ship":
 						var did: int = int(qi.ref_id)
 						var des: ShipDesign = view.raw_game_state_DO_NOT_USE_EXCEPT_SIM().designs.get(did)
-						if des != null and not des.weapons.is_empty():
-							queued_warships += 1
+						if des != null and not des.weapons.is_empty() and des.hull != "small":
+							queued_warships += qi.count
 
 			if queued_warships < 2:
 				var best_yard: Colony = null
@@ -389,8 +500,14 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 							q_cmd.kind_item = "ship"
 							q_cmd.ref_id = str(war_des_id)
 							q_cmd.count = 1
-							if not best_yard.queue.is_empty() and (str(best_yard.queue[0].kind) == "trade_goods" or str(best_yard.queue[0].added_by) == "governor"):
-								q_cmd.index = 0
+							var insert_idx: int = -1
+							for idx in range(best_yard.queue.size()):
+								var qi: QueueItem = best_yard.queue[idx]
+								if str(qi.kind) == "trade_goods" or str(qi.added_by) == "governor":
+									insert_idx = idx
+									break
+							if insert_idx >= 0:
+								q_cmd.index = insert_idx
 							cmds.append(q_cmd)
 							queued_by_colony[best_yard.id] = int(queued_by_colony.get(best_yard.id, 0)) + 1
 

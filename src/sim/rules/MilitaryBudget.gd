@@ -42,6 +42,18 @@ static func next_role(view: AiView) -> String:
 			if s_val > highest_enemy_shield:
 				highest_enemy_shield = s_val
 
+	for cid in knw.seen_colonies.keys():
+		var c_data: Dictionary = knw.seen_colonies[cid]
+		if int(c_data.get("owner", -1)) == view.empire_id:
+			continue
+		if c_data.get("buildings") is Array:
+			for b in c_data.get("buildings"):
+				var bdef: Dictionary = db.def("buildings", str(b))
+				var dblk: Dictionary = bdef.get("defense", {})
+				var sh: int = int(dblk.get("planet_shield", 0))
+				if sh > highest_enemy_shield:
+					highest_enemy_shield = sh
+
 	# Check own swat share among warships
 	var own_warships: int = 0
 	var own_swat: int = 0

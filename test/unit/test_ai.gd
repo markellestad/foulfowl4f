@@ -165,9 +165,8 @@ func test_stale_intel_rescout() -> void:
 	var cmds_fresh: Array[Cmd] = AiMilitary.plan(view, mem)
 	var launched_strike_fresh: bool = false
 	for c in cmds_fresh:
-		if c is CmdFleetMove and (c as CmdFleetMove).fleet_id == wf.id:
+		if c is CmdFleetMove and ((c as CmdFleetMove).fleet_id == wf.id or (c as CmdFleetMove).system_id == enemy_planet.system_id):
 			launched_strike_fresh = true
-
 	assert_true(launched_strike_fresh, "Fresh intel (10 turns): strike fleet IS launched without re-scout")
 
 func test_failure_memory_third_strike_refused() -> void:

@@ -32,6 +32,10 @@ static func apply(gs: GameState, db: ContentDB, log: BattleLog) -> void:
 					if gs.fleets.has(s.fleet_id):
 						var f: Fleet = gs.fleets[s.fleet_id]
 						f.ship_ids.erase(s.id)
+					else:
+						for f in gs.fleets.values():
+							if f.system_id == log.system_id:
+								f.ship_ids.erase(s.id)
 					gs.ships.erase(uid)
 				else:
 					s.hp = cur_hp

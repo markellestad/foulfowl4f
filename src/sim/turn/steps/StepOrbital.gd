@@ -66,7 +66,7 @@ func next(ctx: TurnContext) -> bool:
 			if f.system_id == sys_id:
 				var col_id: int = int(f.order.get("colony_id", -1))
 				var is_invade: bool = (str(f.order.get("type", "")) == "invade")
-				if not is_invade and ctrl == f.owner:
+				if not is_invade and (ctrl == f.owner or ctrl == -1):
 					for sid in f.ship_ids:
 						var s: Ship = ctx.gs.ships.get(sid)
 						if s != null and ctx.gs.designs.has(s.design_id):
@@ -75,7 +75,7 @@ func next(ctx: TurnContext) -> bool:
 								is_invade = true
 								break
 
-				if is_invade and ctrl == f.owner:
+				if is_invade and (ctrl == f.owner or ctrl == -1):
 					var target_col: Colony = null
 					if col_id >= 0 and ctx.gs.colonies.has(col_id):
 						target_col = ctx.gs.colonies[col_id]
