@@ -68,6 +68,8 @@ func setup(p_state: GameState, p_db: ContentDB, preset_def: Dictionary) -> void:
 	camera.zoom_changed.connect(func(z: float) -> void:
 		if star_layer != null:
 			star_layer.set_zoom(z)
+		if fleet_layer != null:
+			fleet_layer.set_zoom(z)
 	)
 
 func select_system(sys_id: int) -> void:

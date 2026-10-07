@@ -11,15 +11,21 @@ var viewer_empire_id: int = 0
 # Move preview (for Move button / mouse target preview)
 var preview_fleet_id: int = -1
 var preview_target_system_id: int = -1
+var current_zoom: float = 1.0
 
 var _font: Font = null
-var _font_size: int = 12
+var _font_size: int = 14
 
 func setup(p_state: GameState, p_db: ContentDB, p_viewer_empire_id: int = 0) -> void:
 	state = p_state
 	db = p_db
 	viewer_empire_id = p_viewer_empire_id
 	queue_redraw()
+
+func set_zoom(zoom: float) -> void:
+	if current_zoom != zoom:
+		current_zoom = zoom
+		queue_redraw()
 
 func set_selected_fleet(f_id: int) -> void:
 	if selected_fleet_id != f_id:
@@ -42,10 +48,10 @@ func _ensure_font() -> void:
 		var root_theme: Theme = ThemeDB.get_project_theme()
 		if root_theme != null and root_theme.default_font != null:
 			_font = root_theme.default_font
-			_font_size = root_theme.default_font_size
+			_font_size = max(14, root_theme.default_font_size)
 		else:
 			_font = ThemeDB.fallback_font
-			_font_size = 12
+			_font_size = 14
 
 func _draw() -> void:
 	if state == null or db == null:
@@ -109,7 +115,7 @@ func _draw() -> void:
 		if f.ship_ids.size() >= 8:
 			var txt: String = Copy.t("ui.fleet.doomstack") if Copy.has("ui.fleet.doomstack") else "8+"
 			var t_pos := f_pos + Vector2(10, -10)
-			draw_string(_font, t_pos, txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("#ffdd66"))
+			draw_string(_font, t_pos, txt, HORIZONTAL_ALIGNMENT_LEFT, -1, _font_size, Color("#ffdd66"))
 
 func _draw_dotted_trajectory(start: Vector2, finish: Vector2, color: Color, width: float, ticks: int) -> void:
 	var total_dist: float = start.distance_to(finish)

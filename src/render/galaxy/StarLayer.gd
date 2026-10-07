@@ -30,9 +30,9 @@ func set_selected_system(sys_id: int) -> void:
 		queue_redraw()
 
 func set_zoom(zoom: float) -> void:
-	var prev_bucket: bool = current_zoom >= 0.6
+	var prev_bucket: bool = current_zoom >= 0.45
 	current_zoom = zoom
-	var new_bucket: bool = current_zoom >= 0.6
+	var new_bucket: bool = current_zoom >= 0.45
 	if prev_bucket != new_bucket:
 		queue_redraw()
 
@@ -41,7 +41,7 @@ func _ensure_font() -> void:
 		var root_theme: Theme = ThemeDB.get_project_theme()
 		if root_theme != null and root_theme.default_font != null:
 			_font = root_theme.default_font
-			_font_size = root_theme.default_font_size
+			_font_size = max(14, root_theme.default_font_size)
 		else:
 			_font = ThemeDB.fallback_font
 			_font_size = 14
@@ -63,7 +63,7 @@ func _draw() -> void:
 			draw_dashed_line(p1, p2, Color(Palette.MUTED.r, Palette.MUTED.g, Palette.MUTED.b, 0.5), 1.5, 8.0)
 
 	# 2. Draw stars
-	var show_names: bool = current_zoom >= 0.6
+	var show_names: bool = current_zoom >= 0.45
 
 	for sys in state.systems:
 		var pos := Vector2(sys.x * 4.0, sys.y * 4.0)
