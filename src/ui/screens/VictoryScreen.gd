@@ -13,7 +13,7 @@ func setup(p: Dictionary = {}) -> void:
 
 func build() -> void:
 	var bg := ColorRect.new()
-	bg.color = Palette.BG
+	bg.color = Color(0.0, 0.0, 0.0, 0.6)
 	bg.set_anchors_preset(PRESET_FULL_RECT)
 	add_child(bg)
 
@@ -22,7 +22,7 @@ func build() -> void:
 	add_child(center)
 
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(560, 360)
+	panel.custom_minimum_size = Vector2(560, 0)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Palette.PANEL
 	style.border_color = Palette.LINE

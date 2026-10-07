@@ -1,5 +1,5 @@
 class_name CapitulationCard
-extends PanelContainer
+extends Control
 
 signal answered(accepted: bool)
 
@@ -12,17 +12,31 @@ func setup(p_offer_id: int, p_leader: String = "The enemy leader") -> void:
 	build_ui()
 
 func build_ui() -> void:
-	custom_minimum_size = Vector2(480, 260)
+	set_anchors_preset(PRESET_FULL_RECT)
+	mouse_filter = MOUSE_FILTER_STOP
+
+	var bg := ColorRect.new()
+	bg.color = Color(0.0, 0.0, 0.0, 0.6)
+	bg.set_anchors_preset(PRESET_FULL_RECT)
+	add_child(bg)
+
+	var center := CenterContainer.new()
+	center.set_anchors_preset(PRESET_FULL_RECT)
+	add_child(center)
+
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(480, 0)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Palette.PANEL
 	style.border_color = Palette.LINE
 	style.set_border_width_all(2)
 	style.set_content_margin_all(20)
-	add_theme_stylebox_override("panel", style)
+	card.add_theme_stylebox_override("panel", style)
+	center.add_child(card)
 
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 16)
-	add_child(vbox)
+	card.add_child(vbox)
 
 	var title := Label.new()
 	title.text = Copy.t("capitulation.card.title")
