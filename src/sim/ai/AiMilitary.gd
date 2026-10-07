@@ -3,6 +3,7 @@ extends RefCounted
 
 static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 	var cmds: Array[Cmd] = []
+	var queued_by_colony: Dictionary = {}
 	var is_floor: bool = (str(view.personality().get("id", "")) == "floor")
 	var strike_ratio: int = 130 if is_floor else view.db.bal("strike_ratio_pct")
 	var intel_max_age: int = view.db.bal("intel_max_age")
@@ -274,22 +275,29 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 					view.raw_game_state_DO_NOT_USE_EXCEPT_SIM().designs[boot_des.id] = boot_des
 
 			if boot_des != null:
-				if best_yard.queue.size() >= view.db.bal("queue_max"):
+				var q_delta: int = int(queued_by_colony.get(best_yard.id, 0))
+				var eff_size: int = best_yard.queue.size() + q_delta
+				var can_add: bool = (eff_size < view.db.bal("queue_max"))
+				if not can_add:
 					for i in range(best_yard.queue.size() - 1, -1, -1):
-						if str(best_yard.queue[i].added_by) == "governor":
+						if str(best_yard.queue[i].added_by) == "governor" or str(best_yard.queue[i].kind) == "trade_goods":
 							var rm_cmd: CmdQueueRemove = CmdQueueRemove.new()
 							rm_cmd.empire_id = view.empire_id
 							rm_cmd.colony_id = best_yard.id
 							rm_cmd.index = i
 							cmds.append(rm_cmd)
+							queued_by_colony[best_yard.id] = q_delta - 1
+							can_add = true
 							break
-				var q_cmd: CmdQueueAdd = CmdQueueAdd.new()
-				q_cmd.empire_id = view.empire_id
-				q_cmd.colony_id = best_yard.id
-				q_cmd.kind_item = "ship"
-				q_cmd.ref_id = str(boot_des.id)
-				q_cmd.count = 1
-				cmds.append(q_cmd)
+				if can_add:
+					var q_cmd: CmdQueueAdd = CmdQueueAdd.new()
+					q_cmd.empire_id = view.empire_id
+					q_cmd.colony_id = best_yard.id
+					q_cmd.kind_item = "ship"
+					q_cmd.ref_id = str(boot_des.id)
+					q_cmd.count = 1
+					cmds.append(q_cmd)
+					queued_by_colony[best_yard.id] = int(queued_by_colony.get(best_yard.id, 0)) + 1
 
 	# 4. If at war and under strike requirement, ensure shipyards are actively producing warships
 	var min_strike_needed: int = 999999999
@@ -360,7 +368,10 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 							view.raw_game_state_DO_NOT_USE_EXCEPT_SIM().designs[war_des.id] = war_des
 							war_des_id = war_des.id
 
-						if best_yard.queue.size() >= view.db.bal("queue_max"):
+						var q_delta: int = int(queued_by_colony.get(best_yard.id, 0))
+						var eff_size: int = best_yard.queue.size() + q_delta
+						var can_add: bool = (eff_size < view.db.bal("queue_max"))
+						if not can_add:
 							for i in range(best_yard.queue.size() - 1, -1, -1):
 								if str(best_yard.queue[i].added_by) == "governor" or str(best_yard.queue[i].kind) == "trade_goods":
 									var rm_cmd: CmdQueueRemove = CmdQueueRemove.new()
@@ -368,16 +379,20 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 									rm_cmd.colony_id = best_yard.id
 									rm_cmd.index = i
 									cmds.append(rm_cmd)
+									queued_by_colony[best_yard.id] = q_delta - 1
+									can_add = true
 									break
-						var q_cmd: CmdQueueAdd = CmdQueueAdd.new()
-						q_cmd.empire_id = view.empire_id
-						q_cmd.colony_id = best_yard.id
-						q_cmd.kind_item = "ship"
-						q_cmd.ref_id = str(war_des_id)
-						q_cmd.count = 1
-						if not best_yard.queue.is_empty() and (str(best_yard.queue[0].kind) == "trade_goods" or str(best_yard.queue[0].added_by) == "governor"):
-							q_cmd.index = 0
-						cmds.append(q_cmd)
+						if can_add:
+							var q_cmd: CmdQueueAdd = CmdQueueAdd.new()
+							q_cmd.empire_id = view.empire_id
+							q_cmd.colony_id = best_yard.id
+							q_cmd.kind_item = "ship"
+							q_cmd.ref_id = str(war_des_id)
+							q_cmd.count = 1
+							if not best_yard.queue.is_empty() and (str(best_yard.queue[0].kind) == "trade_goods" or str(best_yard.queue[0].added_by) == "governor"):
+								q_cmd.index = 0
+							cmds.append(q_cmd)
+							queued_by_colony[best_yard.id] = int(queued_by_colony.get(best_yard.id, 0)) + 1
 
 	return cmds
 
