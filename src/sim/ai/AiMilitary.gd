@@ -108,8 +108,8 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 		if not FuelRange.in_range_system(view.db, view.raw_game_state_DO_NOT_USE_EXCEPT_SIM(), view.empire_id, target_sys):
 			continue
 
-
 		# Check intel freshness
+
 		var age: int = view.turn - int(col_info.get("turn_seen", view.turn))
 		if age > intel_max_age:
 			# Stale intel! Must re-scout before striking
@@ -167,8 +167,8 @@ static func plan(view: AiView, memory: AiMemory = null) -> Array[Cmd]:
 			if not FuelRange.in_range_system(view.db, view.raw_game_state_DO_NOT_USE_EXCEPT_SIM(), view.empire_id, target_sys):
 				continue
 
-
 			var has_friendly_force: bool = false
+
 			for f in own_fleets:
 				if f.system_id == target_sys or f.dest_system_id == target_sys:
 					for sid in f.ship_ids:

@@ -89,13 +89,20 @@ func test_stale_intel_rescout() -> void:
 		"turn_seen": gs.turn - 11 # 11 turns ago
 	}
 
-	# Spawn an idle scout fleet for empire 1
 	var cap_sys: int = 1
 	var cap_c: Colony = view.capital_colony()
 	if cap_c != null:
 		var cap_p: Planet = view.planet(cap_c.planet_id)
 		if cap_p != null:
 			cap_sys = cap_p.system_id
+
+	# Ensure enemy colony is within fuel range of empire 1
+	var enemy_planet: Planet = gs.planets[gs.colonies[enemy_cid].planet_id]
+	for sys in gs.systems:
+		if sys.id != cap_sys and FuelRange.in_range_system(_db, gs, 1, sys.id):
+			enemy_planet.system_id = sys.id
+			break
+
 
 	var scout_des: ShipDesign = ShipDesign.new()
 	scout_des.id = gs.alloc_id("design")
@@ -192,6 +199,13 @@ func test_failure_memory_third_strike_refused() -> void:
 		var cap_p: Planet = view.planet(cap_c.planet_id)
 		if cap_p != null:
 			cap_sys = cap_p.system_id
+
+	var enemy_planet: Planet = gs.planets[gs.colonies[enemy_cid].planet_id]
+	for sys in gs.systems:
+		if sys.id != cap_sys and FuelRange.in_range_system(_db, gs, 1, sys.id):
+			enemy_planet.system_id = sys.id
+			break
+
 
 	var war_des: ShipDesign = ShipDesign.new()
 	war_des.id = gs.alloc_id("design")
